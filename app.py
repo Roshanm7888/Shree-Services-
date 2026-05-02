@@ -6,7 +6,7 @@ from datetime import datetime
 # 1. Page Config
 st.set_page_config(page_title="Shree Services | Roshan Mishra", layout="centered", page_icon="🏢")
 
-# Custom Styling for Big Vertical Cards
+# Custom Styling
 st.markdown("""
     <style>
     [data-testid="stSidebar"] { background-color: #1e3a8a; }
@@ -36,7 +36,9 @@ st.markdown("""
 # 2. Data & Settings
 SHEET_ID = "1NVNjNawK0026WPsd6P_X-lSd6LoLWqXo8dG1m7Ou098"
 URL = f"https://docs.google.com/spreadsheets/d/{SHEET_ID}/export?format=csv"
-MY_NUMBER = "919220393972"
+
+# ALERT NUMBER (7888273972)
+MY_NUMBER = "917888273972"
 
 @st.cache_data(ttl=30)
 def load_data():
@@ -48,20 +50,24 @@ def load_data():
 
 df = load_data()
 
-# 3. SIDEBAR MENU (3-Line Menu icon automatically appears on mobile)
+# 3. SIDEBAR MENU
 with st.sidebar:
     st.markdown("<h2 style='color:white;'>📋 MENU</h2>", unsafe_allow_html=True)
     choice = st.radio("", ["🏠 Home", "📊 Ledger Status", "🔔 WhatsApp Reminder", "📤 Upload Bills"], index=0)
     st.markdown("---")
-    st.markdown("<p style='color:white;'>Contact: +91 9220393972</p>", unsafe_allow_html=True)
+    # Sidebar Display (All 3 numbers)
+    st.markdown("""
+        <p style='color:white;'>📞 <b>Contact Us:</b><br>
+        1. 7888273972<br>
+        2. 8668257610<br>
+        3. 9220393972</p>
+    """, unsafe_allow_html=True)
 
 # --- NAVIGATION LOGIC ---
 
 if choice == "🏠 Home":
-    # Big Header
     st.markdown('<div class="main-header"><h1>🏛️ SHREE SERVICES</h1><p style="font-size:20px;">A Complete Hub for Accounting, Taxation & Insurance Solutions</p></div>', unsafe_allow_html=True)
 
-    # Vertical Service List (One by One)
     services = [
         {"title": "📑 Taxation", "desc": "House Tax, Salary Tax, Business Tax & Capital Gain Tax Filing."},
         {"title": "🛡️ Insurance", "desc": "Car & Bike, Life Insurance (LIC), Health & Mediclaim."},
@@ -82,7 +88,6 @@ if choice == "🏠 Home":
             st.session_state.inquiry = s['title']
             st.rerun()
 
-    # Inquiry Form
     if 'inquiry' in st.session_state:
         st.write("---")
         with st.form("lead_form"):
@@ -90,7 +95,7 @@ if choice == "🏠 Home":
             name = st.text_input("Full Name")
             phone = st.text_input("Mobile Number")
             if st.form_submit_button("Submit"):
-                msg = f"New Inquiry!\nService: {st.session_state.inquiry}\nName: {name}\nPhone: {phone}"
+                msg = f"New Inquiry Alert!\nService: {st.session_state.inquiry}\nName: {name}\nPhone: {phone}"
                 st.markdown(f'<a href="https://wa.me/{MY_NUMBER}?text={urllib.parse.quote(msg)}" target="_blank" style="text-decoration:none;"><div style="background-color:#25d366; color:white; padding:15px; border-radius:10px; text-align:center; font-weight:bold;">📲 Contact Roshan Ji on WhatsApp</div></a>', unsafe_allow_html=True)
 
 elif choice == "📊 Ledger Status":
@@ -104,7 +109,6 @@ elif choice == "🔔 WhatsApp Reminder":
     if not df.empty:
         party = st.selectbox("Select Party", df['Firm Name'].unique())
         row = df[df['Firm Name'] == party].iloc[0]
-        # Get phone
         p_num = ""
         for c in ['Mobile Number', 'Mobile', 'Phone']:
             if c in df.columns: p_num = str(row[c]); break
@@ -115,7 +119,7 @@ elif choice == "🔔 WhatsApp Reminder":
 
 elif choice == "📤 Upload Bills":
     st.title("📤 Bill Submission")
-    st.selectbox("Select Firm", df['Firm Name'].unique() if not df.empty else ["No Data"])
+    if not df.empty:
+        st.selectbox("Select Firm", df['Firm Name'].unique())
     st.file_uploader("Upload Documents", accept_multiple_files=True)
     if st.button("Submit Bills"): st.success("Files shared with Roshan Mishra.")
-
