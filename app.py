@@ -4,7 +4,7 @@ import urllib.parse
 from datetime import datetime, timedelta
 
 # 1. Page Config
-st.set_page_config(page_title="Shree Services | Online GST & Tax Center", layout="centered", page_icon="🏢")
+st.set_page_config(page_title="Shree Services - Online GST & Tax Center", layout="centered", page_icon="🏢")
 
 # Custom Styling
 st.markdown("""
@@ -13,12 +13,10 @@ st.markdown("""
     [data-testid="stSidebar"] { background-color: #1e3a8a; }
     [data-testid="stSidebar"] p, [data-testid="stSidebar"] span, [data-testid="stSidebar"] label { color: white !important; font-size: 16px !important; }
     .stButton>button { width: 100%; border-radius: 10px; height: 3.5em; background-color: #1e3a8a; color: white; font-weight: bold; }
-    
     .main-header { background: #1e3a8a; color: white; padding: 30px; border-radius: 0 0 20px 20px; text-align: center; margin-top: -60px; margin-bottom: 30px;}
-    .service-box { background-color: white; padding: 25px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); border-left: 10px solid #1e3a8a; margin-bottom: 20px; }
-    
+    .service-box { background-color: white; padding: 25px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); border-left: 10px solid #1e3a8a; margin-bottom: 20px; cursor: pointer; }
+    .info-alert { background-color: #e0f2fe; padding: 15px; border-radius: 10px; border-left: 5px solid #0369a1; color: #0369a1; font-weight: bold; margin-top: -10px; margin-bottom: 20px; }
     .invoice-card { background: #ffffff; border: 2px solid #1e3a8a; padding: 25px; border-radius: 12px; font-family: 'Segoe UI', sans-serif; color: #333; }
-    .invoice-header { text-align: center; border-bottom: 2px solid #1e3a8a; padding-bottom: 10px; margin-bottom: 15px; }
     table { width: 100%; border-collapse: collapse; margin-top: 15px; }
     th { background-color: #f2f2f2; padding: 10px; text-align: left; border-bottom: 2px solid #1e3a8a; }
     td { padding: 10px; border-bottom: 1px solid #eee; }
@@ -43,85 +41,94 @@ def load_data():
 
 df = load_data()
 
+# --- AUTO-DETECT UPLOAD PAGE ---
+query_params = st.query_params
+nav_index = 0
+if "page" in query_params and query_params.get("page") == "upload":
+    nav_index = 4
+
 # 3. SIDEBAR MENU
 with st.sidebar:
     st.markdown("<h2 style='color:white;'>📋 MENU</h2>", unsafe_allow_html=True)
-    choice = st.radio("", ["🏠 Home", "📊 Ledger Status", "🧾 Create Invoice", "🔔 WhatsApp Reminder", "📤 Upload Bills"], index=0)
+    choice = st.radio("", ["🏠 Home", "📊 Ledger Status", "🧾 Create Invoice", "🔔 WhatsApp Reminder", "📤 Upload Bills"], index=nav_index)
     st.markdown("---")
-    st.markdown("<p style='color:white;'>📞 <b>Contact:</b><br>7888273972<br>8668257610<br>9220393972</p>", unsafe_allow_html=True)
+    st.markdown("<p style='color:white;'>📞 7888273972<br>8668257610<br>9220393972</p>", unsafe_allow_html=True)
 
-# --- NAVIGATION LOGIC ---
+# --- NAVIGATION ---
 
 if choice == "🏠 Home":
     st.markdown('<div class="main-header"><h1>🏛️ SHREE SERVICES</h1><p>A Complete Hub for Accounting & Taxation Solutions</p></div>', unsafe_allow_html=True)
+    
+    st.write("### Our Services (Click to view details)")
+    
+    col1, col2 = st.columns(2)
+    with col1:
+        if st.button("📊 Taxation"):
+            st.markdown('<div class="info-alert">GST, House Tax, Salary Tax & Business Tax Filing.<br>📞 Call: 7888273972</div>', unsafe_allow_html=True)
+        if st.button("🛡️ Insurance"):
+            st.markdown('<div class="info-alert">Life, Health & Vehicle Insurance Solutions.<br>📞 Call: 8668257610</div>', unsafe_allow_html=True)
+    with col2:
+        if st.button("📝 Accounting"):
+            st.markdown('<div class="info-alert">Daily & Yearly Professional Bookkeeping.<br>📞 Call: 9220393972</div>', unsafe_allow_html=True)
+        if st.button("🌐 Online Work"):
+            st.markdown('<div class="info-alert">PAN, Aadhar, GST Registration & Digital Services.</div>', unsafe_allow_html=True)
+
+    # General Info boxes for look
     services = [
-        {"t": "Taxation", "d": "GST, House Tax, Salary Tax & Business Tax Filing."},
-        {"t": "Insurance", "d": "Life, Health & Vehicle Insurance Solutions."},
-        {"t": "Accounting", "d": "Daily & Yearly Professional Bookkeeping."},
-        {"t": "Online Work", "d": "All types of Online Registration & Digital Services."},
         {"t": "Online Ticket", "d": "Flight, Train & Bus Ticket Booking."}
     ]
     for s in services:
-        st.markdown(f'<div class="service-box"><h3 style="color:#1e3a8a; margin-top:0;">{s["t"]}</h3><p>{s["d"]}</p></div>', unsafe_allow_html=True)
+        st.markdown(f'<div class="service-box"><h3>{s["t"]}</h3><p>{s["d"]}</p></div>', unsafe_allow_html=True)
 
 elif choice == "🧾 Create Invoice":
-    st.title("📑 Generate Professional Bill")
+    st.title("📑 Generate Bill")
     if not df.empty:
-        party = st.selectbox("Select Client / Firm", df['Firm Name'].unique())
+        party = st.selectbox("Select Client", df['Firm Name'].unique())
         row = df[df['Firm Name'] == party].iloc[0]
-        amount = st.number_input("Billing Amount (₹)", min_value=0, value=800)
-        
-        # Auto Month Logic
+        amount = st.number_input("Amount (₹)", min_value=0, value=800)
         prev_month = (datetime.now().replace(day=1) - timedelta(days=1)).strftime("%B %Y")
         particulars = st.text_input("Particulars", value=f"GST Filing Charges for {prev_month}")
         
         qr_link = f"https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=upi://pay?pa={FIXED_UPI}&pn=Shree%20Services&am={amount}&cu=INR"
-        inv_date = datetime.now().strftime("%d-%b-%Y")
-
+        
         st.markdown(f"""
         <div class="invoice-card">
             <div class="invoice-header">
-                <h1 style="color:#1e3a8a; margin-bottom:0; font-size:24px;">Shree Services - Online GST & Tax Center</h1>
-                <p style="margin-top:5px; margin-bottom:5px;"><b>A Complete Hub for Accounting & Taxation Solutions</b></p>
-                <hr style="border:0.5px solid #1e3a8a; margin: 10px 0;">
-                <small>Address: Plot no. 64&65 Block k-5, Mohan Garden, Delhi-110059 | Mob: 7888273972</small>
+                <h2 style="color:#1e3a8a;">Shree Services - Online GST & Tax Center</h2>
+                <small>Mohan Garden, Delhi-110059 | Mob: 7888273972</small>
             </div>
-            <table style="width:100%; border:none;">
-                <tr style="border:none;"><td style="border:none;"><b>Invoice To:</b> {party}</td><td style="text-align:right; border:none;"><b>Date:</b> {inv_date}</td></tr>
-            </table>
             <table>
-                <tr><th>Description / Particulars</th><th style="text-align:right;">Amount</th></tr>
+                <tr><th>Description</th><th style="text-align:right;">Amount</th></tr>
                 <tr><td>{particulars}</td><td style="text-align:right;">₹{amount}/-</td></tr>
                 <tr style="background:#f9f9f9;"><td style="font-weight:bold;">Total Payable</td><td style="text-align:right; font-weight:bold; color:#1e3a8a; font-size:18px;">₹{amount}/-</td></tr>
             </table>
             <div class="qr-box">
-                <p style="font-size:12px; margin-bottom:5px; color:#1e3a8a;"><b>SCAN TO PAY VIA UPI</b></p>
                 <img src="{qr_link}" width="130">
-                <p style="font-size:11px; margin-top:5px; color:#555;">UPI ID: {FIXED_UPI}</p>
+                <p style="font-size:11px;">UPI ID: {FIXED_UPI}</p>
             </div>
         </div>
         """, unsafe_allow_html=True)
         
         if st.button("🖨️ Print / Save as PDF"):
-            st.info("Tip: Press Ctrl+P and select 'Save as PDF'")
+            st.info("Press Ctrl+P and select 'Save as PDF'")
 
-        msg = f"Namaste 🙏, *Shree Services - Online GST & Tax Center*.\n\n*Bill For:* {party}\n*Details:* {particulars}\n*Amount:* ₹{amount}\n\n*Pay via UPI:* {FIXED_UPI}\n*Portal:* {PORTAL_LINK}"
-        st.markdown(f'<a href="https://wa.me/{row["Mobile Number"]}?text={urllib.parse.quote(msg)}" target="_blank" style="text-decoration:none;"><div style="background-color:#25d366; color:white; padding:15px; border-radius:10px; text-align:center; font-weight:bold;">📲 Send Bill on WhatsApp</div></a>', unsafe_allow_html=True)
+        msg = f"Namaste 🙏, *Shree Services - Online GST & Tax Center*.\n\n*Bill For:* {party}\n*Amount:* ₹{amount}\n\n*Pay via UPI:* {FIXED_UPI}\n*Portal:* {PORTAL_LINK}"
+        st.markdown(f'<a href="https://wa.me/{row["Mobile Number"]}?text={urllib.parse.quote(msg)}" target="_blank" style="text-decoration:none;"><div style="background-color:#25d366; color:white; padding:15px; border-radius:10px; text-align:center; font-weight:bold;">📲 Send Bill</div></a>', unsafe_allow_html=True)
 
 elif choice == "🔔 WhatsApp Reminder":
-    st.title("🔔 Tax & Payment Reminders")
+    st.title("🔔 Tax Reminders")
     if not df.empty:
         party = st.selectbox("Select Party", df['Firm Name'].unique())
         row = df[df['Firm Name'] == party].iloc[0]
-        r_type = st.radio("Select Reminder Type", ["GSTR-1 (Due 11th)", "GST-3B (Due 20th)", "Custom Payment Reminder"])
+        r_type = st.radio("Reminder Type", ["GSTR-1 Reminder (Due 11th)", "GST-3B Reminder (Due 20th)"])
         
+        upload_link = f"{PORTAL_LINK}?page=upload"
         curr_m = datetime.now().strftime("%B")
+
         if "GSTR-1" in r_type:
-            r_msg = f"Namaste 🙏, *Shree Services*.\nReminder: {curr_m} month ke *GSTR-1* ki due date 11 tarik hai. Kripya 9 tarik tak apne Sale Bills upload karein: {PORTAL_LINK}"
-        elif "GST-3B" in r_type:
-            r_msg = f"Namaste 🙏, *Shree Services*.\nReminder: {curr_m} month ke *GST-3B* ki due date 20 tarik hai. Kripya 18 tarik tak apna data upload karein: {PORTAL_LINK}"
+            r_msg = f"Namaste 🙏, *Shree Services*.\n\nReminder: {curr_m} month ke *GSTR-1* ki due date 11 tarik hai. Kripya 9 tarik tak apne Sale Bills yahan upload karein:\n👉 {upload_link}\n\nShukriya!"
         else:
-            r_msg = st.text_area("Type your message here...", value="Namaste, Aapka payment pending hai, kripya clear karein. Shukriya!")
+            r_msg = f"Namaste 🙏, *Shree Services*.\n\nReminder: {curr_m} month ke *GST-3B* ki due date 20 tarik hai. Kripya 18 tarik tak apna data yahan upload karein:\n👉 {upload_link}"
 
         st.markdown(f'<a href="https://wa.me/{row["Mobile Number"]}?text={urllib.parse.quote(r_msg)}" target="_blank" style="text-decoration:none;"><div style="background-color:#25d366; color:white; padding:15px; border-radius:10px; text-align:center; font-weight:bold;">📲 Send Reminder</div></a>', unsafe_allow_html=True)
 
@@ -131,7 +138,6 @@ elif choice == "📊 Ledger Status":
 
 elif choice == "📤 Upload Bills":
     st.title("📤 Client Upload Portal")
-    st.markdown("Kripya niche diye gaye sections mein apne documents upload karein.")
     if not df.empty: st.selectbox("Select Your Firm Name", df['Firm Name'].unique())
     
     st.markdown('<div class="upload-card">📁 GSTR-1 (Sales Documents)</div>', unsafe_allow_html=True)
@@ -140,5 +146,5 @@ elif choice == "📤 Upload Bills":
     st.markdown('<div class="upload-card">📁 GST-3B (Purchase Documents)</div>', unsafe_allow_html=True)
     st.file_uploader("Upload Purchase Bills", accept_multiple_files=True, key="purchase")
     
-    if st.button("Submit All Documents"):
-        st.success("Documents successfully submitted to Shree Services!")
+    if st.button("Submit to Drive"):
+        st.success("Bills Successfully Uploaded!")
