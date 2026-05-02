@@ -10,19 +10,13 @@ st.set_page_config(page_title="Shree Services | Admin", layout="wide", page_icon
 SHEET_ID = "1NVNjNawK0026WPsd6P_X-lSd6LoLWqXo8dG1m7Ou098"
 SHEET_URL = f"https://docs.google.com/spreadsheets/d/{SHEET_ID}/export?format=csv"
 
-# 3. App Link
-web_link = "https://shree-services.streamlit.app" 
-
-# Date Logic
-today = datetime.now()
-reporting_month = today.strftime("%B") 
-next_month_date = (today.replace(day=28) + timedelta(days=4)).replace(day=1)
-deadline_month = next_month_date.strftime("%B")
-
-@st.cache_data(ttl=60)
+@st.cache_data(ttl=30)
 def load_data():
     try:
-        return pd.read_csv(SHEET_URL)
+        data = pd.read_csv(SHEET_URL)
+        # Column names ke aage-piche ke space hatane ke liye
+        data.columns = data.columns.str.strip()
+        return data
     except:
         return pd.DataFrame()
 
@@ -44,24 +38,27 @@ if not df.empty:
 
     with tab2:
         st.subheader("Send Quick Reminders")
-        sel_party = st.selectbox("Select Client", df['Firm Name'])
+        sel_party = st.selectbox("Select Client", df['Firm Name'].unique())
         
-        # Yahan humne 'Mobile Number' kar diya hai jo aapki sheet mein hai
         row = df[df['Firm Name'] == sel_party].iloc[0]
-        phone = str(row['Mobile Number']) 
         
-        def create_wa_link(msg_text):
-            return f"https://wa.me/{phone}?text={urllib.parse.quote(msg_text)}"
+        # --- YE HISSA COLUMN DHONDNE KE LIYE HAI ---
+        phone = ""
+        possible_cols = ['Mobile Number', 'Mobile', 'Mobile No', 'Phone']
+        for col in possible_cols:
+            if col in df.columns:
+                phone = str(row[col])
+                break
+        
+        if phone:
+            def create_wa_link(msg_text):
+                return f"https://wa.me/{phone}?text={urllib.parse.quote(msg_text)}"
 
-        col1, col2 = st.columns(2)
-        with col1:
-            m1 = f"Namaste, mein Roshan Mishra bol raha hoon. Aapka GST R1 {reporting_month} month ka jis ka last date 11 {deadline_month} hai, kripya karke aap apna bill is link par upload kar de: {web_link}"
-            st.markdown(f'<a href="{create_wa_link(m1)}" target="_blank"><button style="background-color:#25d366; color:white; border-radius:10px; padding:12px; border:none; width:100%; cursor:pointer; font-weight:bold;">Send GSTR-1 Reminder</button></a>', unsafe_allow_html=True)
-        with col2:
-            m2 = f"Namaste {row['Owner']}, aapka {reporting_month} month ka GST bill generate ho gaya hai. Kripya payment clear karein. Link: {web_link}"
-            st.markdown(f'<a href="{create_wa_link(m2)}" target="_blank"><button style="background-color:#075e54; color:white; border-radius:10px; padding:12px; border:none; width:100%; cursor:pointer; font-weight:bold;">Send Payment Bill</button></a>', unsafe_allow_html=True)
+            m1 = f"Namaste, mein Roshan Mishra bol raha hoon. Aapka GST R1 ka last date 11 hai, kripya bill upload karein."
+            
+            st.write(f"**Client:** {sel_party} | **Number:** {phone}")
+            st.markdown(f'<a href="{create_wa_link(m1)}" target="_blank"><button style="background-color:#25d366; color:white; border-radius:10px; padding:15px; border:none; width:100%; cursor:pointer; font-weight:bold; font-size:18px;">📲 Send WhatsApp Reminder</button></a>', unsafe_allow_html=True)
+        else:
+            st.error("Google Sheet mein 'Mobile Number' naam ka column nahi mila. Kripya check karein.")
 else:
-    st.error("Google Sheet load nahi ho rahi. Kripya link check karein.")
-
- 
-
+    st.error("Data load nahi ho raha. Google Sheet ko 'Anyone with the link can view' pe set karein.")
