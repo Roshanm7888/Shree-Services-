@@ -1,24 +1,24 @@
 import streamlit as st
 import pandas as pd
 import urllib.parse
-from datetime import datetime
+from datetime import datetime, timedelta
 
 # 1. Page Config
-st.set_page_config(page_title="Shree Services - Online GST & Tax Center", layout="centered", page_icon="🏢")
+st.set_page_config(page_title="Shree Services | Online GST & Tax Center", layout="centered", page_icon="🏢")
 
 # Custom Styling
 st.markdown("""
     <style>
-    #MainMenu {visibility: hidden;}
-    footer {visibility: hidden;}
-    header {visibility: hidden;}
+    #MainMenu {visibility: hidden;} footer {visibility: hidden;} header {visibility: hidden;}
     [data-testid="stSidebar"] { background-color: #1e3a8a; }
-    [data-testid="stSidebar"] p, [data-testid="stSidebar"] span, [data-testid="stSidebar"] label { color: white !important; font-size: 16px !important; }
-    .stButton>button { width: 100%; border-radius: 10px; height: 3.5em; background-color: #1e3a8a; color: white; font-weight: bold; }
-    .invoice-card { background: #ffffff; border: 2px solid #1e3a8a; padding: 25px; border-radius: 12px; font-family: 'Segoe UI', sans-serif; color: #333; }
-    .invoice-header { text-align: center; border-bottom: 2px solid #1e3a8a; padding-bottom: 10px; margin-bottom: 15px; }
-    .qr-box { text-align: center; margin-top: 15px; border: 1px dashed #1e3a8a; padding: 15px; border-radius: 10px; background: #f9f9f9; }
-    .service-box { background-color: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); border-left: 10px solid #1e3a8a; margin-bottom: 15px; }
+    [data-testid="stSidebar"] p, [data-testid="stSidebar"] span, [data-testid="stSidebar"] label { color: white !important; }
+    .stButton>button { width: 100%; border-radius: 10px; background-color: #1e3a8a; color: white; font-weight: bold; }
+    .invoice-card { background: #ffffff; border: 2px solid #1e3a8a; padding: 25px; border-radius: 12px; font-family: 'Segoe UI', sans-serif; }
+    .invoice-header { text-align: center; border-bottom: 2px solid #1e3a8a; padding-bottom: 10px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+    th { background-color: #f2f2f2; border-bottom: 2px solid #1e3a8a; padding: 10px; text-align: left; }
+    td { padding: 10px; border-bottom: 1px solid #eee; }
+    .qr-box { text-align: center; margin-top: 15px; border: 1px dashed #1e3a8a; padding: 10px; }
     </style>
     """, unsafe_allow_html=True)
 
@@ -38,91 +38,82 @@ def load_data():
 
 df = load_data()
 
-# URL Parameters Check (For direct invoice link)
-query_params = st.query_params
-is_invoice_view = "party" in query_params
+# 3. SIDEBAR
+with st.sidebar:
+    st.markdown("<h2 style='color:white;'>📋 MENU</h2>", unsafe_allow_html=True)
+    choice = st.radio("", ["🏠 Home", "📊 Ledger Status", "🧾 Create Invoice", "🔔 WhatsApp Reminder", "📤 Upload Bills"])
 
-# 3. SIDEBAR (Hide if direct link)
-if not is_invoice_view:
-    with st.sidebar:
-        st.markdown("<h2 style='color:white;'>📋 MENU</h2>", unsafe_allow_html=True)
-        choice = st.radio("", ["🏠 Home", "📊 Ledger Status", "🧾 Create Invoice", "🔔 WhatsApp Reminder", "📤 Upload Bills"], index=0)
-        st.markdown("---")
-        st.markdown(f"<p style='color:white;'>📞 7888273972<br>8668257610<br>9220393972</p>", unsafe_allow_html=True)
-else:
-    choice = "View Invoice"
-
-# --- NAVIGATION LOGIC ---
+# --- LOGIC ---
 
 if choice == "🏠 Home":
-    st.markdown('<div style="background:#1e3a8a; color:white; padding:30px; border-radius:0 0 20px 20px; text-align:center; margin-top:-60px;"><h1>🏛️ SHREE SERVICES</h1><p>A Complete Hub for Accounting & Taxation Solutions</p></div>', unsafe_allow_html=True)
-    services = ["Taxation", "Insurance", "Accounting", "Online Work", "Online Ticket"]
-    for s in services:
-        st.markdown(f'<div class="service-box"><h3>{s}</h3><p>Professional services for your business growth.</p></div>', unsafe_allow_html=True)
-
-elif choice == "View Invoice":
-    # Special View for Client when they click the WhatsApp Link
-    party_name = query_params.get("party")
-    inv_amt = query_params.get("amt", "800")
-    inv_date = datetime.now().strftime("%d-%b-%Y")
-    qr_link = f"https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=upi://pay?pa={FIXED_UPI}&pn=Shree%20Services&am={inv_amt}&cu=INR"
-    
-    st.markdown(f"""
-    <div class="invoice-card">
-        <div class="invoice-header">
-            <h2 style="color:#1e3a8a;">Shree Services - Online GST & Tax Center</h2>
-            <p><b>Accounting, Taxation & Insurance Solutions</b></p>
-            <hr style="border:0.5px solid #1e3a8a;">
-            <small>Plot no. 64&65 Block k-5, Mohan Garden, Delhi-110059</small>
-        </div>
-        <p><b>Invoice To:</b> {party_name}<br><b>Date:</b> {inv_date}</p>
-        <div style="background:#1e3a8a; color:white; padding:15px; border-radius:8px; text-align:right; font-size:20px;">Payable: ₹{inv_amt}/-</div>
-        <div class="qr-box">
-            <p><b>SCAN TO PAY VIA UPI</b></p>
-            <img src="{qr_link}" width="150">
-            <p style="font-size:12px;">{FIXED_UPI}</p>
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
-    if st.button("Go to Home Portal"):
-        st.query_params.clear()
-        st.rerun()
+    st.markdown("<h1 style='text-align:center; color:#1e3a8a;'>SHREE SERVICES</h1><p style='text-align:center;'>A Complete Hub for Accounting & Taxation Solutions</p>", unsafe_allow_html=True)
 
 elif choice == "🧾 Create Invoice":
-    st.title("📑 Professional Bill Generator")
+    st.title("📑 Create Invoice")
     if not df.empty:
         party = st.selectbox("Select Client", df['Firm Name'].unique())
         amount = st.number_input("Amount (₹)", min_value=0, value=800)
-        desc = st.text_input("Service", value="GST Filing Charges - April Month")
         
-        # Link for WhatsApp
-        safe_party = urllib.parse.quote(party)
-        direct_link = f"{PORTAL_LINK}/?party={safe_party}&amt={amount}"
+        # Automatic Month Logic
+        current_month = (datetime.now().replace(day=1) - timedelta(days=1)).strftime("%B %Y")
+        particulars = st.text_input("Particulars", value=f"GST Filing Charges for {current_month}")
         
-        msg = (f"Namaste 🙏, *Shree Services - Online GST & Tax Center*.\n\n"
-               f"Aapka GST 3B file ho gaya hai.\n"
-               f"*Bill Amount:* ₹{amount}\n"
-               f"*Description:* {desc}\n\n"
-               f"📥 *For Invoice / Download Bill:* \n{direct_link}\n\n"
-               f"Kripya link par click karke bill download karein aur scanner scan karein. Shukriya!")
+        qr_link = f"https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=upi://pay?pa={FIXED_UPI}&pn=Shree%20Services&am={amount}&cu=INR"
+        inv_date = datetime.now().strftime("%d-%b-%Y")
+
+        st.markdown(f"""
+        <div class="invoice-card">
+            <div class="invoice-header">
+                <h2 style="color:#1e3a8a;">Shree Services - Online GST & Tax Center</h2>
+                <small>Mohan Garden, Delhi-110059 | Mob: 7888273972</small>
+            </div>
+            <p style="margin-top:10px;"><b>To:</b> {party} <span style="float:right;"><b>Date:</b> {inv_date}</span></p>
+            <table>
+                <tr><th>Particulars</th><th style="text-align:right;">Amount</th></tr>
+                <tr><td>{particulars}</td><td style="text-align:right;">₹{amount}/-</td></tr>
+                <tr><td style="font-weight:bold;">Total Payable</td><td style="text-align:right; font-weight:bold; color:#1e3a8a; font-size:18px;">₹{amount}/-</td></tr>
+            </table>
+            <div class="qr-box">
+                <p style="font-size:12px;"><b>SCAN TO PAY VIA UPI</b></p>
+                <img src="{qr_link}" width="120">
+                <p style="font-size:10px;">UPI ID: {FIXED_UPI}</p>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+
+        if st.button("🖨️ Save as PDF / Print"):
+            st.info("Press Ctrl+P and select 'Save as PDF'")
+
+        # WhatsApp
+        msg = f"Namaste 🙏, *Shree Services - Online GST & Tax Center*.\n\n*Bill For:* {party}\n*Description:* {particulars}\n*Amount:* ₹{amount}\n\n*Pay via UPI:* {FIXED_UPI}\n*Portal:* {PORTAL_LINK}"
+        st.markdown(f'<a href="https://wa.me/?text={urllib.parse.quote(msg)}" target="_blank" style="text-decoration:none;"><div style="background-color:#25d366; color:white; padding:15px; border-radius:10px; text-align:center; font-weight:bold;">📲 Send Invoice on WhatsApp</div></a>', unsafe_allow_html=True)
+
+elif choice == "🔔 WhatsApp Reminder":
+    st.title("🔔 Tax Reminders")
+    if not df.empty:
+        party = st.selectbox("Select Party", df['Firm Name'].unique())
+        row = df[df['Firm Name'] == party].iloc[0]
+        p_num = str(row['Mobile Number'])
         
-        st.info("Niche wale button se WhatsApp bhejiye. Link apne aap chala jayega.")
-        st.markdown(f'<a href="https://wa.me/?text={urllib.parse.quote(msg)}" target="_blank" style="text-decoration:none;"><div style="background-color:#25d366; color:white; padding:15px; border-radius:10px; text-align:center; font-weight:bold;">📲 Send Bill Link on WhatsApp</div></a>', unsafe_allow_html=True)
+        # Reminder Types
+        r_type = st.radio("Reminder Type", ["GSTR-1 Reminder (Due 11th)", "GST-3B Reminder (Due 20th)", "Payment Reminder"])
+        
+        current_month = datetime.now().strftime("%B")
+        
+        if r_type == "GSTR-1 Reminder (Due 11th)":
+            r_msg = f"Namaste 🙏, *Shree Services*.\nReminder: {current_month} month ke *GSTR-1* ki due date 11 tarik hai. Kripya 9 tarik tak apne Sale Bills yahan upload karein: {PORTAL_LINK}"
+        elif r_type == "GST-3B Reminder (Due 20th)":
+            r_msg = f"Namaste 🙏, *Shree Services*.\nReminder: {current_month} month ke *GST-3B* ki due date 20 tarik hai. Kripya 18 tarik tak apna data clear karein aur bills yahan upload karein: {PORTAL_LINK}"
+        else:
+            r_msg = f"Namaste 🙏, Aapka payment pending hai, kripya check karein. Shukriya!"
+
+        st.markdown(f'<a href="https://wa.me/{p_num}?text={urllib.parse.quote(r_msg)}" target="_blank" style="text-decoration:none;"><div style="background-color:#25d366; color:white; padding:15px; border-radius:10px; text-align:center; font-weight:bold;">📲 Send {r_type}</div></a>', unsafe_allow_html=True)
 
 elif choice == "📊 Ledger Status":
     st.title("📊 Ledger Status")
-    if not df.empty: st.dataframe(df, use_container_width=True)
-
-elif choice == "🔔 WhatsApp Reminder":
-    st.title("🔔 Send Reminder")
-    if not df.empty:
-        party = st.selectbox("Select Party", df['Firm Name'].unique())
-        m = f"Namaste 🙏, Shree Services reminder. Aapka data pending hai: {PORTAL_LINK}"
-        st.markdown(f'<a href="https://wa.me/?text={urllib.parse.quote(m)}" target="_blank" style="text-decoration:none;"><div style="background-color:#25d366; color:white; padding:15px; border-radius:10px; text-align:center; font-weight:bold;">Send Reminder</div></a>', unsafe_allow_html=True)
+    st.dataframe(df, use_container_width=True)
 
 elif choice == "📤 Upload Bills":
-    st.title("📤 Client Upload Portal")
-    if not df.empty: st.selectbox("Select Firm", df['Firm Name'].unique())
-    st.file_uploader("Upload Sales", accept_multiple_files=True, key="s")
-    st.file_uploader("Upload Purchases", accept_multiple_files=True, key="p")
-    if st.button("Submit"): st.success("Bills Uploaded!")
+    st.title("📤 Upload Bills")
+    st.file_uploader("Upload Sales/Purchase Bills")
+    if st.button("Submit"): st.success("Uploaded!")
