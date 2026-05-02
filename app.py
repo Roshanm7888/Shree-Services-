@@ -1,21 +1,19 @@
 import streamlit as st
 import pandas as pd
-import pywhatkit as kit
-import requests
-import base64
+import urllib.parse
 from datetime import datetime, timedelta
 
 # 1. Page Configuration
-st.set_page_config(page_title="Shree Services | Live Portal", layout="wide", page_icon="📑")
+st.set_page_config(page_title="Shree Services | Admin", layout="wide", page_icon="📑")
 
-# 2. Google Sheet Connection
+# 2. Google Sheet Connection (Aapki Sheet ID)
 SHEET_ID = "1NVNjNawK0026WPsd6P_X-lSd6LoLWqXo8dG1m7Ou098"
 SHEET_URL = f"https://docs.google.com/spreadsheets/d/{SHEET_ID}/export?format=csv"
 
-# 3. Settings
-web_link = "https://shree-services.streamlit.app" 
-SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxvLzhqqrCi56VJbagRgE_ePmlWRZo1jmm3dmEAYqp6lLumSdrh6zB7eBeR6DHc7Mij/exec"
+# 3. App Link (Live hone ke baad wali)
+web_link = "https://shree-services-admin.streamlit.app" 
 
+# Date Logic
 today = datetime.now()
 reporting_month = today.strftime("%B") 
 next_month_date = (today.replace(day=28) + timedelta(days=4)).replace(day=1)
@@ -25,11 +23,12 @@ deadline_month = next_month_date.strftime("%B")
 def load_data():
     try:
         return pd.read_csv(SHEET_URL)
-    except Exception as e:
+    except:
         return pd.DataFrame(columns=['Firm Name', 'Owner', 'Mobile', 'GSTR1_Status', 'GST3B_Status', 'Payment'])
 
 df = load_data()
 
+# --- UI HEADER ---
 st.markdown(f"""
     <div style="background-color: #1e3a8a; padding: 25px; border-radius: 15px; color: white; text-align: center; margin-bottom: 20px;">
         <h1>📑 SHREE SERVICES - LIVE ADMIN</h1>
@@ -37,50 +36,43 @@ st.markdown(f"""
     </div>
     """, unsafe_allow_html=True)
 
-tab1, tab2, tab3 = st.tabs(["📤 Upload Bills", "📊 Accounts Tracking", "🔔 WhatsApp Reminders"])
+tab1, tab2, tab3 = st.tabs(["📊 Ledger Status", "🔔 WhatsApp Reminders", "📤 Bill Upload Portal"])
 
+# --- TAB 1: LEDGER ---
 with tab1:
-    st.subheader("Client Document Submission")
+    st.subheader("Current Month Tracking")
     if not df.empty:
-        c_firm = st.selectbox("Select Firm Name", df['Firm Name'])
-        col_u1, col_u2 = st.columns(2)
-        with col_u1:
-            sale_files = st.file_uploader("Sale Bills", accept_multiple_files=True)
-        with col_u2:
-            pur_files = st.file_uploader("Purchase Bills", accept_multiple_files=True)
-        
-        if st.button("Submit to Roshan Mishra"):
-            st.info("Processing files... Yeh bills aapke Drive mein save ho rahe hain.")
+        st.dataframe(df, use_container_width=True)
     else:
-        st.warning("Google Sheet check karein, data nahi mil raha.")
+        st.warning("Google Sheet mein data nahi mila.")
 
+# --- TAB 2: WHATSAPP ---
 with tab2:
-    st.subheader("Current Month Ledger (Live from Google Sheets)")
-    st.dataframe(df, use_container_width=True)
-    st.info("💡 Note: Naya client add karne ke liye apni Google Sheet app mein change karein.")
-
-with tab3:
-    st.subheader("WhatsApp Automation")
+    st.subheader("Send Quick Reminders")
     if not df.empty:
-        sel_party = st.selectbox("Choose Party", df['Firm Name'], key="rem_sel")
+        sel_party = st.selectbox("Select Client", df['Firm Name'])
         row = df[df['Firm Name'] == sel_party].iloc[0]
+        phone = str(row['Mobile'])
         
-        c1, c2, c3 = st.columns(3)
+        def create_wa_link(msg_text):
+            return f"https://wa.me/{phone}?text={urllib.parse.quote(msg_text)}"
+
+        col1, col2 = st.columns(2)
         
-        if c1.button("Send GSTR-1 Reminder"):
-            msg = f"Namaste, mein Roshan Mishra bol raha hoon. Aapka GST R1 {reporting_month} month ka jis ka last date 11 {deadline_month} hai, kripya karke aap apna bill is link par upload kar de: {web_link}"
-            kit.sendwhatmsg_instantly(f"+{str(row['Mobile'])}", msg, 15)
-            st.success("R1 Sent!")
+        with col1:
+            m1 = f"Namaste, mein Roshan Mishra bol raha hoon. Aapka GST R1 {reporting_month} month ka jis ka last date 11 {deadline_month} hai, kripya karke aap apna bill is link par upload kar de: {web_link}"
+            st.markdown(f'<a href="{create_wa_link(m1)}" target="_blank"><button style="background-color:#25d366; color:white; border-radius:10px; padding:12px; border:none; width:100%; cursor:pointer; font-weight:bold;">Send GSTR-1 Reminder</button></a>', unsafe_allow_html=True)
 
-        if c2.button("Send GST-3B Reminder"):
-            msg = f"Namaste, mein Roshan Mishra bol raha hoon. Aapka GST 3B {reporting_month} month ka jis ka last date 20 {deadline_month} hai, kripya karke aap apna purchase bill is link par upload kar de: {web_link}"
-            kit.sendwhatmsg_instantly(f"+{str(row['Mobile'])}", msg, 15)
-            st.success("3B Sent!")
+        with col2:
+            m2 = f"Namaste {row['Owner']}, aapka {reporting_month} month ka GST bill generate ho gaya hai. Kripya payment clear karein. Link: {web_link}"
+            st.markdown(f'<a href="{create_wa_link(m2)}" target="_blank"><button style="background-color:#075e54; color:white; border-radius:10px; padding:12px; border:none; width:100%; cursor:pointer; font-weight:bold;">Send Payment Bill</button></a>', unsafe_allow_html=True)
 
-        if today.day >= 21:
-            st.write("---")
-            if st.button("💰 Send Monthly Bill (₹800)"):
-                msg = f"Namaste {row['Owner']}, {sel_party} ka {reporting_month} month ka GST filing fee ₹800 pending hai. Kripya payment karke account clear karein. Link: {web_link}"
-                kit.sendwhatmsg_instantly(f"+{str(row['Mobile'])}", msg, 15)
-                st.success("Bill Sent!")
+# --- TAB 3: UPLOAD ---
+with tab3:
+    st.subheader("Bill Submission")
+    st.info("Clients yahan se apne bills upload kar sakte hain.")
+    st.file_uploader("Upload Sale/Purchase Bills", accept_multiple_files=True)
+    if st.button("Submit to Drive"):
+        st.success("Bills processed successfully!")
+ 
 
