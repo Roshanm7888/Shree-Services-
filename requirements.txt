@@ -1,0 +1,6 @@
+streamlit
+pandas
+pywhatkit
+requests
+openpyxl
+
