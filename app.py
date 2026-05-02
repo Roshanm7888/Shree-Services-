@@ -6,34 +6,30 @@ from datetime import datetime
 # 1. Page Config
 st.set_page_config(page_title="Shree Services | Roshan Mishra", layout="centered", page_icon="🏢")
 
-# Custom Styling
+# Custom Styling (Footer hide + Sidebar White Text)
 st.markdown("""
     <style>
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
     header {visibility: hidden;}
+    
+    /* Sidebar Background & White Text */
     [data-testid="stSidebar"] { background-color: #1e3a8a; }
-    .stButton>button { width: 100%; border-radius: 10px; height: 3.5em; background-color: #1e3a8a; color: white; font-weight: bold; font-size: 18px; }
-    .service-box { 
-        background-color: white; 
-        padding: 30px; 
-        border-radius: 15px; 
-        box-shadow: 0 4px 15px rgba(0,0,0,0.1); 
-        border-left: 10px solid #1e3a8a; 
-        margin-bottom: 25px; 
+    [data-testid="stSidebar"] .st-emotion-cache-17l2puu, 
+    [data-testid="stSidebar"] p, 
+    [data-testid="stSidebar"] span,
+    [data-testid="stSidebar"] label { 
+        color: white !important; 
+        font-weight: 500 !important;
+        font-size: 17px !important;
     }
+    
+    .stButton>button { width: 100%; border-radius: 10px; height: 3.5em; background-color: #1e3a8a; color: white; font-weight: bold; font-size: 18px; }
+    .service-box { background-color: white; padding: 30px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); border-left: 10px solid #1e3a8a; margin-bottom: 25px; }
     .service-title { color: #1e3a8a; font-size: 26px; font-weight: bold; margin-bottom: 10px; text-transform: uppercase; }
     .service-desc { color: #555; font-size: 18px; line-height: 1.6; }
-    .main-header { 
-        background: #1e3a8a; 
-        color: white; 
-        padding: 40px 20px; 
-        border-radius: 0 0 30px 30px; 
-        text-align: center; 
-        margin-bottom: 40px;
-        margin-top: -60px;
-    }
-    .upload-card { background: #f9f9f9; padding: 20px; border-radius: 10px; border: 1px dashed #1e3a8a; margin-bottom: 10px; }
+    .main-header { background: #1e3a8a; color: white; padding: 40px 20px; border-radius: 0 0 30px 30px; text-align: center; margin-bottom: 40px; margin-top: -60px; }
+    .upload-card { background: #f9f9f9; padding: 15px; border-radius: 10px; border: 1px dashed #1e3a8a; margin-top: 20px; font-weight: bold; color: #1e3a8a; }
     </style>
     """, unsafe_allow_html=True)
 
@@ -52,7 +48,7 @@ def load_data():
 
 df = load_data()
 
-# 3. SIDEBAR MENU
+# 3. SIDEBAR MENU (White Text Enabled)
 with st.sidebar:
     st.markdown("<h2 style='color:white;'>📋 MENU</h2>", unsafe_allow_html=True)
     choice = st.radio("", ["🏠 Home", "📊 Ledger Status", "🔔 WhatsApp Reminder", "📤 Upload Bills"], index=0)
@@ -109,19 +105,16 @@ elif choice == "🔔 WhatsApp Reminder":
         st.markdown(f'<a href="{wa_url}" target="_blank" style="text-decoration:none;"><div style="background-color:#25d366; color:white; padding:20px; border-radius:10px; text-align:center; font-weight:bold;">Send WhatsApp to {party}</div></a>', unsafe_allow_html=True)
 
 elif choice == "📤 Upload Bills":
-    st.title("📤 Document Submission Portal")
+    st.title("📤 Document Submission")
     if not df.empty:
         st.selectbox("Select Your Firm Name", df['Firm Name'].unique(), key="firm_select")
     
-    st.write("---")
-    
-    # Do alag alag boxes for GSTR1 and 3B
-    st.markdown('<div class="upload-card"><b>📁 GSTR-1 (Sale Bills)</b></div>', unsafe_allow_html=True)
+    st.markdown('<div class="upload-card">📁 GSTR-1 (Sale Bills)</div>', unsafe_allow_html=True)
     st.file_uploader("Upload all Sale bills here", accept_multiple_files=True, key="sale_upload")
     
-    st.markdown('<div class="upload-card"><b>📁 GST-3B (Purchase Bills)</b></div>', unsafe_allow_html=True)
+    st.markdown('<div class="upload-card">📁 GST-3B (Purchase Bills)</div>', unsafe_allow_html=True)
     st.file_uploader("Upload all Purchase bills here", accept_multiple_files=True, key="pur_upload")
     
     if st.button("Final Submission"):
-        st.success("Bills Successfully Uploaded! Roshan Mishra ji ko notify kar diya gaya hai.")
+        st.success("Bills Successfully Uploaded! Roshan ji ko notify kar diya gaya hai.")
         st.balloons()
