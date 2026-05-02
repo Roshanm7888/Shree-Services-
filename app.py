@@ -34,7 +34,8 @@ st.markdown("""
         color: #333;
     }
     .invoice-header { text-align: center; border-bottom: 2px solid #1e3a8a; padding-bottom: 10px; margin-bottom: 15px; }
-    .services-tag { font-size: 12px; color: #1e3a8a; font-weight: bold; margin-top: 5px; }
+    .services-tag { font-size: 11px; color: #1e3a8a; font-weight: bold; margin-top: 5px; }
+    .qr-box { text-align: center; margin-top: 15px; border: 1px dashed #1e3a8a; padding: 15px; border-radius: 10px; background: #f9f9f9; }
     .upload-card { background: #f0f2f6; padding: 10px; border-radius: 8px; margin-top: 15px; font-weight: bold; color: #1e3a8a; }
     </style>
     """, unsafe_allow_html=True)
@@ -42,9 +43,8 @@ st.markdown("""
 # 2. Data & Settings
 SHEET_ID = "1NVNjNawK0026WPsd6P_X-lSd6LoLWqXo8dG1m7Ou098"
 URL = f"https://docs.google.com/spreadsheets/d/{SHEET_ID}/export?format=csv"
-
-# ALERT & MAIN NUMBER
 MY_NUMBER = "917888273972"
+FIXED_UPI = "7888273972-2@ybl" # Aapka naya UPI ID
 
 @st.cache_data(ttl=30)
 def load_data():
@@ -83,17 +83,15 @@ if choice == "🏠 Home":
         st.markdown(f'<div class="service-box"><h3 style="color:#1e3a8a; margin-top:0;">{s["t"]}</h3><p>{s["d"]}</p></div>', unsafe_allow_html=True)
 
 elif choice == "🧾 Create Invoice":
-    st.title("📑 Generate Professional Bill")
+    st.title("📑 Professional Bill Generator")
     if not df.empty:
         party = st.selectbox("Select Client / Firm", df['Firm Name'].unique())
         row = df[df['Firm Name'] == party].iloc[0]
         amount = st.number_input("Billing Amount (₹)", min_value=0, value=800)
         desc = st.text_input("Service Name", value="GST Filing Charges - April Month")
         
-        # Phone logic
-        p_num = ""
-        for c in ['Mobile Number', 'Mobile', 'Phone']:
-            if c in df.columns: p_num = str(row[c]); break
+        # QR Code Generation
+        qr_link = f"https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=upi://pay?pa={FIXED_UPI}&pn=Shree%20Services&am={amount}&cu=INR"
 
         st.markdown("### 📄 Invoice Preview")
         inv_date = datetime.now().strftime("%d-%b-%Y")
@@ -102,7 +100,7 @@ elif choice == "🧾 Create Invoice":
         <div class="invoice-card">
             <div class="invoice-header">
                 <h1 style="color:#1e3a8a; margin-bottom:0;">SHREE SERVICES</h1>
-                <p style="margin-top:5px; margin-bottom:5px;"><b>Accounting, Taxation & Insurance Solutions</b></p>
+                <p style="margin-top:5px; margin-bottom:5px;"><b>A Complete Hub for Accounting & Taxation Solutions</b></p>
                 <div class="services-tag">TAXATION • INSURANCE • ACCOUNTING • ONLINE WORK • ONLINE TICKET</div>
                 <hr style="border:0.5px solid #1e3a8a; margin: 10px 0;">
                 <small>Address: Plot no. 64&65 Block k-5, Mohan Garden, Delhi-110059</small><br>
@@ -117,15 +115,19 @@ elif choice == "🧾 Create Invoice":
             <div style="background:#1e3a8a; color:white; padding:15px; border-radius:8px; text-align:right; font-size:20px;">
                 Total Payable: <b>₹{amount}/-</b>
             </div>
-            <p style="font-size:10px; margin-top:15px; color:gray;">* This is a computer generated bill issued by Shree Services Delhi.</p>
+            <div class="qr-box">
+                <p style="font-size:12px; margin-bottom:5px; color:#1e3a8a;"><b>SCAN TO PAY VIA ANY UPI APP</b></p>
+                <img src="{qr_link}" width="130">
+                <p style="font-size:11px; margin-top:5px; color:#555;">UPI ID: {FIXED_UPI}</p>
+            </div>
+            <p style="font-size:10px; margin-top:15px; color:gray; text-align:center;">* This is a computer generated bill issued by Shree Services Delhi.</p>
         </div>
         """, unsafe_allow_html=True)
         
-        msg = f"Namaste 🙏, *Shree Services Delhi* ki taraf se.\n\nAapka GST 3B file ho gaya hai.\n*Bill Amount:* ₹{amount}\n*Description:* {desc}\n\n*Address:* Mohan Garden, Delhi-59\n*Contact:* 7888273972, 8668257610\n\nKripya payment clear karein. Shukriya!"
-        wa_url = f"https://wa.me/{p_num}?text={urllib.parse.quote(msg)}"
+        msg = f"Namaste 🙏, *Shree Services Delhi* ki taraf se.\n\nAapka GST 3B file ho gaya hai.\n*Bill Amount:* ₹{amount}\n*Description:* {desc}\n\n*Address:* Mohan Garden, Delhi-59\n*Contact:* 7888273972\n*UPI ID:* {FIXED_UPI}\n\nKripya scanner scan karke payment karein. Shukriya!"
         
         st.write(" ")
-        st.markdown(f'<a href="{wa_url}" target="_blank" style="text-decoration:none;"><div style="background-color:#25d366; color:white; padding:15px; border-radius:10px; text-align:center; font-weight:bold; font-size:18px;">📲 Send Invoice via WhatsApp</div></a>', unsafe_allow_html=True)
+        st.markdown(f'<a href="https://wa.me/{row["Mobile Number"]}?text={urllib.parse.quote(msg)}" target="_blank" style="text-decoration:none;"><div style="background-color:#25d366; color:white; padding:15px; border-radius:10px; text-align:center; font-weight:bold; font-size:18px;">📲 Send Bill & Scanner on WhatsApp</div></a>', unsafe_allow_html=True)
 
 elif choice == "📊 Ledger Status":
     st.title("📊 Ledger Status")
@@ -136,11 +138,8 @@ elif choice == "🔔 WhatsApp Reminder":
     if not df.empty:
         party = st.selectbox("Select Party", df['Firm Name'].unique())
         row = df[df['Firm Name'] == party].iloc[0]
-        p_num = ""
-        for c in ['Mobile Number', 'Mobile', 'Phone']:
-            if c in df.columns: p_num = str(row[c]); break
-        m = f"Namaste 🙏, Shree Services ki taraf se reminder. Aapka GST data pending hai, kripya yahan upload karein: https://shree-services.streamlit.app"
-        st.markdown(f'<a href="https://wa.me/{p_num}?text={urllib.parse.quote(m)}" target="_blank" style="text-decoration:none;"><div style="background-color:#25d366; color:white; padding:20px; border-radius:10px; text-align:center; font-weight:bold;">Send Reminder to Client</div></a>', unsafe_allow_html=True)
+        m = f"Namaste 🙏, Shree Services reminder. Aapka GST data pending hai, kripya yahan upload karein: https://shree-services.streamlit.app"
+        st.markdown(f'<a href="https://wa.me/{row["Mobile Number"]}?text={urllib.parse.quote(m)}" target="_blank" style="text-decoration:none;"><div style="background-color:#25d366; color:white; padding:15px; border-radius:10px; text-align:center; font-weight:bold;">Send Reminder</div></a>', unsafe_allow_html=True)
 
 elif choice == "📤 Upload Bills":
     st.title("📤 Client Upload Portal")
