@@ -4,9 +4,9 @@ import urllib.parse
 from datetime import datetime
 
 # 1. Page Config
-st.set_page_config(page_title="Shree Services | Roshan Mishra", layout="centered", page_icon="🏢")
+st.set_page_config(page_title="Shree Services | Online GST & Tax Center", layout="centered", page_icon="🏢")
 
-# Custom Styling (Professional UI + Hidden Footers)
+# Custom Styling
 st.markdown("""
     <style>
     #MainMenu {visibility: hidden;}
@@ -44,7 +44,8 @@ st.markdown("""
 SHEET_ID = "1NVNjNawK0026WPsd6P_X-lSd6LoLWqXo8dG1m7Ou098"
 URL = f"https://docs.google.com/spreadsheets/d/{SHEET_ID}/export?format=csv"
 MY_NUMBER = "917888273972"
-FIXED_UPI = "7888273972-2@ybl" # Aapka naya UPI ID
+FIXED_UPI = "7888273972-2@ybl"
+PORTAL_LINK = "https://shree-services.streamlit.app"
 
 @st.cache_data(ttl=30)
 def load_data():
@@ -61,12 +62,7 @@ with st.sidebar:
     st.markdown("<h2 style='color:white;'>📋 MENU</h2>", unsafe_allow_html=True)
     choice = st.radio("", ["🏠 Home", "📊 Ledger Status", "🧾 Create Invoice", "🔔 WhatsApp Reminder", "📤 Upload Bills"], index=0)
     st.markdown("---")
-    st.markdown("""
-        <p style='color:white;'>📞 <b>Contact:</b><br>
-        7888273972<br>
-        8668257610<br>
-        9220393972</p>
-    """, unsafe_allow_html=True)
+    st.markdown(f"<p style='color:white;'>📞 7888273972<br>8668257610<br>9220393972</p>", unsafe_allow_html=True)
 
 # --- NAVIGATION LOGIC ---
 
@@ -90,7 +86,6 @@ elif choice == "🧾 Create Invoice":
         amount = st.number_input("Billing Amount (₹)", min_value=0, value=800)
         desc = st.text_input("Service Name", value="GST Filing Charges - April Month")
         
-        # QR Code Generation
         qr_link = f"https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=upi://pay?pa={FIXED_UPI}&pn=Shree%20Services&am={amount}&cu=INR"
 
         st.markdown("### 📄 Invoice Preview")
@@ -99,7 +94,7 @@ elif choice == "🧾 Create Invoice":
         st.markdown(f"""
         <div class="invoice-card">
             <div class="invoice-header">
-                <h1 style="color:#1e3a8a; margin-bottom:0;">SHREE SERVICES</h1>
+                <h1 style="color:#1e3a8a; margin-bottom:0;">Shree Services - Online GST & Tax Center</h1>
                 <p style="margin-top:5px; margin-bottom:5px;"><b>A Complete Hub for Accounting & Taxation Solutions</b></p>
                 <div class="services-tag">TAXATION • INSURANCE • ACCOUNTING • ONLINE WORK • ONLINE TICKET</div>
                 <hr style="border:0.5px solid #1e3a8a; margin: 10px 0;">
@@ -124,7 +119,7 @@ elif choice == "🧾 Create Invoice":
         </div>
         """, unsafe_allow_html=True)
         
-        msg = f"Namaste 🙏, *Shree Services Delhi* ki taraf se.\n\nAapka GST 3B file ho gaya hai.\n*Bill Amount:* ₹{amount}\n*Description:* {desc}\n\n*Address:* Mohan Garden, Delhi-59\n*Contact:* 7888273972\n*UPI ID:* {FIXED_UPI}\n\nKripya scanner scan karke payment karein. Shukriya!"
+        msg = f"Namaste 🙏, *Shree Services - Online GST & Tax Center* ki taraf se.\n\nAapka GST 3B file ho gaya hai.\n*Bill Amount:* ₹{amount}\n*Description:* {desc}\n\n*Portal Link:* {PORTAL_LINK}\n*UPI ID:* {FIXED_UPI}\n\nKripya payment clear karein aur scanner scan karein. Shukriya!"
         
         st.write(" ")
         st.markdown(f'<a href="https://wa.me/{row["Mobile Number"]}?text={urllib.parse.quote(msg)}" target="_blank" style="text-decoration:none;"><div style="background-color:#25d366; color:white; padding:15px; border-radius:10px; text-align:center; font-weight:bold; font-size:18px;">📲 Send Bill & Scanner on WhatsApp</div></a>', unsafe_allow_html=True)
@@ -138,7 +133,7 @@ elif choice == "🔔 WhatsApp Reminder":
     if not df.empty:
         party = st.selectbox("Select Party", df['Firm Name'].unique())
         row = df[df['Firm Name'] == party].iloc[0]
-        m = f"Namaste 🙏, Shree Services reminder. Aapka GST data pending hai, kripya yahan upload karein: https://shree-services.streamlit.app"
+        m = f"Namaste 🙏, *Shree Services - Online GST & Tax Center* reminder. Aapka GST data pending hai, kripya yahan upload karein: {PORTAL_LINK}"
         st.markdown(f'<a href="https://wa.me/{row["Mobile Number"]}?text={urllib.parse.quote(m)}" target="_blank" style="text-decoration:none;"><div style="background-color:#25d366; color:white; padding:15px; border-radius:10px; text-align:center; font-weight:bold;">Send Reminder</div></a>', unsafe_allow_html=True)
 
 elif choice == "📤 Upload Bills":
@@ -149,3 +144,4 @@ elif choice == "📤 Upload Bills":
     st.markdown('<div class="upload-card">📁 GST-3B (Purchase Bills)</div>', unsafe_allow_html=True)
     st.file_uploader("Upload Purchases", accept_multiple_files=True, key="p")
     if st.button("Submit Documents"): st.success("Bills Successfully Uploaded!")
+
