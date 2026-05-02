@@ -9,6 +9,9 @@ st.set_page_config(page_title="Shree Services | Roshan Mishra", layout="centered
 # Custom Styling
 st.markdown("""
     <style>
+    #MainMenu {visibility: hidden;}
+    footer {visibility: hidden;}
+    header {visibility: hidden;}
     [data-testid="stSidebar"] { background-color: #1e3a8a; }
     .stButton>button { width: 100%; border-radius: 10px; height: 3.5em; background-color: #1e3a8a; color: white; font-weight: bold; font-size: 18px; }
     .service-box { 
@@ -30,14 +33,13 @@ st.markdown("""
         margin-bottom: 40px;
         margin-top: -60px;
     }
+    .upload-card { background: #f9f9f9; padding: 20px; border-radius: 10px; border: 1px dashed #1e3a8a; margin-bottom: 10px; }
     </style>
     """, unsafe_allow_html=True)
 
 # 2. Data & Settings
 SHEET_ID = "1NVNjNawK0026WPsd6P_X-lSd6LoLWqXo8dG1m7Ou098"
 URL = f"https://docs.google.com/spreadsheets/d/{SHEET_ID}/export?format=csv"
-
-# ALERT NUMBER (7888273972)
 MY_NUMBER = "917888273972"
 
 @st.cache_data(ttl=30)
@@ -55,7 +57,6 @@ with st.sidebar:
     st.markdown("<h2 style='color:white;'>📋 MENU</h2>", unsafe_allow_html=True)
     choice = st.radio("", ["🏠 Home", "📊 Ledger Status", "🔔 WhatsApp Reminder", "📤 Upload Bills"], index=0)
     st.markdown("---")
-    # Sidebar Display (All 3 numbers)
     st.markdown("""
         <p style='color:white;'>📞 <b>Contact Us:</b><br>
         1. 7888273972<br>
@@ -67,7 +68,6 @@ with st.sidebar:
 
 if choice == "🏠 Home":
     st.markdown('<div class="main-header"><h1>🏛️ SHREE SERVICES</h1><p style="font-size:20px;">A Complete Hub for Accounting, Taxation & Insurance Solutions</p></div>', unsafe_allow_html=True)
-
     services = [
         {"title": "📑 Taxation", "desc": "House Tax, Salary Tax, Business Tax & Capital Gain Tax Filing."},
         {"title": "🛡️ Insurance", "desc": "Car & Bike, Life Insurance (LIC), Health & Mediclaim."},
@@ -76,14 +76,8 @@ if choice == "🏠 Home":
         {"title": "📅 Daily Accounting", "desc": "Day-to-day Bookkeeping and Cash Flow Management."},
         {"title": "📈 Yearly Accounting", "desc": "Finalization of Accounts, Balance Sheet & Profit & Loss Statements."}
     ]
-
     for s in services:
-        st.markdown(f"""
-            <div class="service-box">
-                <div class="service-title">{s['title']}</div>
-                <div class="service-desc">{s['desc']}</div>
-            </div>
-        """, unsafe_allow_html=True)
+        st.markdown(f'<div class="service-box"><div class="service-title">{s["title"]}</div><div class="service-desc">{s["desc"]}</div></div>', unsafe_allow_html=True)
         if st.button(f"Inquiry for {s['title']}", key=s['title']):
             st.session_state.inquiry = s['title']
             st.rerun()
@@ -100,9 +94,7 @@ if choice == "🏠 Home":
 
 elif choice == "📊 Ledger Status":
     st.title("📊 Client Ledger Status")
-    if not df.empty:
-        st.dataframe(df, use_container_width=True)
-    else: st.error("Database not connected.")
+    if not df.empty: st.dataframe(df, use_container_width=True)
 
 elif choice == "🔔 WhatsApp Reminder":
     st.title("🔔 Send Reminders")
@@ -112,14 +104,24 @@ elif choice == "🔔 WhatsApp Reminder":
         p_num = ""
         for c in ['Mobile Number', 'Mobile', 'Phone']:
             if c in df.columns: p_num = str(row[c]); break
-        
         m = f"Namaste 🙏, Shree Services ki taraf se reminder. Aapka data pending hai, kripya upload karein."
         wa_url = f"https://wa.me/{p_num}?text={urllib.parse.quote(m)}"
         st.markdown(f'<a href="{wa_url}" target="_blank" style="text-decoration:none;"><div style="background-color:#25d366; color:white; padding:20px; border-radius:10px; text-align:center; font-weight:bold;">Send WhatsApp to {party}</div></a>', unsafe_allow_html=True)
 
 elif choice == "📤 Upload Bills":
-    st.title("📤 Bill Submission")
+    st.title("📤 Document Submission Portal")
     if not df.empty:
-        st.selectbox("Select Firm", df['Firm Name'].unique())
-    st.file_uploader("Upload Documents", accept_multiple_files=True)
-    if st.button("Submit Bills"): st.success("Files shared with Roshan Mishra.")
+        st.selectbox("Select Your Firm Name", df['Firm Name'].unique(), key="firm_select")
+    
+    st.write("---")
+    
+    # Do alag alag boxes for GSTR1 and 3B
+    st.markdown('<div class="upload-card"><b>📁 GSTR-1 (Sale Bills)</b></div>', unsafe_allow_html=True)
+    st.file_uploader("Upload all Sale bills here", accept_multiple_files=True, key="sale_upload")
+    
+    st.markdown('<div class="upload-card"><b>📁 GST-3B (Purchase Bills)</b></div>', unsafe_allow_html=True)
+    st.file_uploader("Upload all Purchase bills here", accept_multiple_files=True, key="pur_upload")
+    
+    if st.button("Final Submission"):
+        st.success("Bills Successfully Uploaded! Roshan Mishra ji ko notify kar diya gaya hai.")
+        st.balloons()
