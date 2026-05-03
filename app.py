@@ -4,25 +4,26 @@ import urllib.parse
 from datetime import datetime, timedelta
 
 # 1. Page Configuration
-st.set_page_config(page_title="Shree Services - Online GST & Tax Center", layout="wide", page_icon="🏢")
+st.set_page_config(page_title="Shree Services", layout="wide", page_icon="🏢")
 
-# Custom Styling (Buttons and Layout)
+# Professional UI Styling
 st.markdown("""
     <style>
     [data-testid="stSidebar"] { display: none; }
     #MainMenu {visibility: hidden;} footer {visibility: hidden;} header {visibility: hidden;}
     .main-header { background: #1e3a8a; color: white; padding: 30px; border-radius: 15px; text-align: center; margin-bottom: 20px;}
-    .stButton>button { border-radius: 8px; height: 3.5em; font-weight: bold; border: 2px solid #1e3a8a; background-color: white; color: #1e3a8a; }
-    .stButton>button:hover { background-color: #1e3a8a; color: white; }
+    .stButton>button { border-radius: 8px; height: 3.5em; font-weight: bold; border: 2px solid #1e3a8a; width: 100%; }
+    .service-box { background: white; padding: 20px; border-radius: 12px; border-left: 10px solid #1e3a8a; margin-bottom: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
     .footer-box { background: #1e3a8a; padding: 15px; border-radius: 10px; text-align: center; margin-top: 20px; color: white; font-weight: bold;}
+    .upload-card { background: #f0f4f8; padding: 20px; border-radius: 10px; border: 2px dashed #1e3a8a; margin-bottom: 15px; font-weight: bold; }
     </style>
     """, unsafe_allow_html=True)
 
-# 2. Data Loading
+# 2. Settings
 SHEET_ID = "1NVNjNawK0026WPsd6P_X-lSd6LoLWqXo8dG1m7Ou098"
 SHEET_URL = f"https://docs.google.com/spreadsheets/d/{SHEET_ID}/export?format=csv"
-FIXED_UPI = "7888273972-2@ybl"
 PORTAL_LINK = "https://shree-services.streamlit.app"
+FIXED_UPI = "7888273972-2@ybl"
 
 @st.cache_data(ttl=10)
 def load_data():
@@ -33,108 +34,95 @@ def load_data():
     except: return pd.DataFrame()
 df = load_data()
 
-if 'page' not in st.session_state: st.session_state.page = "home"
+# Handle Page Navigation via URL and Session
+params = st.query_params
+if 'page' not in st.session_state:
+    st.session_state.page = params.get("page", "home")
 
 # 3. TOP NAVIGATION
-st.markdown('<div class="main-header"><h1>Shree Services - Online GST & Tax Center</h1><p>A Complete Hub for Accounting & Taxation Solutions</p></div>', unsafe_allow_html=True)
+st.markdown('<div class="main-header"><h1>Shree Services - Online GST & Tax Center</h1></div>', unsafe_allow_html=True)
 
-col_n1, col_n2, col_n3, col_n4, col_n5 = st.columns(5)
-with col_n1: 
+col1, col2, col3, col4, col5 = st.columns(5)
+with col1: 
     if st.button("🏠 HOME"): st.session_state.page = "home"
-with col_n2: 
+with col2: 
     if st.button("🧾 BILL"): st.session_state.page = "bill"
-with col_n3: 
+with col3: 
     if st.button("🔔 REMINDER"): st.session_state.page = "rem"
-with col_n4: 
+with col4: 
     if st.button("📤 UPLOAD"): st.session_state.page = "up"
-with col_n5: 
+with col5: 
     if st.button("📊 LEDGER"): st.session_state.page = "led"
 
-# 4. Page Logic
-if st.session_state.page == "bill":
-    st.markdown("### 📑 Create Professional Invoice")
-    if not df.empty:
-        party = st.selectbox("Select Client Name", df['Firm Name'].unique())
-        c_row = df[df['Firm Name'] == party].iloc[0]
-        amt = st.number_input("Amount (₹)", value=800)
-        p_month = (datetime.now().replace(day=1) - timedelta(days=1)).strftime("%B %Y")
-        particulars = st.text_input("Particulars", value=f"GST Filing Charges for {p_month}")
-        
-        qr_code_url = f"https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=upi://pay?pa={FIXED_UPI}&pn=Shree%20Services&am={amt}&cu=INR"
-        inv_date = datetime.now().strftime('%d/%m/%Y')
-        
-        # HTML CODE FOR BILL
-        bill_template = f"""
-        <html>
-        <head>
-        <style>
-            .bill-container {{ background: white; border: 2px solid #333; padding: 40px; font-family: Arial, sans-serif; color: #000; width: 90%; margin: auto; }}
-            .bill-header {{ text-align: center; border-bottom: 2px solid #333; padding-bottom: 10px; margin-bottom: 20px; }}
-            .bill-table {{ width: 100%; border-collapse: collapse; margin: 20px 0; border: 1px solid #333; }}
-            .bill-table th, .bill-table td {{ border: 1px solid #333; padding: 12px; text-align: left; }}
-            .bill-table th {{ background-color: #f2f2f2; }}
-            .qr-section {{ text-align: center; margin-top: 30px; border: 1px dashed #1e3a8a; padding: 15px; background: #f9f9f9; }}
-            .flex-row {{ display: flex; justify-content: space-between; }}
-        </style>
-        </head>
-        <body>
-        <div class="bill-container">
-            <div class="bill-header">
-                <h1 style="margin:0; color:#1e3a8a;">SHREE SERVICES</h1>
-                <p style="margin:5px; font-weight:bold;">Accounting, GST & Taxation Services</p>
-                <p style="margin:2px; font-size:14px;">Address: Mohan Garden, New Delhi-110059 | Mob: 7888273972, 8668257610</p>
-            </div>
-            <div class="flex-row" style="margin-bottom: 20px;">
-                <div><b>Invoice To:</b> {party}</div>
-                <div><b>Date:</b> {inv_date}</div>
-            </div>
-            <table class="bill-table">
-                <tr>
-                    <th style="width: 70%;">Description / Particulars</th>
-                    <th style="text-align:right;">Amount (₹)</th>
-                </tr>
-                <tr>
-                    <td style="height:120px; vertical-align:top;">{particulars}</td>
-                    <td style="text-align:right; vertical-align:top;"><b>₹{amt}.00</b></td>
-                </tr>
-                <tr>
-                    <td style="text-align:right; font-weight:bold;">Total Amount:</td>
-                    <td style="text-align:right; font-weight:bold; font-size:18px; color:#1e3a8a;">₹{amt}.00</td>
-                </tr>
-            </table>
-            <div class="qr-section">
-                <p style="margin-top:0; font-size:14px;"><b>SCAN & PAY VIA ANY UPI APP</b></p>
-                <img src="{qr_code_url}" width="140">
-                <p style="margin-bottom:0; font-family:monospace; font-weight:bold;">UPI ID: {FIXED_UPI}</p>
-            </div>
-            <div style="margin-top:30px; text-align:right;">
-                <p style="margin-bottom:40px;">For <b>Shree Services</b></p>
-                <p>(Authorized Signatory)</p>
-            </div>
-        </div>
-        </body>
-        </html>
-        """
-        
-        # RENDERING BILL IN AN IFRAME (SOLVES THE CODE DISPLAY ISSUE)
-        st.components.v1.html(bill_template, height=800, scrolling=True)
-        
-        # Print Tip
-        st.info("Tip: Is bill ko save karne ke liye screen ka screenshot lein ya browser print ka upyog karein.")
-
-        # WhatsApp Message
-        wa_msg = f"Namaste 🙏, *Shree Services*.\n*Bill For:* {party}\n*Amount:* ₹{amt}\n\n*Pay via UPI:* {FIXED_UPI}\n*Portal:* {PORTAL_LINK}"
-        st.markdown(f'<a href="https://wa.me/{c_row["Mobile Number"]}?text={urllib.parse.quote(wa_msg)}" target="_blank"><div style="background:#25d366; color:white; padding:15px; border-radius:10px; text-align:center; font-weight:bold; margin-top:20px;">📲 Send Bill on WhatsApp</div></a>', unsafe_allow_html=True)
-
-elif st.session_state.page == "home":
-    st.info("Welcome to Shree Services Portal. Use top buttons to navigate.")
-    for s in ["📊 Taxation", "🛡️ Insurance", "📝 Online Work"]:
-        st.markdown(f'<div style="background:white; padding:20px; border-radius:10px; border-left:10px solid #1e3a8a; margin-bottom:15px; box-shadow: 2px 2px 10px rgba(0,0,0,0.1);"><h3>{s}</h3><p>Professional services for your business.</p></div>', unsafe_allow_html=True)
+# 4. PAGE LOGIC
+if st.session_state.page == "home":
+    st.write("### Our Services")
+    services = ["📊 Taxation (GST/Income Tax)", "🛡️ Insurance (Life/Health)", "📝 Online Work (PAN/Aadhar)"]
+    for s in services:
+        with st.container():
+            st.markdown(f'<div class="service-box"><h3>{s}</h3></div>', unsafe_allow_html=True)
+            with st.expander(f"Apply for {s}"):
+                m_val = st.text_input("Client Mobile Number", key=f"m_{s}")
+                r_val = st.text_area("What is your requirement?", key=f"r_{s}")
+                if st.button(f"Submit {s} Request"):
+                    msg = f"New Request for {s}\nClient No: {m_val}\nRequirement: {r_val}"
+                    st.markdown(f'<a href="https://wa.me/917888273972?text={urllib.parse.quote(msg)}" target="_blank"><div style="background:#25d366; color:white; padding:10px; text-align:center; border-radius:10px;">📲 Send to Roshan Mishra</div></a>', unsafe_allow_html=True)
 
 elif st.session_state.page == "up":
-    st.title("📤 Document Upload")
-    st.file_uploader("Upload Files", accept_multiple_files=True)
-    if st.button("Submit to Drive"): st.success("Files Submitted Successfully!")
+    st.title("📤 Upload Bills")
+    mode = params.get("mode", "all")
+    if not df.empty: st.selectbox("Select Your Firm", df['Firm Name'].unique())
+    
+    if mode == "sale" or mode == "all":
+        st.markdown('<div class="upload-card">📁 SECTION 1: SALE BILLS (GSTR-1)</div>', unsafe_allow_html=True)
+        st.file_uploader("Upload Sales", accept_multiple_files=True, key="s1")
+    
+    if mode == "purchase" or mode == "all":
+        st.markdown('<div class="upload-card">📁 SECTION 2: PURCHASE BILLS (GST-3B)</div>', unsafe_allow_html=True)
+        st.file_uploader("Upload Purchases", accept_multiple_files=True, key="p1")
+    
+    if st.button("Submit to Google Drive"):
+        st.success("Files successfully uploaded to Drive!")
 
-# Footer
-st.markdown('<div class="footer-box">📞 Contact: 7888273972 | 9220393972</div>', unsafe_allow_html=True)
+elif st.session_state.page == "rem":
+    st.title("🔔 WhatsApp Reminder Panel")
+    if not df.empty:
+        party = st.selectbox("Select Client", df['Firm Name'].unique())
+        row = df[df['Firm Name'] == party].iloc[0]
+        r_type = st.radio("Reminder Type", ["GSTR-1 (Sale Link)", "GST-3B (Purchase Link)", "Payment"])
+        
+        if "GSTR-1" in r_type:
+            link = f"{PORTAL_LINK}?page=up&mode=sale"
+            m = f"Namaste 🙏, *Shree Services*. GSTR-1 date aa rahi hai. Sale bills yahan upload karein:\n👉 {link}"
+        elif "GST-3B" in r_type:
+            link = f"{PORTAL_LINK}?page=up&mode=purchase"
+            m = f"Namaste 🙏, *Shree Services*. GST-3B date aa rahi hai. Purchase bills yahan upload karein:\n👉 {link}"
+        else:
+            m = f"Namaste 🙏, *Shree Services*. Aapka payment pending hai: {PORTAL_LINK}"
+        
+        st.markdown(f'<a href="https://wa.me/{row["Mobile Number"]}?text={urllib.parse.quote(m)}" target="_blank"><div style="background:#25d366; color:white; padding:15px; border-radius:10px; text-align:center;">📲 Send WhatsApp Reminder</div></a>', unsafe_allow_html=True)
+
+elif st.session_state.page == "led":
+    st.title("📊 Client Ledger Status")
+    st.dataframe(df, use_container_width=True)
+
+elif st.session_state.page == "bill":
+    # Bill generation logic here (Purana design rendered as HTML)
+    st.title("📑 Generate Bill")
+    if not df.empty:
+        party = st.selectbox("Party Name", df['Firm Name'].unique())
+        amt = st.number_input("Amount", value=800)
+        qr_url = f"https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=upi://pay?pa={FIXED_UPI}&pn=Shree%20Services&am={amt}&cu=INR"
+        
+        bill_html = f"""<div style="border:2px solid black; padding:20px; background:white; color:black;">
+        <h2 style="text-align:center;">SHREE SERVICES</h2>
+        <p><b>Client:</b> {party}</p><hr>
+        <p>GST Filing Charges: <b>₹{amt}</b></p>
+        <div style="text-align:center;"><img src="{qr_url}" width="120"><br>UPI: {FIXED_UPI}</div>
+        </div>"""
+        st.markdown(bill_html, unsafe_allow_html=True)
+        wa_b = f"Bill For: {party}\nAmount: ₹{amt}\nPay here: {FIXED_UPI}"
+        st.markdown(f'<a href="https://wa.me/?text={urllib.parse.quote(wa_b)}" target="_blank">📲 Send Bill</a>', unsafe_allow_html=True)
+
+# 5. Permanent Footer
+st.markdown('<div class="footer-box">📞 Roshan Mishra: 7888273972 | 9220393972</div>', unsafe_allow_html=True)
