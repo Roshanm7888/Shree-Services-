@@ -35,6 +35,8 @@ def save_saas_data(data):
     with open(USERS_FILE, "w") as f: json.dump(data, f, indent=4)
 
 if "logged_in_user" not in st.session_state: st.session_state.logged_in_user = None
+if "inv_rows" not in st.session_state: st.session_state.inv_rows = [{"desc": "", "hsn": "", "qty": 1.0, "rate": 0.0, "amt": 0.0}]
+
 saas_db = load_saas_data()
 
 def get_initials(name):
@@ -47,7 +49,7 @@ def get_initials(name):
 if not st.session_state.logged_in_user:
     st.markdown("""
         <div class="main-title">
-            <h1>SaaS Invoice Management Portal</h1>
+            <h1>Professional SaaS Invoice Management Portal</h1>
             <p>Secure Login & Direct Company Registration System</p>
         </div>
     """, unsafe_allow_html=True)
@@ -134,7 +136,6 @@ else:
     
     if "history" not in st.session_state: st.session_state.history = user_data["history"]
     if "saved_parties" not in st.session_state: st.session_state.saved_parties = user_data["parties"]
-    if "saved_services" not in st.session_state: st.session_state.saved_services = user_data["services"]
     if "stock_items" not in user_data: user_data["stock_items"] = [{"name": "Default Service", "rate": 500.0}]
 
     # Auto-clean History (24 Days retention)
@@ -151,6 +152,7 @@ else:
     # --- Sidebar Menu ---
     st.sidebar.markdown(f"👤 **Logged in as:** `{current_user}`")
     st.sidebar.markdown(f"🏢 **Company:** `{user_data['profile']['name']}`")
+    st.sidebar.markdown(f"📊 **Mode:** `{user_data['profile'].get('nature', 'Service')}`")
     st.sidebar.markdown("---")
     
     menu_option = st.sidebar.radio("Navigation Menu", [
@@ -194,7 +196,6 @@ else:
         up_contact = st.text_input("Contact Number", value=prof.get("contact", ""))
         up_gstin = st.text_input("Company GSTIN", value=prof.get("gstin", ""))
         
-        # Nature of Business Selection
         current_nature = prof.get("nature", "Service")
         up_nature = st.selectbox("Nature of Business", ["Service", "Manufacturing/Trading"], index=["Service", "Manufacturing/Trading"].index(current_nature if current_nature in ["Service", "Manufacturing/Trading"] else "Service"))
         
@@ -302,8 +303,8 @@ else:
                     new_serv = st.text_area("Edit Services", value=bill.get('services', ''), key=f"serv_{bill['invoice_no']}")
                     new_pd = st.number_input("Paid Amount", value=float(bill.get('paid', 0.0)), key=f"pd_{bill['invoice_no']}")
                     if st.button("💾 Save Changes", key=f"sv_{bill['invoice_no']}"):
-                        tot = sum([float(l.split('|')[-1].strip()) for l in new_serv.split('\n') if l.strip() and '|' in l])
-                        bill.update({'services': new_serv, 'total': tot, 'paid': new_pd, 'balance': tot - new_pd})
+                        tot = sum([float(l['amt']) for l in bill.get('parsed_items', [])])
+                        bill.update({'total': tot, 'paid': new_pd, 'balance': tot - new_pd})
                         user_data["history"] = st.session_state.history
                         save_saas_data(saas_db)
                         st.success("Updated!")
@@ -316,92 +317,78 @@ else:
                         st.rerun()
 
     else:
-        # --- Create Invoice Tab ---
+        # --- Create Invoice Tab (Tally Style Dynamic Rows) ---
         comp_profile = user_data["profile"]
         nature_mode = comp_profile.get("nature", "Service")
         
-        st.markdown(f"<div class='main-title'><h1>{comp_profile.get('name', 'Invoice Portal')}</h1><p>Mode: {nature_mode}</p></div>", unsafe_allow_html=True)
+        st.markdown(f"<div class='main-title'><h1>{comp_profile.get('name', 'Invoice Portal')}</h1><p>Mode: {nature_mode} (Tally Style Entry)</p></div>", unsafe_allow_html=True)
 
         next_inv_num = len(st.session_state.history) + 1
         current_inv_no = f"TAX/2026-27/{next_inv_num:03d}"
 
-        with st.form("invoice_form"):
-            st.markdown('<div class="section-box-1">👤 1. Client Details</div>', unsafe_allow_html=True)
-            party_names = list(st.session_state.saved_parties.keys())
-            selected_party = st.selectbox("Select Existing Party", party_names)
+        # 1. Party Management
+        st.markdown('<div class="section-box-1">👤 1. Client / Party Details</div>', unsafe_allow_html=True)
+        party_list = list(user_data["parties"].keys()) + ["+ Add New Party"]
+        selected_party = st.selectbox("Select Party", party_list)
 
-            with st.expander("➕ Add New Party"):
-                new_trade_name = st.text_input("Trade Name")
-                new_legal_name = st.text_input("Legal Name")
-                new_address = st.text_input("Address")
-                new_gstin = st.text_input("GSTIN")
+        if selected_party == "+ Add New Party":
+            with st.form("new_party_form"):
+                n_trade = st.text_input("Trade Name")
+                n_legal = st.text_input("Legal Name")
+                n_addr = st.text_input("Address")
+                n_gstin = st.text_input("GSTIN")
+                if st.form_submit_button("Save Party Permanently"):
+                    if n_trade.strip():
+                        user_data["parties"][n_trade.strip()] = {"legal": n_legal, "address": n_addr, "gstin": n_gstin}
+                        save_saas_data(saas_db)
+                        st.success("Party Saved Successfully!")
+                        st.rerun()
+                    else: st.warning("Please enter Trade Name.")
 
-            st.markdown('<div class="section-box-2">📋 2. Invoice Details</div>', unsafe_allow_html=True)
-            inv_no = st.text_input("Invoice Number", current_inv_no)
-            inv_date = st.text_input("Invoice Date", datetime.now().strftime("%B %d, %Y"))
+        st.markdown('<div class="section-box-2">📋 2. Invoice Meta Details</div>', unsafe_allow_html=True)
+        col_i1, col_i2 = st.columns(2)
+        inv_no = col_i1.text_input("Invoice Number", current_inv_no)
+        inv_date = col_i2.text_input("Invoice Date", datetime.now().strftime("%B %d, %Y"))
 
-            st.markdown('<div class="section-box-3">💼 3. Items & Billing Structure</div>', unsafe_allow_html=True)
-            
-            if nature_mode == "Service":
-                services_text = st.text_area("Services Details (Format: Service | Period | Amount)", placeholder="GST Filing | July | 700")
+        # 2. Tally-Style Dynamic Row Entry Grid
+        st.markdown('<div class="section-box-3">💼 3. Items & Grid Entry</div>', unsafe_allow_html=True)
+        if st.button("➕ Add Row"): 
+            st.session_state.inv_rows.append({"desc": "", "hsn": "", "qty": 1.0, "rate": 0.0, "amt": 0.0})
+
+        for i, row in enumerate(st.session_state.inv_rows):
+            cols = st.columns([3, 2, 1, 2, 2])
+            row['desc'] = cols[0].text_input(f"Desc {i+1}", value=row['desc'], key=f"d_{i}")
+            if nature_mode == "Manufacturing/Trading":
+                row['hsn'] = cols[1].text_input(f"HSN {i+1}", value=row['hsn'], key=f"h_{i}")
+                row['qty'] = cols[2].number_input(f"Qty {i+1}", value=row['qty'], key=f"q_{i}")
+                row['rate'] = cols[3].number_input(f"Rate {i+1}", value=row['rate'], key=f"r_{i}")
+                row['amt'] = row['qty'] * row['rate']
+                cols[4].write(f"Amt: Rs. {row['amt']:.2f}")
             else:
-                services_text = st.text_area("Manufacturing Items (Format: Item Name | HSN | Qty | Rate)", placeholder="Steel Rods | 7214 | 10 | 500")
+                row['amt'] = cols[4].number_input(f"Amount {i+1}", value=row['amt'], key=f"a_{i}")
 
-            total_paid = st.number_input("Total Amount Paid (Rs.)", min_value=0.0, value=0.0)
-            submitted = st.form_submit_button("✨ Generate Exact A4 Invoice Preview")
+        total_paid = st.number_input("Total Amount Paid (Rs.)", min_value=0.0, value=0.0)
 
-        if submitted:
-            client_name = new_trade_name.strip() if 'new_trade_name' in locals() and new_trade_name.strip() else selected_party
-            if client_name == new_trade_name.strip() and new_trade_name.strip():
-                st.session_state.saved_parties[client_name] = {"legal": new_legal_name, "address": new_address, "gstin": new_gstin}
-            p_info = st.session_state.saved_parties.get(client_name, {"legal": "-", "address": "-", "gstin": "07AAAAA0000A1Z5"})
+        if st.button("✨ Finalize & Generate Exact A4 Invoice"):
+            target_party = selected_party if selected_party != "+ Add New Party" else list(user_data["parties"].keys())[-1]
+            p_info = user_data["parties"].get(target_party, {"legal": "-", "address": "-", "gstin": "07AAAAA0000A1Z5"})
             
-            lines = services_text.split('\n')
-            subtotal_amt = 0.0
-            parsed_items = []
+            subtotal_amt = sum([r['amt'] for r in st.session_state.inv_rows])
+            tax_rate = float(comp_profile.get("tax_rate", 18.0)) if comp_profile.get("gst_enabled", True) else 0.0
+            tax_amount = (subtotal_amt * tax_rate) / 100.0
             
-            for line in lines:
-                if line.strip() and '|' in line:
-                    parts = [p.strip() for p in line.split('|')]
-                    if nature_mode == "Service":
-                        desc = parts[0]
-                        period = parts[1] if len(parts) > 1 else "General"
-                        try: amt = float(parts[2]) if len(parts) > 2 else float(parts[1])
-                        except: amt = 0.0
-                        parsed_items.append({"desc": desc, "period": period, "amt": amt})
-                        subtotal_amt += amt
-                    else:
-                        desc = parts[0]
-                        hsn = parts[1] if len(parts) > 1 else "-"
-                        try: qty = float(parts[2]) if len(parts) > 2 else 1.0
-                        except: qty = 1.0
-                        try: rate = float(parts[3]) if len(parts) > 3 else 0.0
-                        except: rate = 0.0
-                        amt = qty * rate
-                        parsed_items.append({"desc": desc, "hsn": hsn, "qty": qty, "rate": rate, "amt": amt})
-                        subtotal_amt += amt
-
-            gst_enabled = comp_profile.get("gst_enabled", True)
-            tax_rate = float(comp_profile.get("tax_rate", 18.0)) if gst_enabled else 0.0
-            tax_amount = (subtotal_amt * tax_rate) / 100.0 if gst_enabled else 0.0
-            
-            # Smart GST Split Logic (CGST+SGST if local state code '07', else IGST)
             client_gstin_val = p_info.get("gstin", "")
-            if client_gstin_val.startswith("07"):
-                tax_label = f"CGST ({tax_rate/2}%) + SGST ({tax_rate/2}%)"
-            else:
-                tax_label = f"IGST ({tax_rate}%)"
+            tax_label = f"CGST ({tax_rate/2}%) + SGST ({tax_rate/2}%)" if client_gstin_val.startswith("07") else f"IGST ({tax_rate}%)"
 
             total_amt = subtotal_amt + tax_amount
             balance = total_amt - total_paid
 
             st.session_state.history.append({
-                "invoice_no": inv_no, "client": client_name, "total": total_amt,
+                "invoice_no": inv_no, "client": target_party, "total": total_amt,
                 "paid": total_paid, "balance": balance, "date": inv_date,
-                "services": services_text, "timestamp": datetime.now().isoformat()
+                "parsed_items": st.session_state.inv_rows, "timestamp": datetime.now().isoformat()
             })
             user_data["history"] = st.session_state.history
-            user_data["parties"] = st.session_state.saved_parties
             save_saas_data(saas_db)
 
             p_col = "#0f172a" if "Modern Dark" in comp_profile.get("format") else "#065f46" if "Emerald Green" in comp_profile.get("format") else "#581c87" if "Royal Purple" in comp_profile.get("format") else "#334155" if "Minimalist Clean" in comp_profile.get("format") else "#991b1b" if "Crimson Red" in comp_profile.get("format") else "#1e3a8a"
@@ -415,17 +402,16 @@ else:
             wm_en = comp_profile.get("watermark_enabled", True)
             wm_html = f'<div style="position: absolute; top: 40%; left: 20%; transform: rotate(-30deg); font-size: 90px; font-weight: bold; color: rgba(0, 0, 0, 0.04); z-index: 0; pointer-events: none; white-space: nowrap;">{comp_profile.get("name")}</div>' if wm_en else ""
 
-            # Build Table Rows dynamically based on Nature
             table_headers = ""
             table_rows = ""
             if nature_mode == "Service":
-                table_headers = "<th>S.No.</th><th>Description of Services</th><th>Period</th><th class='right'>Amount (Rs.)</th>"
-                for i, item in enumerate(parsed_items, 1):
-                    table_rows += f"<tr><td class='right'>{i}</td><td>{item['desc']}</td><td>{item['period']}</td><td class='right'>{item['amt']:.2f}</td></tr>"
+                table_headers = "<th>S.No.</th><th>Description of Services</th><th class='right'>Amount (Rs.)</th>"
+                for i, row in enumerate(st.session_state.inv_rows, 1):
+                    table_rows += f"<tr><td class='right'>{i}</td><td>{row['desc']}</td><td class='right'>{row['amt']:.2f}</td></tr>"
             else:
                 table_headers = "<th>S.No.</th><th>Item Description</th><th>HSN</th><th>Qty</th><th>Rate</th><th class='right'>Amount (Rs.)</th>"
-                for i, item in enumerate(parsed_items, 1):
-                    table_rows += f"<tr><td class='right'>{i}</td><td>{item['desc']}</td><td>{item['hsn']}</td><td>{item['qty']}</td><td>{item['rate']:.2f}</td><td class='right'>{item['amt']:.2f}</td></tr>"
+                for i, row in enumerate(st.session_state.inv_rows, 1):
+                    table_rows += f"<tr><td class='right'>{i}</td><td>{row['desc']}</td><td>{row['hsn']}</td><td>{row['qty']}</td><td>{row['rate']:.2f}</td><td class='right'>{row['amt']:.2f}</td></tr>"
 
             html_content = f"""
             <!DOCTYPE html><html><head><meta charset="utf-8"><style>
@@ -448,7 +434,7 @@ else:
                     <div style="display:flex;gap:15px; align-items:flex-start;">{l_html}<div><h2 style="margin:0;color:{p_col};">{comp_profile.get('name')}</h2><p style="margin:3px 0;font-size:12px;">{comp_profile.get('address')}<br>Contact: {comp_profile.get('contact')}<br>GSTIN: {comp_profile.get('gstin')}</p></div></div>
                     <div style="text-align:right;"><h2 style="margin:0;">Tax Invoice</h2><p style="margin:3px 0;font-size:12px;">Invoice No: {inv_no}<br>Date: {inv_date}<br>Client GSTIN: {p_info.get('gstin')}</p></div>
                 </div>
-                <table style="width:100%;border-collapse:collapse;margin-bottom:20px;font-size:13px;position:relative;z-index:1;"><tr><td style="border:1px solid #cbd5e1;padding:10px;"><strong>Service Provider:</strong><br>{comp_profile.get('name')} ({comp_profile.get('legal')})</td><td style="border:1px solid #cbd5e1;padding:10px;"><strong>Billed To:</strong><br><strong>{client_name}</strong><br>Legal: {p_info.get('legal')}<br>Address: {p_info.get('address')}</td></tr></table>
+                <table style="width:100%;border-collapse:collapse;margin-bottom:20px;font-size:13px;position:relative;z-index:1;"><tr><td style="border:1px solid #cbd5e1;padding:10px;"><strong>Service Provider:</strong><br>{comp_profile.get('name')} ({comp_profile.get('legal')})</td><td style="border:1px solid #cbd5e1;padding:10px;"><strong>Billed To:</strong><br><strong>{target_party}</strong><br>Legal: {p_info.get('legal')}<br>Address: {p_info.get('address')}</td></tr></table>
                 <table class="items-table"><thead><tr>{table_headers}</tr></thead><tbody>{table_rows}</tbody></table>
                 <table class="totals">
                     <tr><td>Subtotal:</td><td class="right">Rs. {subtotal_amt:.2f}</td></tr>
