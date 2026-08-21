@@ -3,8 +3,13 @@ from datetime import datetime, timedelta
 import json
 import os
 import time
+import google.generativeai as genai
 
 st.set_page_config(page_title="Professional Invoice Portal - SaaS", page_icon="📄", layout="wide")
+
+# --- GEMINI API CONFIG (Replace with your actual API key) ---
+API_KEY = "YOUR_GOOGLE_GEMINI_API_KEY"
+genai.configure(api_key=API_KEY)
 
 # --- FIXED CSS FOR COMPACT LOGIN, DESIGNER WAVE THEMES & ANDROID/DESKTOP ---
 st.markdown("""
@@ -79,6 +84,22 @@ def get_initials(name):
     if len(words) >= 2: return (words[0][0] + words[1][0]).upper()
     elif len(words) == 1 and len(words[0]) >= 2: return words[0][:2].upper()
     return "SS"
+
+# --- AI BUSINESS ASSISTANT FUNCTION ---
+def ask_gemini_assistant(query):
+    try:
+        model = genai.GenerativeModel('gemini-pro')
+        instructions = """You are an expert, polite AI Business Assistant for 'Shree Services Invoice Portal'. 
+        Knowledge base to guide users:
+        1. Business Natures supported: Goods/Manufacturing/Trading, Services, Transport Company, Other Business.
+        2. Settings & Customization: Users can configure company details, choose from 6 Designer Wave Themes (Corporate Curve Wave, Emerald Green, Sunset Orange, etc.), toggle GST, and set watermarks in the 'Settings' tab.
+        3. Subscription & Plans: Free trial allows 1 invoice generation. Paid subscription is Rs. 5 via UPI (roshan@shreeservices.upi). Users can submit UTR/Txn ID, and Admin reviews it.
+        4. History & Management: Users can view and edit/delete past invoices up to 24 days.
+        Provide step-by-step, accurate, and professional answers."""
+        response = model.generate_content(f"{instructions} User Query: {query}")
+        return response.text
+    except Exception as e:
+        return f"AI Assistant is currently unavailable. Please verify API key configuration."
 
 SESSION_TIMEOUT_SECONDS = 900
 if st.session_state.logged_in_user and st.session_state.login_time:
@@ -190,8 +211,8 @@ if not st.session_state.logged_in_user:
     with b_col4:
         st.markdown("""
             <div class="benefit-card">
-                <h3>🛡️ Secure & GST Compliant</h3>
-                <p>Automatic CGST/SGST split or IGST calculation based on state codes, complete party management, and 24-day history records.</p>
+                <h3>🤖 24/7 AI Business Assistant</h3>
+                <p>Instant expert support for tax rules, settings navigation, and step-by-step portal assistance powered by Gemini.</p>
             </div>
         """, unsafe_allow_html=True)
 
@@ -245,30 +266,33 @@ else:
         st.sidebar.info(f"⏱️ **Session Remaining:** `{rem_mins:02d}:{rem_s:02d}`")
 
     st.sidebar.markdown("---")
-    menu_option = st.sidebar.radio("Navigation Menu", [
+    menu_options_list = [
         "Create Invoice", 
+        "🤖 AI Business Assistant", 
         "📊 Party-wise History & Edit/Delete (24 Days)", 
         "⚙️ Company Profile & Format Settings", 
         "🚪 Logout"
-    ])
-
-    # --- AI Gemini Studio Widget ---
-    st.sidebar.markdown("---")
-    with st.sidebar.expander("🤖 AI Design & Logo Studio"):
-        task = st.selectbox("I need help with:", ["Logo Design Prompt", "Invoice Layout Theme Advice"])
-        req = st.text_area("Describe requirement (e.g. 'Shree Hindi me circle mein')")
-        if st.button("✨ Generate AI Prompt"):
-            if req.strip():
-                if "Logo" in task:
-                    st.success(f"💡 **AI Logo Prompt:** Create a circular vector emblem for '{req}'. Use elegant gold and royal blue typography.")
-                else:
-                    st.success(f"💡 **AI Layout Advice:** For '{req}', use Corporate Curve Wave layout.")
-            else: st.warning("Please describe what you need first!")
+    ]
+    menu_option = st.sidebar.radio("Navigation Menu", menu_options_list)
 
     if menu_option == "🚪 Logout":
         st.session_state.logged_in_user = None
         st.session_state.login_time = None
         st.rerun()
+
+    # --- AI BUSINESS ASSISTANT TAB (Restricted to Paid Users or All Users as requested) ---
+    elif menu_option == "🤖 AI Business Assistant":
+        st.markdown("<div class='main-title'><h1>🤖 AI Business & Tax Assistant</h1><p>Ask anything about taxes, invoice settings, or how to use the portal!</p></div>", unsafe_allow_html=True)
+        
+        user_query = st.text_area("Type your question here (e.g., 'How do I change my invoice theme?' or 'What is the GST calculation rule?'):")
+        if st.button("Ask AI Expert"):
+            if user_query.strip():
+                with st.spinner("Thinking..."):
+                    ai_answer = ask_gemini_assistant(user_query)
+                    st.markdown("### 💡 AI Expert Response:")
+                    st.info(ai_answer)
+            else:
+                st.warning("Please enter a valid question.")
 
     elif menu_option == "⚙️ Company Profile & Format Settings":
         st.markdown("""
