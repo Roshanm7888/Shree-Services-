@@ -6,7 +6,7 @@ import time
 
 st.set_page_config(page_title="Professional Invoice Portal - SaaS", page_icon="📄", layout="wide")
 
-# --- FIXED CSS FOR COMPACT LOGIN & ANDROID/DESKTOP OPTIMIZATION ---
+# --- FIXED CSS FOR COMPACT LOGIN & DESIGNER WAVE THEMES ---
 st.markdown("""
     <style>
     @media (max-width: 600px) {
@@ -17,7 +17,6 @@ st.markdown("""
         .stButton button { width: 100% !important; }
     }
     
-    /* Compact Login Card Styling for Desktop */
     .login-container {
         max-width: 500px;
         margin: 0 auto;
@@ -28,7 +27,6 @@ st.markdown("""
         box-shadow: 0 10px 25px rgba(0,0,0,0.05);
     }
 
-    /* Benefits Grid Styling */
     .benefit-card {
         background: #ffffff;
         padding: 20px;
@@ -100,7 +98,6 @@ if not st.session_state.logged_in_user:
         </div>
     """, unsafe_allow_html=True)
     
-    # Compact Login Centered Layout
     col_l1, col_l2, col_l3 = st.columns([1, 2, 1])
     with col_l2:
         auth_tab1, auth_tab2 = st.tabs(["🔐 Login", "📝 New Registration"])
@@ -186,8 +183,8 @@ if not st.session_state.logged_in_user:
     with b_col3:
         st.markdown("""
             <div class="benefit-card">
-                <h3>🎨 6 Pro Themes & Watermarks</h3>
-                <p>Customize your professional A4 invoices with 6 color palettes, custom border styles, company logos, and dynamic watermarks.</p>
+                <h3>🎨 Designer Wave Themes & Watermarks</h3>
+                <p>Choose from corporate curved wave designs (Navy, Emerald, Sunset Orange, Royal Blue) with custom watermarks.</p>
             </div>
         """, unsafe_allow_html=True)
     with b_col4:
@@ -265,7 +262,7 @@ else:
                 if "Logo" in task:
                     st.success(f"💡 **AI Logo Prompt:** Create a circular vector emblem for '{req}'. Use elegant gold and royal blue typography.")
                 else:
-                    st.success(f"💡 **AI Layout Advice:** For '{req}', use 'Classic Blue' or 'Emerald Green' with double-line borders.")
+                    st.success(f"💡 **AI Layout Advice:** For '{req}', use 'Classic Blue' or 'Emerald Green' with designer wave layouts.")
             else: st.warning("Please describe what you need first!")
 
     if menu_option == "🚪 Logout":
@@ -277,12 +274,19 @@ else:
         st.markdown("""
             <div class="main-title">
                 <h1>Settings & Format Customizer</h1>
-                <p>Configure fixed business nature, 6 professional color themes, watermark options, and live preview</p>
+                <p>Configure fixed business nature, Designer Wave Themes, watermark options, and live preview</p>
             </div>
         """, unsafe_allow_html=True)
         
         prof = user_data["profile"]
-        format_options = ["Classic Blue (Professional)", "Modern Dark (Executive)", "Emerald Green (Corporate)", "Royal Purple (Creative)", "Minimalist Clean (Simple)", "Crimson Red (Bold)"]
+        format_options = [
+            "Corporate Navy Wave (Professional)", 
+            "Emerald Green Wave (Modern)", 
+            "Sunset Orange Wave (Vibrant)", 
+            "Royal Purple Curve (Creative)", 
+            "Minimalist Clean (Simple)", 
+            "Classic Blue (Standard)"
+        ]
         border_options = ["Solid Line", "Dotted Border (Stylish)", "Double Line (Accounting)", "Dashed Border (Modern)"]
 
         st.markdown("### 🏢 Business Information")
@@ -295,10 +299,10 @@ else:
         nat_idx = nature_options.index(current_nature) if current_nature in nature_options else 0
         up_nature = st.selectbox("Fixed Business Nature (Format)", nature_options, index=nat_idx)
         
-        st.markdown("### 🎨 Invoice Theme & Border Design")
-        fmt_val = prof.get("format", "Classic Blue (Professional)")
+        st.markdown("### 🎨 Invoice Theme & Designer Wave Layout")
+        fmt_val = prof.get("format", format_options[0])
         fmt_idx = format_options.index(fmt_val) if fmt_val in format_options else 0
-        up_format = st.selectbox("Select Invoice Color Theme (6 Options)", format_options, index=fmt_idx)
+        up_format = st.selectbox("Select Invoice Designer Theme", format_options, index=fmt_idx)
 
         b_val = prof.get("border_style", "Solid Line")
         b_idx = border_options.index(b_val) if b_val in border_options else 0
@@ -324,16 +328,28 @@ else:
             st.success("Settings saved successfully!")
             st.rerun()
 
-        # --- INSTANT FULL A4 SIZE LIVE PREVIEW ---
+        # --- INSTANT FULL A4 SIZE LIVE PREVIEW WITH DESIGNER WAVE STYLING ---
         st.markdown("---")
         st.markdown("### 👁️ Instant Full A4 Size Live Preview (Real-Time)")
         
-        if "Modern Dark" in up_format: p_col = "#0f172a"
-        elif "Emerald Green" in up_format: p_col = "#065f46"
-        elif "Royal Purple" in up_format: p_col = "#581c87"
-        elif "Minimalist Clean" in up_format: p_col = "#334155"
-        elif "Crimson Red" in up_format: p_col = "#991b1b"
-        else: p_col = "#1e3a8a"
+        if "Emerald Green" in up_format:
+            p_col = "#065f46"
+            wave_gradient = "linear-gradient(135deg, #059669 0%, #10b981 100%)"
+        elif "Sunset Orange" in up_format:
+            p_col = "#c2410c"
+            wave_gradient = "linear-gradient(135deg, #ea580c 0%, #fb923c 100%)"
+        elif "Royal Purple" in up_format:
+            p_col = "#581c87"
+            wave_gradient = "linear-gradient(135deg, #7e22ce 0%, #a855f7 100%)"
+        elif "Minimalist Clean" in up_format:
+            p_col = "#334155"
+            wave_gradient = "linear-gradient(135deg, #475569 0%, #64748b 100%)"
+        elif "Classic Blue" in up_format:
+            p_col = "#1e3a8a"
+            wave_gradient = "linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%)"
+        else: # Corporate Navy Wave
+            p_col = "#0f172a"
+            wave_gradient = "linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%)"
 
         if "Dotted" in up_border: b_css = "2px dotted #1e293b"
         elif "Dashed" in up_border: b_css = "2px dashed #1e293b"
@@ -352,9 +368,9 @@ else:
         <!DOCTYPE html><html><head><meta charset="utf-8"><style>
             body {{ font-family: 'Helvetica', Arial, sans-serif; color: #1e293b; background: #e2e8f0; margin: 0; padding: 20px; }}
             .a4-page {{ width: 210mm; min-height: 297mm; margin: auto; background: #fff; padding: 15mm 20mm; box-sizing: border-box; box-shadow: 0 0 20px rgba(0,0,0,0.15); border: {b_css}; position: relative; overflow: hidden; }}
-            .header {{ display: flex; justify-content: space-between; border-bottom: 3px solid {p_col}; padding-bottom: 12px; margin-bottom: 20px; position: relative; z-index: 1; }}
-            .company-title {{ font-size: 24px; font-weight: bold; color: {p_col}; }}
-            .invoice-title {{ font-size: 26px; font-weight: bold; text-transform: uppercase; color: #1e293b; text-align: right; }}
+            .wave-header {{ background: {wave_gradient}; color: #fff; padding: 20px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; position: relative; z-index: 1; }}
+            .company-title {{ font-size: 24px; font-weight: bold; color: #ffffff; }}
+            .invoice-title {{ font-size: 26px; font-weight: bold; text-transform: uppercase; color: #ffffff; text-align: right; }}
             .billing-table {{ width: 100%; border-collapse: collapse; margin-bottom: 25px; border: 1px solid #cbd5e1; background: #f8fafc; position: relative; z-index: 1; }}
             .billing-table td {{ padding: 12px; vertical-align: top; width: 50%; font-size: 13px; border: 1px solid #cbd5e1; line-height: 1.5; }}
             .items-table {{ width: 100%; border-collapse: collapse; margin-bottom: 20px; position: relative; z-index: 1; }}
@@ -366,15 +382,15 @@ else:
             .grand-total {{ font-weight: bold; background: #eff6ff; font-size: 14px; color: {p_col}; }}
         </style></head><body><div class="a4-page">
             {wm_html}
-            <div class="header">
+            <div class="wave-header">
                 <div style="display: flex; align-items: flex-start; gap: 15px;">
                     {logo_html}
                     <div>
                         <div class="company-title">{up_name}</div>
-                        <div style="font-size: 12px; color: #475569; margin-top: 5px; line-height: 1.4;">{up_address}<br><strong>Contact:</strong> {up_contact}<br><strong>GSTIN:</strong> {up_gstin}</div>
+                        <div style="font-size: 12px; color: #e2e8f0; margin-top: 5px; line-height: 1.4;">{up_address}<br><strong>Contact:</strong> {up_contact}<br><strong>GSTIN:</strong> {up_gstin}</div>
                     </div>
                 </div>
-                <div><div class="invoice-title">Tax Invoice</div><div style="font-size: 12px; color: #475569; text-align: right; margin-top: 5px; line-height: 1.4;"><strong>Invoice No:</strong> TAX/2026-27/001<br><strong>Date:</strong> July 15, 2026</div></div>
+                <div><div class="invoice-title">Tax Invoice</div><div style="font-size: 12px; color: #e2e8f0; text-align: right; margin-top: 5px; line-height: 1.4;"><strong>Invoice No:</strong> TAX/2026-27/001<br><strong>Date:</strong> July 15, 2026</div></div>
             </div>
             <table class="billing-table"><tr><td><strong>Service Provider:</strong><br>{up_name}</td><td><strong>Billed To:</strong><br><strong>Sample Client Enterprises</strong><br>New Delhi</td></tr></table>
             <table class="items-table"><thead><tr><th style="width: 10%;">S.No.</th><th style="width: 55%;">Description</th><th style="width: 15%;">Mode</th><th class='right' style="width: 20%;">Amount (Rs.)</th></tr></thead><tbody><tr><td class='right'>1</td><td>Sample Item / Service</td><td>{up_nature}</td><td class='right'>700.00</td></tr></tbody></table>
@@ -548,13 +564,25 @@ else:
             user_data["history"] = st.session_state.history
             save_saas_data(saas_db)
 
-            sel_theme = user_data["profile"].get("format", "Classic Blue (Professional)")
-            if "Modern Dark" in sel_theme: p_col = "#0f172a"
-            elif "Emerald Green" in sel_theme: p_col = "#065f46"
-            elif "Royal Purple" in sel_theme: p_col = "#581c87"
-            elif "Minimalist Clean" in sel_theme: p_col = "#334155"
-            elif "Crimson Red" in sel_theme: p_col = "#991b1b"
-            else: p_col = "#1e3a8a"
+            sel_theme = user_data["profile"].get("format", format_options[0])
+            if "Emerald Green" in sel_theme:
+                p_col = "#065f46"
+                wave_gradient = "linear-gradient(135deg, #059669 0%, #10b981 100%)"
+            elif "Sunset Orange" in sel_theme:
+                p_col = "#c2410c"
+                wave_gradient = "linear-gradient(135deg, #ea580c 0%, #fb923c 100%)"
+            elif "Royal Purple" in sel_theme:
+                p_col = "#581c87"
+                wave_gradient = "linear-gradient(135deg, #7e22ce 0%, #a855f7 100%)"
+            elif "Minimalist Clean" in sel_theme:
+                p_col = "#334155"
+                wave_gradient = "linear-gradient(135deg, #475569 0%, #64748b 100%)"
+            elif "Classic Blue" in sel_theme:
+                p_col = "#1e3a8a"
+                wave_gradient = "linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%)"
+            else:
+                p_col = "#0f172a"
+                wave_gradient = "linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%)"
 
             sel_border = user_data["profile"].get("border_style", "Solid Line")
             if "Dotted" in sel_border: b_css = "2px dotted #1e293b"
@@ -598,7 +626,11 @@ else:
             <!DOCTYPE html><html><head><meta charset="utf-8"><style>
                 body {{ font-family: Helvetica, Arial; color: #1e293b; background: #e2e8f0; padding: 20px; }}
                 .a4-page {{ width: 210mm; min-height: 297mm; margin: auto; background: #fff; padding: 15mm 20mm; box-sizing: border-box; border: {b_css}; position: relative; overflow: hidden; }}
-                .header {{ display: flex; justify-content: space-between; border-bottom: 3px solid {p_col}; padding-bottom: 12px; margin-bottom: 20px; position: relative; z-index: 1; }}
+                .wave-header {{ background: {wave_gradient}; color: #fff; padding: 20px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; position: relative; z-index: 1; }}
+                .company-title {{ font-size: 24px; font-weight: bold; color: #ffffff; }}
+                .invoice-title {{ font-size: 26px; font-weight: bold; text-transform: uppercase; color: #ffffff; text-align: right; }}
+                .billing-table {{ width: 100%; border-collapse: collapse; margin-bottom: 25px; border: 1px solid #cbd5e1; background: #f8fafc; position: relative; z-index: 1; }}
+                .billing-table td {{ padding: 12px; vertical-align: top; width: 50%; font-size: 13px; border: 1px solid #cbd5e1; line-height: 1.5; }}
                 .items-table {{ width: 100%; border-collapse: collapse; margin-bottom: 20px; position: relative; z-index: 1; }}
                 .items-table th {{ background-color: {p_col}; color: #fff; padding: 10px; font-size: 12px; text-align: left; border: 1px solid {p_col}; }}
                 .items-table td {{ border: 1px solid #cbd5e1; padding: 10px; font-size: 12px; }}
@@ -611,9 +643,9 @@ else:
             <div class="no-print" style="text-align: center; margin-bottom: 20px;"><button onclick="window.print()" style="background:#059669;color:white;padding:12px 25px;font-weight:bold;border:none;border-radius:8px;cursor:pointer;">🖨️ Print / Save PDF Directly</button></div>
             <div class="a4-page">
                 {wm_html}
-                <div class="header">
-                    <div style="display:flex;gap:15px; align-items:flex-start;">{l_html}<div><h2 style="margin:0;color:{p_col};">{user_data['profile']['name']}</h2><p style="margin:3px 0;font-size:12px;">{user_data['profile']['address']}<br>Contact: {user_data['profile']['contact']}<br>GSTIN: {user_data['profile']['gstin']}</p></div></div>
-                    <div style="text-align:right;"><h2 style="margin:0;">Tax Invoice</h2><p style="margin:3px 0;font-size:12px;">Invoice No: {inv_no}<br>Date: {inv_date}<br>Mode: {current_nature}</p></div>
+                <div class="wave-header">
+                    <div style="display:flex;gap:15px; align-items:flex-start;">{l_html}<div><h2 style="margin:0;color:#ffffff;">{user_data['profile']['name']}</h2><p style="margin:3px 0;font-size:12px;color:#e2e8f0;">{user_data['profile']['address']}<br>Contact: {user_data['profile']['contact']}<br>GSTIN: {user_data['profile']['gstin']}</p></div></div>
+                    <div style="text-align:right;"><h2 style="margin:0;color:#ffffff;">Tax Invoice</h2><p style="margin:3px 0;font-size:12px;color:#e2e8f0;">Invoice No: {inv_no}<br>Date: {inv_date}<br>Mode: {current_nature}</p></div>
                 </div>
                 <table style="width:100%;border-collapse:collapse;margin-bottom:20px;font-size:13px;position:relative;z-index:1;"><tr><td style="border:1px solid #cbd5e1;padding:10px;"><strong>Service Provider:</strong><br>{user_data['profile']['name']}</td><td style="border:1px solid #cbd5e1;padding:10px;"><strong>Billed To:</strong><br><strong>{target_party}</strong><br>Address: {p_info.get('address')}<br>GSTIN: {p_info.get('gstin')}</td></tr></table>
                 <table class="items-table"><thead><tr>{table_headers}</tr></thead><tbody>{table_rows}</tbody></table>
