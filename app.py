@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 import json
 import os
 
-st.set_page_config(page_title="Shree Services - Invoice Portal", page_icon="📄", layout="centered")
+st.set_page_config(page_title="Professional Invoice Portal - SaaS", page_icon="📄", layout="centered")
 
 # --- Colorful & Modern UI CSS ---
 st.markdown("""
@@ -83,368 +83,478 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# --- Permanent JSON Storage Functions ---
-DATA_FILE = "invoices_data.json"
+# --- Multi-User & SaaS Database Storage Functions ---
+USERS_FILE = "saas_users_data.json"
 
-def load_data():
-    if os.path.exists(DATA_FILE):
+def load_saas_data():
+    if os.path.exists(USERS_FILE):
         try:
-            with open(DATA_FILE, "r") as f:
+            with open(USERS_FILE, "r") as f:
                 return json.load(f)
         except:
             pass
-    return {
-        "history": [],
-        "parties": {
-            "RKMK Enterprises": {
-                "legal": "Rinky Acharya",
-                "address": "Flat No. 34, Ground Floor, Block P Extn, Mohan Garden, New Delhi - 110059",
-                "gstin": "07DEOPA0606H1ZU"
-            },
-            "Chandra Enterprises": {
-                "legal": "Manoj Kumar",
-                "address": "2nd Floor Front Side, Left Side L Type, N Block Extn, Plot No.1 Mohan Garden, DK Road, New Delhi",
-                "gstin": "07AMSPK3043R1ZC"
-            }
-        },
-        "services": ["ITR", "GST", "GST REGISTRATION", "UDYAM", "SHOP ACT"]
-    }
+    return {} # Format: { "user_id": { "password": "...", "profile": {...}, "history": [...], "parties": {...}, "services": [...] } }
 
-def save_data(data):
-    with open(DATA_FILE, "w") as f:
+def save_saas_data(data):
+    with open(USERS_FILE, "w") as f:
         json.dump(data, f, indent=4)
 
-# Load data into session state
-app_data = load_data()
-if "history" not in st.session_state:
-    st.session_state.history = app_data["history"]
-if "saved_parties" not in st.session_state:
-    st.session_state.saved_parties = app_data["parties"]
-if "saved_services" not in st.session_state:
-    st.session_state.saved_services = app_data["services"]
+# Initialize Session States for Auth
+if "logged_in_user" not in st.session_state:
+    st.session_state.logged_in_user = None
 
-# --- Auto-clean History: Keep only last 24 days records ---
-current_time = datetime.now()
-cleaned_history = []
-for h in st.session_state.history:
-    t_str = h.get('timestamp', current_time.isoformat())
-    if current_time - datetime.fromisoformat(t_str) <= timedelta(days=24):
-        cleaned_history.append(h)
+saas_db = load_saas_data()
 
-if len(cleaned_history) != len(st.session_state.history):
-    st.session_state.history = cleaned_history
-    app_data["history"] = st.session_state.history
-    save_data(app_data)
-
-# --- Sidebar Menu for Navigation & Party-wise History ---
-st.sidebar.title("📌 Navigation Menu")
-menu_option = st.sidebar.radio("Go to:", ["Create Invoice", "📊 Party-wise History & Edit/Delete (24 Days)"])
-
-if menu_option == "📊 Party-wise History & Edit/Delete (24 Days)":
+# --- Authentication & Registration Flow ---
+if not st.session_state.logged_in_user:
     st.markdown("""
         <div class="main-title">
-            <h1>Party-wise Invoice Management</h1>
-            <p>View, Edit, or Delete bills created in the last 24 days</p>
+            <h1>SaaS Invoice Management Portal</h1>
+            <p>Secure Login & Multi-Company Registration System</p>
         </div>
     """, unsafe_allow_html=True)
     
-    if not st.session_state.history:
-        st.info("No invoice history available for the last 24 days.")
-    else:
-        all_parties_in_history = list(set([h['client'] for h in st.session_state.history]))
-        selected_history_party = st.selectbox("Select Party to View History", all_parties_in_history)
+    auth_tab1, auth_tab2 = st.tabs(["🔐 Login", "📝 New User Registration"])
+    
+    with auth_tab1:
+        st.subheader("Existing User Login")
+        login_id = st.text_input("Email ID / Mobile Number", key="login_id")
+        login_pass = st.text_input("Password", type="password", key="login_pass")
         
-        party_bills = [h for h in st.session_state.history if h['client'] == selected_history_party]
-        
-        st.markdown(f"### Bills for: {selected_history_party}")
-        
-        for idx, bill in enumerate(party_bills):
-            with st.expander(f"Invoice No: {bill['invoice_no']} | Date: {bill['date']} | Total: Rs. {bill['total']}"):
-                # Edit Form for this specific bill
-                edit_key_services = f"edit_serv_{bill['invoice_no']}"
-                edit_key_paid = f"edit_paid_{bill['invoice_no']}"
+        if st.button("Login to Portal"):
+            if login_id in saas_db and saas_db[login_id]["password"] == login_pass:
+                st.session_state.logged_in_user = login_id
+                st.success("Login Successful!")
+                st.rerun()
+            else:
+                st.error("Invalid User ID or Password!")
                 
-                new_serv = st.text_area("Edit Services Details", value=bill.get('services', ''), key=edit_key_services)
-                new_pd = st.number_input("Edit Total Amount Paid (Rs.)", value=float(bill.get('paid', 0.0)), key=edit_key_paid)
-                
-                col_save, col_del = st.columns(2)
-                with col_save:
-                    if st.button("💾 Save Changes", key=f"save_{bill['invoice_no']}"):
-                        # Recalculate totals
-                        lines = new_serv.split('\n')
-                        tot_amt = 0.0
-                        for line in lines:
-                            if line.strip():
-                                if '|' in line:
-                                    parts = [p.strip() for p in line.split('|')]
-                                    try:
-                                        amt = float(parts[2]) if len(parts) > 2 else float(parts[1])
-                                    except:
-                                        amt = 0.0
-                                else:
-                                    parts = line.strip().rsplit(' ', 1)
-                                    try:
-                                        amt = float(parts[1])
-                                    except:
-                                        amt = 0.0
-                                tot_amt += amt
-                        
-                        # Update record in history
-                        for item in st.session_state.history:
-                            if item['invoice_no'] == bill['invoice_no']:
-                                item['services'] = new_serv
-                                item['total'] = tot_amt
-                                item['paid'] = new_pd
-                                item['balance'] = tot_amt - new_pd
-                        
-                        app_data["history"] = st.session_state.history
-                        save_data(app_data)
-                        st.success(f"Invoice {bill['invoice_no']} updated successfully!")
-                        st.rerun()
-                        
-                with col_del:
-                    if st.button("❌ Delete Invoice", key=f"del_{bill['invoice_no']}"):
-                        st.session_state.history = [item for item in st.session_state.history if item['invoice_no'] != bill['invoice_no']]
-                        app_data["history"] = st.session_state.history
-                        save_data(app_data)
-                        st.warning(f"Invoice {bill['invoice_no']} deleted! Sequence adjusted.")
-                        st.rerun()
+    with auth_tab2:
+        st.subheader("Create New Account & Company")
+        reg_id = st.text_input("Enter Email ID / Mobile Number (User ID)", key="reg_id")
+        reg_pass1 = st.text_input("Create Password", type="password", key="reg_pass1")
+        reg_pass2 = st.text_input("Confirm Password", type="password", key="reg_pass2")
+        
+        st.markdown("---")
+        st.markdown("#### 🏢 Company / Business Profile Setup")
+        comp_name = st.text_input("Company / Trade Name (e.g., Shree Services)", key="comp_name")
+        comp_legal = st.text_input("Authorized Person / Owner Name", key="comp_legal")
+        comp_address = st.text_input("Company Complete Address", key="comp_address")
+        comp_contact = st.text_input("Contact Number", key="comp_contact")
+        comp_gstin = st.text_input("Company GSTIN (Optional)", key="comp_gstin")
+        comp_nature = st.text_input("Nature of Business / Dealings (e.g., Tax Filing & Accounting)", key="comp_nature")
+        
+        if st.button("Register & Create Account"):
+            if not reg_id or not reg_pass1:
+                st.warning("Please fill User ID and Password fields.")
+            elif reg_pass1 != reg_pass2:
+                st.error("Passwords do not match! Please verify confirmation.")
+            elif reg_id in saas_db:
+                st.error("User ID already registered! Please login.")
+            elif not comp_name:
+                st.warning("Please enter Company Name.")
+            else:
+                # Initialize User Profile & Data
+                saas_db[reg_id] = {
+                    "password": reg_pass1,
+                    "profile": {
+                        "name": comp_name,
+                        "legal": comp_legal,
+                        "address": comp_address,
+                        "contact": comp_contact,
+                        "gstin": comp_gstin,
+                        "nature": comp_nature
+                    },
+                    "history": [],
+                    "parties": {
+                        "RKMK Enterprises": {
+                            "legal": "Rinky Acharya",
+                            "address": "Flat No. 34, Ground Floor, Block P Extn, Mohan Garden, New Delhi - 110059",
+                            "gstin": "07DEOPA0606H1ZU"
+                        }
+                    },
+                    "services": ["ITR", "GST", "GST REGISTRATION", "UDYAM", "SHOP ACT"]
+                }
+                save_saas_data(saas_db)
+                st.success("Registration Successful! Now you can go to the Login tab and sign in.")
 
 else:
-    st.markdown("""
-        <div class="main-title">
-            <h1>Shree Services & Tax Portal</h1>
-            <p>Professional Tally-Style Invoice & Billing System</p>
-        </div>
-    """, unsafe_allow_html=True)
+    # --- Logged-In User Portal ---
+    current_user = st.session_state.logged_in_user
+    user_data = saas_db[current_user]
+    
+    # Load user specific data into session states
+    if "history" not in st.session_state:
+        st.session_state.history = user_data["history"]
+    if "saved_parties" not in st.session_state:
+        st.session_state.saved_parties = user_data["parties"]
+    if "saved_services" not in st.session_state:
+        st.session_state.saved_services = user_data["services"]
 
-    # Automatically calculate correct next invoice number based on permanent history count + 1
-    next_inv_num = len(st.session_state.history) + 1
-    current_inv_no = f"TAX/2026-27/{next_inv_num:03d}"
+    # Auto-clean History (24 Days retention)
+    current_time = datetime.now()
+    cleaned_history = [
+        h for h in st.session_state.history 
+        if current_time - datetime.fromisoformat(h.get('timestamp', current_time.isoformat())) <= timedelta(days=24)
+    ]
+    if len(cleaned_history) != len(st.session_state.history):
+        st.session_state.history = cleaned_history
+        user_data["history"] = st.session_state.history
+        save_saas_data(saas_db)
 
-    with st.form("invoice_form"):
-        st.markdown('<div class="section-box-1">👤 1. Client / Party Details</div>', unsafe_allow_html=True)
-        party_names = list(st.session_state.saved_parties.keys())
-        selected_party = st.selectbox("Select Existing Party", party_names)
+    # Edit Mode Handlers
+    if "edit_party" not in st.session_state:
+        st.session_state.edit_party = ""
+    if "edit_services" not in st.session_state:
+        st.session_state.edit_services = "GST | July | 700"
+    if "edit_paid" not in st.session_state:
+        st.session_state.edit_paid = 0.0
 
-        with st.expander("➕ Click Here to Add New Party"):
-            new_trade_name = st.text_input("New Party Trade Name", "")
-            new_legal_name = st.text_input("New Client Legal Name", "")
-            new_address = st.text_input("New Client Address", "")
-            new_gstin = st.text_input("New Client GSTIN", "")
+    # --- Sidebar Menu ---
+    st.sidebar.markdown(f"👤 **Logged in as:** `{current_user}`")
+    st.sidebar.markdown(f"🏢 **Company:** `{user_data['profile']['name']}`")
+    st.sidebar.markdown("---")
+    
+    menu_option = st.sidebar.radio("Navigation Menu", ["Create Invoice", "📊 Party-wise History & Edit/Delete (24 Days)", "⚙️ Company Profile Settings", "🚪 Logout"])
 
-        st.markdown('<div class="section-box-2">📋 2. Invoice Details</div>', unsafe_allow_html=True)
-        inv_no = st.text_input("Invoice Number (Auto-generated)", current_inv_no)
-        inv_date = st.text_input("Invoice Date", datetime.now().strftime("%B %d, %Y"))
+    if menu_option == "🚪 Logout":
+        st.session_state.logged_in_user = None
+        st.rerun()
 
-        st.markdown('<div class="section-box-3">💼 3. Select Services & Add Amount</div>', unsafe_allow_html=True)
-        selected_services = st.multiselect("Select Services from Library", st.session_state.saved_services, default=["GST"])
-        new_service_input = st.text_input("Add New Service (Agar upar list mein na ho)", "")
+    elif menu_option == "⚙️ Company Profile Settings":
+        st.markdown("""
+            <div class="main-title">
+                <h1>Company Profile Settings</h1>
+                <p>Update your business and invoice branding details</p>
+            </div>
+        """, unsafe_allow_html=True)
         
-        st.markdown("💡 *Format: Service Name | Period | Amount (Jaise: GST Filing | July | 700)*")
-        default_text = "\n".join([f"{s} | July | 700" for s in selected_services])
-        services_text = st.text_area("Services Details", value=default_text)
+        prof = user_data["profile"]
+        with st.form("profile_form"):
+            up_name = st.text_input("Company / Trade Name", value=prof.get("name", ""))
+            up_legal = st.text_input("Authorized Person / Owner Name", value=prof.get("legal", ""))
+            up_address = st.text_input("Company Complete Address", value=prof.get("address", ""))
+            up_contact = st.text_input("Contact Number", value=prof.get("contact", ""))
+            up_gstin = st.text_input("Company GSTIN", value=prof.get("gstin", ""))
+            up_nature = st.text_input("Nature of Business / Dealings", value=prof.get("nature", ""))
+            
+            up_submit = st.form_submit_button("💾 Save Profile Changes")
+            if up_submit:
+                user_data["profile"] = {
+                    "name": up_name,
+                    "legal": up_legal,
+                    "address": up_address,
+                    "contact": up_contact,
+                    "gstin": up_gstin,
+                    "nature": up_nature
+                }
+                save_saas_data(saas_db)
+                st.success("Company profile updated successfully!")
 
-        total_paid = st.number_input("Total Amount Paid (Rs.)", min_value=0.0, value=0.0)
-
-        submitted = st.form_submit_button("✨ Generate Exact A4 Invoice Preview")
-
-    if submitted:
-        if 'new_trade_name' in locals() and new_trade_name.strip():
-            client_name = new_trade_name.strip()
-            client_legal = new_legal_name.strip()
-            client_address = new_address.strip()
-            client_gstin = new_gstin.strip()
-            st.session_state.saved_parties[client_name] = {
-                "legal": client_legal,
-                "address": client_address,
-                "gstin": client_gstin
-            }
+    elif menu_option == "📊 Party-wise History & Edit/Delete (24 Days)":
+        st.markdown("""
+            <div class="main-title">
+                <h1>Party-wise Invoice Management</h1>
+                <p>View, Edit, or Delete bills created in the last 24 days</p>
+            </div>
+        """, unsafe_allow_html=True)
+        
+        if not st.session_state.history:
+            st.info("No invoice history available for the last 24 days.")
         else:
-            client_name = selected_party
-            p_info = st.session_state.saved_parties[selected_party]
-            client_legal = p_info["legal"]
-            client_address = p_info["address"]
-            client_gstin = p_info["gstin"]
+            all_parties_in_history = list(set([h['client'] for h in st.session_state.history]))
+            selected_history_party = st.selectbox("Select Party to View History", all_parties_in_history)
+            
+            party_bills = [h for h in st.session_state.history if h['client'] == selected_history_party]
+            
+            st.markdown(f"### Bills for: {selected_history_party}")
+            
+            for idx, bill in enumerate(party_bills):
+                with st.expander(f"Invoice No: {bill['invoice_no']} | Date: {bill['date']} | Total: Rs. {bill['total']}"):
+                    edit_key_services = f"edit_serv_{bill['invoice_no']}"
+                    edit_key_paid = f"edit_paid_{bill['invoice_no']}"
+                    
+                    new_serv = st.text_area("Edit Services Details", value=bill.get('services', ''), key=edit_key_services)
+                    new_pd = st.number_input("Edit Total Amount Paid (Rs.)", value=float(bill.get('paid', 0.0)), key=edit_key_paid)
+                    
+                    col_save, col_del = st.columns(2)
+                    with col_save:
+                        if st.button("💾 Save Changes", key=f"save_{bill['invoice_no']}"):
+                            lines = new_serv.split('\n')
+                            tot_amt = 0.0
+                            for line in lines:
+                                if line.strip():
+                                    if '|' in line:
+                                        parts = [p.strip() for p in line.split('|')]
+                                        try:
+                                            amt = float(parts[2]) if len(parts) > 2 else float(parts[1])
+                                        except:
+                                            amt = 0.0
+                                    else:
+                                        parts = line.strip().rsplit(' ', 1)
+                                        try:
+                                            amt = float(parts[1])
+                                        except:
+                                            amt = 0.0
+                                    tot_amt += amt
+                            
+                            for item in st.session_state.history:
+                                if item['invoice_no'] == bill['invoice_no']:
+                                    item['services'] = new_serv
+                                    item['total'] = tot_amt
+                                    item['paid'] = new_pd
+                                    item['balance'] = tot_amt - new_pd
+                            
+                            user_data["history"] = st.session_state.history
+                            save_saas_data(saas_db)
+                            st.success(f"Invoice {bill['invoice_no']} updated successfully!")
+                            st.rerun()
+                            
+                    with col_del:
+                        if st.button("❌ Delete Invoice", key=f"del_{bill['invoice_no']}"):
+                            st.session_state.history = [item for item in st.session_state.history if item['invoice_no'] != bill['invoice_no']]
+                            user_data["history"] = st.session_state.history
+                            save_saas_data(saas_db)
+                            st.warning(f"Invoice {bill['invoice_no']} deleted! Sequence adjusted.")
+                            st.rerun()
 
-        if new_service_input and new_service_input.upper() not in [s.upper() for s in st.session_state.saved_services]:
-            st.session_state.saved_services.append(new_service_input.upper())
-
-        lines = services_text.split('\n')
-        items = []
-        total_amt = 0.0
-        for line in lines:
-            if line.strip():
-                if '|' in line:
-                    parts = [p.strip() for p in line.split('|')]
-                    desc = parts[0]
-                    period = parts[1] if len(parts) > 1 else "-"
-                    try:
-                        amt = float(parts[2]) if len(parts) > 2 else float(parts[1])
-                    except:
-                        amt = 0.0
-                else:
-                    parts = line.strip().rsplit(' ', 1)
-                    desc = parts[0]
-                    period = "General"
-                    try:
-                        amt = float(parts[1])
-                    except:
-                        amt = 0.0
-                
-                items.append((desc, period, amt))
-                total_amt += amt
-
-        balance = total_amt - total_paid
-
-        new_invoice_record = {
-            "invoice_no": inv_no,
-            "client": client_name,
-            "total": total_amt,
-            "paid": total_paid,
-            "balance": balance,
-            "date": inv_date,
-            "services": services_text,
-            "timestamp": datetime.now().isoformat()
-        }
-
-        st.session_state.history.append(new_invoice_record)
+    else:
+        # --- Create Invoice Tab ---
+        comp_profile = user_data["profile"]
         
-        app_data["history"] = st.session_state.history
-        app_data["parties"] = st.session_state.saved_parties
-        app_data["services"] = st.session_state.saved_services
-        save_data(app_data)
+        st.markdown(f"""
+            <div class="main-title">
+                <h1>{comp_profile.get('name', 'Invoice Portal')}</h1>
+                <p>{comp_profile.get('nature', 'Professional Billing System')}</p>
+            </div>
+        """, unsafe_allow_html=True)
 
-        # --- Perfect A4 Layout HTML & CSS with Built-in Print Button ---
-        html_content = f"""
-        <!DOCTYPE html>
-        <html>
-        <head>
-        <meta charset="utf-8">
-        <style>
-            body {{ font-family: 'Helvetica', Arial, sans-serif; color: #1e293b; background: #e2e8f0; margin: 0; padding: 20px; }}
-            .a4-page {{ 
-                width: 210mm; 
-                min-height: 297mm; 
-                margin: auto; 
-                background: #fff; 
-                padding: 15mm 20mm; 
-                box-sizing: border-box; 
-                box-shadow: 0 0 20px rgba(0,0,0,0.15); 
-            }}
-            .header {{ display: flex; justify-content: space-between; border-bottom: 3px solid #1e3a8a; padding-bottom: 12px; margin-bottom: 20px; }}
-            .company-title {{ font-size: 24px; font-weight: bold; color: #1e3a8a; }}
-            .invoice-title {{ font-size: 26px; font-weight: bold; text-transform: uppercase; color: #1e293b; text-align: right; }}
-            .billing-table {{ width: 100%; border-collapse: collapse; margin-bottom: 25px; border: 1px solid #cbd5e1; background: #f8fafc; }}
-            .billing-table td {{ padding: 12px; vertical-align: top; width: 50%; font-size: 13px; border: 1px solid #cbd5e1; line-height: 1.5; }}
-            .items-table {{ width: 100%; border-collapse: collapse; margin-bottom: 20px; }}
-            .items-table th {{ background-color: #1e3a8a; color: #fff; text-align: left; padding: 10px; font-size: 12px; border: 1px solid #1e3a8a; }}
-            .items-table td {{ border: 1px solid #cbd5e1; padding: 10px; font-size: 12px; }}
-            .right {{ text-align: right; }}
-            .totals {{ width: 300px; margin-left: auto; font-size: 13px; margin-bottom: 40px; border: 1px solid #cbd5e1; border-collapse: collapse; }}
-            .totals td {{ padding: 8px; border: 1px solid #cbd5e1; }}
-            .grand-total {{ font-weight: bold; background: #eff6ff; font-size: 14px; color: #1e3a8a; }}
-            .sign-area {{ float: right; text-align: right; margin-top: 30px; font-size: 13px; }}
-            .sign-line {{ border-top: 1px solid #000; width: 180px; margin-top: 50px; text-align: center; font-weight: bold; }}
-            .print-btn-container {{ text-align: center; margin-bottom: 20px; }}
-            .print-btn {{
-                background-color: #059669;
-                color: white;
-                padding: 12px 25px;
-                font-size: 16px;
-                font-weight: bold;
-                border: none;
-                border-radius: 8px;
-                cursor: pointer;
-                box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            }}
-            .print-btn:hover {{ background-color: #047857; }}
-            @media print {{
-                body {{ background: none; padding: 0; }}
-                .a4-page {{ box-shadow: none; margin: 0; width: 100%; padding: 10mm; }}
-                .no-print {{ display: none !important; }}
-            }}
-        </style>
-        </head>
-        <body>
-        
-        <div class="print-btn-container no-print">
-            <button class="print-btn" onclick="window.print()">🖨️ Print / Save as PDF Directly</button>
-        </div>
+        next_inv_num = len(st.session_state.history) + 1
+        current_inv_no = f"TAX/2026-27/{next_inv_num:03d}"
 
-        <div class="a4-page">
-            <div class="header">
-                <div>
-                    <div class="company-title">Roshan Mishra</div>
-                    <div style="font-size: 12px; color: #475569; margin-top: 5px; line-height: 1.4;">
-                        Plot no 64 & 65, Block K-5<br>
-                        Mohan Garden, New Delhi - 110059<br>
-                        <strong>Contact:</strong> 7888273972
-                    </div>
-                </div>
-                <div>
-                    <div class="invoice-title">Tax Invoice</div>
-                    <div style="font-size: 12px; color: #475569; text-align: right; margin-top: 5px; line-height: 1.4;">
-                        <strong>Invoice No:</strong> {inv_no}<br>
-                        <strong>Date:</strong> {inv_date}<br>
-                        <strong>Client GSTIN:</strong> {client_gstin}
-                    </div>
-                </div>
+        with st.form("invoice_form"):
+            st.markdown('<div class="section-box-1">👤 1. Client / Party Details</div>', unsafe_allow_html=True)
+            party_names = list(st.session_state.saved_parties.keys())
+            selected_party = st.selectbox("Select Existing Party", party_names)
+
+            with st.expander("➕ Click Here to Add New Party"):
+                new_trade_name = st.text_input("New Party Trade Name", "")
+                new_legal_name = st.text_input("New Client Legal Name", "")
+                new_address = st.text_input("New Client Address", "")
+                new_gstin = st.text_input("New Client GSTIN", "")
+
+            st.markdown('<div class="section-box-2">📋 2. Invoice Details</div>', unsafe_allow_html=True)
+            inv_no = st.text_input("Invoice Number (Auto-generated)", current_inv_no)
+            inv_date = st.text_input("Invoice Date", datetime.now().strftime("%B %d, %Y"))
+
+            st.markdown('<div class="section-box-3">💼 3. Select Services & Add Amount</div>', unsafe_allow_html=True)
+            selected_services = st.multiselect("Select Services from Library", st.session_state.saved_services, default=["GST"])
+            new_service_input = st.text_input("Add New Service (Agar upar list mein na ho)", "")
+            
+            st.markdown("💡 *Format: Service Name | Period | Amount (Jaise: GST Filing | July | 700)*")
+            default_text = "\n".join([f"{s} | July | 700" for s in selected_services])
+            services_text = st.text_area("Services Details", value=default_text)
+
+            total_paid = st.number_input("Total Amount Paid (Rs.)", min_value=0.0, value=0.0)
+
+            submitted = st.form_submit_button("✨ Generate Exact A4 Invoice Preview")
+
+        if submitted:
+            if 'new_trade_name' in locals() and new_trade_name.strip():
+                client_name = new_trade_name.strip()
+                client_legal = new_legal_name.strip()
+                client_address = new_address.strip()
+                client_gstin = new_gstin.strip()
+                st.session_state.saved_parties[client_name] = {
+                    "legal": client_legal,
+                    "address": client_address,
+                    "gstin": client_gstin
+                }
+            else:
+                client_name = selected_party
+                p_info = st.session_state.saved_parties[selected_party]
+                client_legal = p_info["legal"]
+                client_address = p_info["address"]
+                client_gstin = p_info["gstin"]
+
+            if new_service_input and new_service_input.upper() not in [s.upper() for s in st.session_state.saved_services]:
+                st.session_state.saved_services.append(new_service_input.upper())
+
+            lines = services_text.split('\n')
+            items = []
+            total_amt = 0.0
+            for line in lines:
+                if line.strip():
+                    if '|' in line:
+                        parts = [p.strip() for p in line.split('|')]
+                        desc = parts[0]
+                        period = parts[1] if len(parts) > 1 else "-"
+                        try:
+                            amt = float(parts[2]) if len(parts) > 2 else float(parts[1])
+                        except:
+                            amt = 0.0
+                    else:
+                        parts = line.strip().rsplit(' ', 1)
+                        desc = parts[0]
+                        period = "General"
+                        try:
+                            amt = float(parts[1])
+                        except:
+                            amt = 0.0
+                    
+                    items.append((desc, period, amt))
+                    total_amt += amt
+
+            balance = total_amt - total_paid
+
+            new_invoice_record = {
+                "invoice_no": inv_no,
+                "client": client_name,
+                "total": total_amt,
+                "paid": total_paid,
+                "balance": balance,
+                "date": inv_date,
+                "services": services_text,
+                "timestamp": datetime.now().isoformat()
+            }
+
+            st.session_state.history.append(new_invoice_record)
+            
+            user_data["history"] = st.session_state.history
+            user_data["parties"] = st.session_state.saved_parties
+            user_data["services"] = st.session_state.saved_services
+            save_saas_data(saas_db)
+
+            # --- Dynamic Company Branded A4 HTML Layout ---
+            html_content = f"""
+            <!DOCTYPE html>
+            <html>
+            <head>
+            <meta charset="utf-8">
+            <style>
+                body {{ font-family: 'Helvetica', Arial, sans-serif; color: #1e293b; background: #e2e8f0; margin: 0; padding: 20px; }}
+                .a4-page {{ 
+                    width: 210mm; 
+                    min-height: 297mm; 
+                    margin: auto; 
+                    background: #fff; 
+                    padding: 15mm 20mm; 
+                    box-sizing: border-box; 
+                    box-shadow: 0 0 20px rgba(0,0,0,0.15); 
+                }}
+                .header {{ display: flex; justify-content: space-between; border-bottom: 3px solid #1e3a8a; padding-bottom: 12px; margin-bottom: 20px; }}
+                .company-title {{ font-size: 24px; font-weight: bold; color: #1e3a8a; }}
+                .invoice-title {{ font-size: 26px; font-weight: bold; text-transform: uppercase; color: #1e293b; text-align: right; }}
+                .billing-table {{ width: 100%; border-collapse: collapse; margin-bottom: 25px; border: 1px solid #cbd5e1; background: #f8fafc; }}
+                .billing-table td {{ padding: 12px; vertical-align: top; width: 50%; font-size: 13px; border: 1px solid #cbd5e1; line-height: 1.5; }}
+                .items-table {{ width: 100%; border-collapse: collapse; margin-bottom: 20px; }}
+                .items-table th {{ background-color: #1e3a8a; color: #fff; text-align: left; padding: 10px; font-size: 12px; border: 1px solid #1e3a8a; }}
+                .items-table td {{ border: 1px solid #cbd5e1; padding: 10px; font-size: 12px; }}
+                .right {{ text-align: right; }}
+                .totals {{ width: 300px; margin-left: auto; font-size: 13px; margin-bottom: 40px; border: 1px solid #cbd5e1; border-collapse: collapse; }}
+                .totals td {{ padding: 8px; border: 1px solid #cbd5e1; }}
+                .grand-total {{ font-weight: bold; background: #eff6ff; font-size: 14px; color: #1e3a8a; }}
+                .sign-area {{ float: right; text-align: right; margin-top: 30px; font-size: 13px; }}
+                .sign-line {{ border-top: 1px solid #000; width: 180px; margin-top: 50px; text-align: center; font-weight: bold; }}
+                .print-btn-container {{ text-align: center; margin-bottom: 20px; }}
+                .print-btn {{
+                    background-color: #059669;
+                    color: white;
+                    padding: 12px 25px;
+                    font-size: 16px;
+                    font-weight: bold;
+                    border: none;
+                    border-radius: 8px;
+                    cursor: pointer;
+                    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+                }}
+                .print-btn:hover {{ background-color: #047857; }}
+                @media print {{
+                    body {{ background: none; padding: 0; }}
+                    .a4-page {{ box-shadow: none; margin: 0; width: 100%; padding: 10mm; }}
+                    .no-print {{ display: none !important; }}
+                }}
+            </style>
+            </head>
+            <body>
+            
+            <div class="print-btn-container no-print">
+                <button class="print-btn" onclick="window.print()">🖨️ Print / Save as PDF Directly</button>
             </div>
 
-            <table class="billing-table">
-                <tr>
-                    <td>
-                        <strong>Service Provider:</strong><br>
-                        Roshan Mishra (Accountant)<br>
-                        Plot no 64 & 65, Block K-5, Mohan Garden, New Delhi - 110059
-                    </td>
-                    <td>
-                        <strong>Billed To:</strong><br>
-                        <strong>{client_name}</strong><br>
-                        Legal Name: {client_legal}<br>
-                        Address: {client_address}
-                    </td>
-                </tr>
-            </table>
+            <div class="a4-page">
+                <div class="header">
+                    <div>
+                        <div class="company-title">{comp_profile.get('name', 'Company Name')}</div>
+                        <div style="font-size: 12px; color: #475569; margin-top: 5px; line-height: 1.4;">
+                            {comp_profile.get('address', '')}<br>
+                            <strong>Contact:</strong> {comp_profile.get('contact', '')}<br>
+                            <strong>GSTIN:</strong> {comp_profile.get('gstin', 'N/A')}
+                        </div>
+                    </div>
+                    <div>
+                        <div class="invoice-title">Tax Invoice</div>
+                        <div style="font-size: 12px; color: #475569; text-align: right; margin-top: 5px; line-height: 1.4;">
+                            <strong>Invoice No:</strong> {inv_no}<br>
+                            <strong>Date:</strong> {inv_date}<br>
+                            <strong>Client GSTIN:</strong> {client_gstin}
+                        </div>
+                    </div>
+                </div>
 
-            <table class="items-table">
-                <thead>
+                <table class="billing-table">
                     <tr>
-                        <th style="width: 10%;">S.No.</th>
-                        <th style="width: 55%;">Description of Services</th>
-                        <th style="width: 15%;">Period</th>
-                        <th class="right" style="width: 20%;">Amount (Rs.)</th>
+                        <td>
+                            <strong>Service Provider:</strong><br>
+                            {comp_profile.get('name', '')} ({comp_profile.get('legal', '')})<br>
+                            {comp_profile.get('address', '')}
+                        </td>
+                        <td>
+                            <strong>Billed To:</strong><br>
+                            <strong>{client_name}</strong><br>
+                            Legal Name: {client_legal}<br>
+                            Address: {client_address}
+                        </td>
                     </tr>
-                </thead>
-                <tbody>
-        """
-        
-        for idx, (desc, period, amt) in enumerate(items, 1):
-            html_content += "<tr><td class='right'>{}</td><td>{}</td><td>{}</td><td class='right'>{:.2f}</td></tr>".format(idx, desc, period, amt)
+                </table>
 
-        html_content += """
-                </tbody>
-            </table>
+                <table class="items-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 10%;">S.No.</th>
+                            <th style="width: 55%;">Description of Services</th>
+                            <th style="width: 15%;">Period</th>
+                            <th class="right" style="width: 20%;">Amount (Rs.)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            """
+            
+            for idx, (desc, period, amt) in enumerate(items, 1):
+                html_content += "<tr><td class='right'>{}</td><td>{}</td><td>{}</td><td class='right'>{:.2f}</td></tr>".format(idx, desc, period, amt)
 
-            <table class="totals">
-                <tr><td>Total Amount:</td><td class="right">Rs. {:.2f}</td></tr>
-                <tr><td>Total Paid:</td><td class="right">Rs. {:.2f}</td></tr>
-                <tr class="grand-total"><td>Balance Due:</td><td class="right">Rs. {:.2f}</td></tr>
-            </table>
+            html_content += f"""
+                    </tbody>
+                </table>
 
-            <div style="clear: both;"></div>
-            <div class="sign-area">
-                For <strong>Roshan Mishra</strong>
-                <div class="sign-line">Authorised Signatory</div>
+                <table class="totals">
+                    <tr><td>Total Amount:</td><td class="right">Rs. {total_amt:.2f}</td></tr>
+                    <tr><td>Total Paid:</td><td class="right">Rs. {total_paid:.2f}</td></tr>
+                    <tr class="grand-total"><td>Balance Due:</td><td class="right">Rs. {balance:.2f}</td></tr>
+                </table>
+
+                <div style="clear: both;"></div>
+                <div class="sign-area">
+                    For <strong>{comp_profile.get('name', '')}</strong>
+                    <div class="sign-line">Authorised Signatory</div>
+                </div>
+                <div style="clear: both;"></div>
+                <hr style="border:none; border-top:1px solid #cbd5e1; margin-top: 40px;">
+                <div style="text-align: center; font-size: 11px; color: #64748b;">Thank you for your business! This is a computer-generated invoice.</div>
             </div>
-            <div style="clear: both;"></div>
-            <hr style="border:none; border-top:1px solid #cbd5e1; margin-top: 40px;">
-            <div style="text-align: center; font-size: 11px; color: #64748b;">Thank you for your business! This is a computer-generated invoice.</div>
-        </div>
-        </body>
-        </html>
-        """.format(total_amt, total_paid, balance)
+            </body>
+            </html>
+            """
 
-        st.success("✨ Invoice Generated Successfully! Preview below:")
-        st.components.v1.html(html_content, height=800, scrolling=True)
+            st.success("✨ Invoice Generated Successfully! Preview below:")
+            st.components.v1.html(html_content, height=800, scrolling=True)
