@@ -5,7 +5,7 @@ from fpdf import FPDF
 st.set_page_config(page_title="Invoice Generator - Roshan Mishra", layout="centered")
 
 st.title("📄 Professional Invoice Generator & Portal")
-st.write("A4 Preview aur Perfect Side-by-Side Layout ke sath apna invoice generate karein.")
+st.write("Tally-style Party Master & Perfect PDF format ke sath apna invoice generate karein.")
 
 if "invoice_count" not in st.session_state:
     st.session_state.invoice_count = 1
@@ -135,14 +135,14 @@ if submitted:
         .header {{ display: flex; justify-content: space-between; border-bottom: 2px solid #1a365d; padding-bottom: 15px; margin-bottom: 20px; }}
         .company-title {{ font-size: 22px; font-weight: bold; color: #1a365d; }}
         .invoice-title {{ font-size: 24px; font-weight: bold; text-transform: uppercase; color: #2c3e50; text-align: right; }}
-        .billing-table {{ width: 100%; border-collapse: collapse; margin-bottom: 20px; background: #f8fafc; }}
-        .billing-table td {{ padding: 10px; vertical-align: top; width: 50%; font-size: 13px; }}
+        .billing-table {{ width: 100%; border-collapse: collapse; margin-bottom: 20px; background: #f8fafc; border: 1px solid #cbd5e1; }}
+        .billing-table td {{ padding: 10px; vertical-align: top; width: 50%; font-size: 13px; border: 1px solid #cbd5e1; }}
         .items-table {{ width: 100%; border-collapse: collapse; margin-bottom: 20px; }}
         .items-table th {{ background-color: #1a365d; color: #fff; text-align: left; padding: 10px; font-size: 12px; }}
-        .items-table td {{ border-bottom: 1px solid #e2e8f0; padding: 10px; font-size: 12px; }}
+        .items-table td {{ border: 1px solid #cbd5e1; padding: 10px; font-size: 12px; }}
         .right {{ text-align: right; }}
-        .totals {{ width: 280px; margin-left: auto; font-size: 13px; margin-bottom: 50px; }}
-        .totals td {{ padding: 6px; border-bottom: 1px solid #e2e8f0; }}
+        .totals {{ width: 280px; margin-left: auto; font-size: 13px; margin-bottom: 50px; border: 1px solid #cbd5e1; border-collapse: collapse; }}
+        .totals td {{ padding: 6px; border: 1px solid #cbd5e1; }}
         .grand-total {{ font-weight: bold; background: #f1f5f9; font-size: 14px; border-top: 2px solid #1a365d; border-bottom: 2px solid #1a365d; }}
         .sign-area {{ float: right; text-align: right; margin-top: 30px; font-size: 13px; }}
         .sign-line {{ border-top: 1px solid #000; width: 180px; margin-top: 50px; text-align: center; font-weight: bold; }}
@@ -226,11 +226,11 @@ if submitted:
     st.success("Invoice generated successfully! A4 Preview below:")
     st.components.v1.html(html_content, height=750, scrolling=True)
 
-    # --- 2. Generate PDF with Side-by-Side Billing Blocks ---
+    # --- 2. Generate PDF with Classic Structured Lines Layout ---
     pdf = FPDF()
     pdf.add_page()
     
-    # Title & Header
+    # Title & Header with lines
     pdf.set_font("Helvetica", "B", 18)
     pdf.cell(190, 10, "TAX INVOICE", ln=True, align="Right")
     
@@ -244,31 +244,32 @@ if submitted:
     pdf.cell(100, 5, "Contact: 7888273972", ln=False)
     pdf.cell(90, 5, f"Client GSTIN: {client_gstin}", ln=True, align="Right")
     
-    pdf.ln(10)
+    # Horizontal Line
+    pdf.ln(5)
+    pdf.set_draw_color(26, 54, 93)
+    pdf.set_line_width(0.8)
+    pdf.line(10, pdf.get_y(), 200, pdf.get_y())
+    pdf.ln(8)
     
-    # Side-by-side Billing Headers
+    # Classic Side-by-Side Billing Blocks with proper borders
     pdf.set_font("Helvetica", "B", 10)
     pdf.cell(95, 6, "Service Provider:", ln=False)
     pdf.cell(95, 6, "Billed To:", ln=True)
     
     pdf.set_font("Helvetica", "", 9)
-    # Left column: Service Provider
     y_start = pdf.get_y()
     pdf.multi_cell(90, 5, "Roshan Mishra (Accountant)\nPlot no 64 & 65, Block K-5,\nMohan Garden, New Delhi - 110059")
-    
     y_end = pdf.get_y()
     
-    # Right column: Billed To (Client)
     pdf.set_xy(105, y_start)
     pdf.multi_cell(90, 5, f"Trade Name: {client_name}\nLegal Name: {client_legal}\nAddress: {client_address}")
     
-    # Adjust Y position below both columns max height
     if pdf.get_y() < y_end:
         pdf.set_y(y_end)
         
     pdf.ln(10)
     
-    # Table Header
+    # Table Header with classic styling
     pdf.set_fill_color(26, 54, 93)
     pdf.set_text_color(255, 255, 255)
     pdf.set_font("Helvetica", "B", 10)
