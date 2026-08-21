@@ -5,13 +5,29 @@ import os
 
 st.set_page_config(page_title="Professional Invoice Portal - SaaS", page_icon="📄", layout="centered")
 
-# --- Colorful & Modern UI CSS ---
+# --- Colorful & Responsive Modern UI CSS (Fixed Black Input Lines on Mobile) ---
 st.markdown("""
     <style>
+    /* Force inputs and textareas to be bright and readable on all devices */
+    input, textarea, select {
+        background-color: #ffffff !important;
+        color: #1e293b !important;
+        border: 1px solid #cbd5e1 !important;
+        border-radius: 8px !important;
+    }
+    
     .stApp {
         background-color: #f8fafc;
         font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     }
+
+    /* Responsive adjustments for phones */
+    @media (max-width: 600px) {
+        .main-title { padding: 15px !important; }
+        .main-title h1 { font-size: 20px !important; }
+        div[data-testid="stForm"] { padding: 15px !important; }
+    }
+
     .main-title {
         background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
         color: white;
@@ -93,13 +109,12 @@ def load_saas_data():
                 return json.load(f)
         except:
             pass
-    return {} # Format: { "user_id": { "password": "...", "profile": {...}, "history": [...], "parties": {...}, "services": [...] } }
+    return {}
 
 def save_saas_data(data):
     with open(USERS_FILE, "w") as f:
         json.dump(data, f, indent=4)
 
-# Initialize Session States for Auth
 if "logged_in_user" not in st.session_state:
     st.session_state.logged_in_user = None
 
@@ -154,7 +169,6 @@ if not st.session_state.logged_in_user:
             elif not comp_name:
                 st.warning("Please enter Company Name.")
             else:
-                # Initialize User Profile & Data
                 saas_db[reg_id] = {
                     "password": reg_pass1,
                     "profile": {
@@ -183,7 +197,6 @@ else:
     current_user = st.session_state.logged_in_user
     user_data = saas_db[current_user]
     
-    # Load user specific data into session states
     if "history" not in st.session_state:
         st.session_state.history = user_data["history"]
     if "saved_parties" not in st.session_state:
@@ -201,14 +214,6 @@ else:
         st.session_state.history = cleaned_history
         user_data["history"] = st.session_state.history
         save_saas_data(saas_db)
-
-    # Edit Mode Handlers
-    if "edit_party" not in st.session_state:
-        st.session_state.edit_party = ""
-    if "edit_services" not in st.session_state:
-        st.session_state.edit_services = "GST | July | 700"
-    if "edit_paid" not in st.session_state:
-        st.session_state.edit_paid = 0.0
 
     # --- Sidebar Menu ---
     st.sidebar.markdown(f"👤 **Logged in as:** `{current_user}`")
@@ -558,3 +563,4 @@ else:
 
             st.success("✨ Invoice Generated Successfully! Preview below:")
             st.components.v1.html(html_content, height=800, scrolling=True)
+
