@@ -5,16 +5,25 @@ from datetime import datetime
 st.set_page_config(page_title="Invoice Generator - Roshan Mishra", layout="centered")
 
 st.title("📄 Professional Invoice Generator & Portal")
-st.write("Party ka screenshot/document upload karein taaki details auto-fill ho sakein, ya direct form bharein.")
+st.write("Tally-style party saving aur auto-fill ke sath apna professional invoice generate karein.")
 
 if "invoice_count" not in st.session_state:
     st.session_state.invoice_count = 1
 if "history" not in st.session_state:
     st.session_state.history = []
+if "saved_parties" not in st.session_state:
+    # Default party jo pehle banayi thi
+    st.session_state.saved_parties = {
+        "RKMK Enterprises": {
+            "legal": "Rinky Acharya",
+            "address": "Flat No. 34, Ground Floor, Block P Extn, Mohan Garden, New Delhi - 110059",
+            "gstin": "07DEOPA0606H1ZU"
+        }
+    }
 
-# Edit/Load session states
-if "edit_client" not in st.session_state:
-    st.session_state.edit_client = "RKMK Enterprises"
+# Session states for form fields
+if "sel_client" not in st.session_state:
+    st.session_state.sel_client = "RKMK Enterprises"
 if "edit_legal" not in st.session_state:
     st.session_state.edit_legal = "Rinky Acharya"
 if "edit_address" not in st.session_state:
@@ -26,20 +35,25 @@ if "edit_services" not in st.session_state:
 if "edit_paid" not in st.session_state:
     st.session_state.edit_paid = 0.0
 
-# --- Screenshot / Document Upload Feature ---
-st.subheader("📸 Auto-Fill from Screenshot / Document")
-uploaded_file = st.file_uploader("Party ka Registration Certificate ya Bill ka Screenshot upload karein", type=["png", "jpg", "jpeg"])
-
-if uploaded_file is not None:
-    st.info("💡 Screenshot upload ho gaya hai! (Note: Cloud par basic text detection ke liye aap niche diye gaye fields mein details dekh kar edit kar sakte hain, ya manually adjust karein).")
-    # Yahan agar aap chahein toh future mein AI Vision OCR connect kar sakte hain, abhi yeh fields ko turant active rakhta hai.
-
 with st.form("invoice_form"):
     st.subheader("1. Client Details")
-    client_name = st.text_input("Client Trade Name", st.session_state.edit_client)
-    client_legal = st.text_input("Client Legal Name", st.session_state.edit_legal)
-    client_address = st.text_input("Client Address", st.session_state.edit_address)
-    client_gstin = st.text_input("Client GSTIN", st.session_state.edit_gstin)
+    
+    # Party Selection Dropdown + Option for New Party
+    party_list = list(st.session_state.saved_parties.keys()) + ["+ Add New Party"]
+    selected_party = st.selectbox("Select Party (Tally Style)", party_list)
+
+    if selected_party != "+ Add New Party":
+        # Auto-fill from saved database
+        p_info = st.session_state.saved_parties[selected_party]
+        client_name = selected_party
+        client_legal = st.text_input("Client Legal Name", p_info["legal"])
+        client_address = st.text_input("Client Address", p_info["address"])
+        client_gstin = st.text_input("Client GSTIN", p_info["gstin"])
+    else:
+        client_name = st.text_input("New Party Trade Name", "Enter Party Name")
+        client_legal = st.text_input("Client Legal Name", "")
+        client_address = st.text_input("Client Address", "")
+        client_gstin = st.text_input("Client GSTIN", "")
 
     st.subheader("2. Invoice Details")
     current_inv_no = f"TAX/2026-27/{st.session_state.invoice_count:03d}"
@@ -55,9 +69,16 @@ with st.form("invoice_form"):
 
     total_paid = st.number_input("Total Amount Paid (Rs.)", min_value=0.0, value=st.session_state.edit_paid)
 
-    submitted = st.form_submit_button("Generate Invoice & Save to History")
+    submitted = st.form_submit_button("Generate Invoice & Save Party")
 
 if submitted:
+    # Save party to directory permanently for this session
+    st.session_state.saved_parties[client_name] = {
+        "legal": client_legal,
+        "address": client_address,
+        "gstin": client_gstin
+    }
+
     lines = services_text.split('\n')
     items = []
     total_amt = 0.0
@@ -199,7 +220,7 @@ if submitted:
     </html>
     """.format(total_amt, total_paid, balance)
 
-    st.success("Invoice generated & saved successfully!")
+    st.success("Invoice generated & party saved successfully!")
     st.components.v1.html(html_content, height=650, scrolling=True)
 
     b64 = base64.b64encode(html_content.encode('utf-8')).decode()
@@ -208,17 +229,13 @@ if submitted:
 
 if st.session_state.history:
     st.markdown("---")
-    st.subheader("📊 Recent Generated Invoices History & Edit")
+    st.subheader("📊 Recent Generated Invoices History")
     for i, h in enumerate(reversed(st.session_state.history)):
         cols = st.columns([4, 1])
         with cols[0]:
             st.write(f"🔹 **{h['invoice_no']}** | Party: **{h['client']}** | Total: Rs. {h['total']} | Paid: Rs. {h['paid']} | Balance: Rs. {h['balance']}")
         with cols[1]:
             if st.button("✏️ Edit / Load", key=f"load_{i}"):
-                st.session_state.edit_client = h['client']
-                st.session_state.edit_legal = h['legal']
-                st.session_state.edit_address = h['address']
-                st.session_state.edit_gstin = h['gstin']
                 st.session_state.edit_services = h['services']
                 st.session_state.edit_paid = h['paid']
                 st.rerun()
