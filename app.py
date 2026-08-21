@@ -2,13 +2,13 @@ import streamlit as st
 from datetime import datetime, timedelta
 import json
 import os
+import time
 
 st.set_page_config(page_title="Professional Invoice Portal - SaaS", page_icon="📄", layout="wide")
 
-# --- FIXED CSS FOR ANDROID & DESKTOP (Dark Sidebar & Dropdown Fix) ---
+# --- FIXED CSS FOR ANDROID & DESKTOP ---
 st.markdown("""
     <style>
-    /* Mobile & Android responsiveness */
     @media (max-width: 600px) {
         .main-title { padding: 15px !important; }
         .main-title h1 { font-size: 18px !important; }
@@ -16,25 +16,11 @@ st.markdown("""
         div[data-testid="column"] { width: 100% !important; margin-bottom: 8px; }
         .stButton button { width: 100% !important; }
     }
-    
-    /* General text and input styling */
     label, p, span, div { color: #1e293b !important; }
     input, textarea { background-color: #ffffff !important; color: #1e293b !important; border: 1px solid #cbd5e1 !important; border-radius: 8px !important; }
-    
-    /* Fix for Sidebar text color on mobile/desktop */
-    section[data-testid="stSidebar"] label, section[data-testid="stSidebar"] p, section[data-testid="stSidebar"] span, section[data-testid="stSidebar"] div, section[data-testid="stSidebar"] .stRadio label {
-        color: #f8fafc !important;
-    }
-    section[data-testid="stSidebar"] {
-        background-color: #0f172a !important;
-    }
-
-    /* Fix for dropdown select boxes and options list */
-    select, option, div[data-baseweb="select"] * {
-        background-color: #ffffff !important;
-        color: #1e293b !important;
-    }
-
+    section[data-testid="stSidebar"] label, section[data-testid="stSidebar"] p, section[data-testid="stSidebar"] span, section[data-testid="stSidebar"] div, section[data-testid="stSidebar"] .stRadio label { color: #f8fafc !important; }
+    section[data-testid="stSidebar"] { background-color: #0f172a !important; }
+    select, option, div[data-baseweb="select"] * { background-color: #ffffff !important; color: #1e293b !important; }
     .stApp { background-color: #f8fafc; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
     .main-title { background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%); color: white; padding: 25px; border-radius: 12px; text-align: center; margin-bottom: 25px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
     .main-title h1 { margin: 0; font-size: 26px; font-weight: 700; color: #ffffff !important; }
@@ -60,6 +46,7 @@ def save_saas_data(data):
     with open(USERS_FILE, "w") as f: json.dump(data, f, indent=4)
 
 if "logged_in_user" not in st.session_state: st.session_state.logged_in_user = None
+if "login_time" not in st.session_state: st.session_state.login_time = None
 if "inv_rows" not in st.session_state: st.session_state.inv_rows = [{"desc": "", "hsn": "", "unit": "NOS", "qty": 1.0, "rate": 0.0, "tax_type": "Taxable", "tax_pct": 18.0, "amt": 0.0}]
 
 saas_db = load_saas_data()
@@ -69,6 +56,16 @@ def get_initials(name):
     if len(words) >= 2: return (words[0][0] + words[1][0]).upper()
     elif len(words) == 1 and len(words[0]) >= 2: return words[0][:2].upper()
     return "SS"
+
+# --- CHECK SESSION TIMEOUT (15 Minutes = 900 seconds) ---
+SESSION_TIMEOUT_SECONDS = 900
+if st.session_state.logged_in_user and st.session_state.login_time:
+    elapsed_time = (datetime.now() - st.session_state.login_time).total_seconds()
+    if elapsed_time > SESSION_TIMEOUT_SECONDS:
+        st.session_state.logged_in_user = None
+        st.session_state.login_time = None
+        st.warning("⏱️ Session expired due to inactivity. Please login again.")
+        st.rerun()
 
 # --- AUTHENTICATION & REGISTRATION ---
 if not st.session_state.logged_in_user:
@@ -96,10 +93,12 @@ if not st.session_state.logged_in_user:
                     }
                     save_saas_data(saas_db)
                 st.session_state.logged_in_user = login_id
+                st.session_state.login_time = datetime.now()
                 st.success("Admin Login Successful!")
                 st.rerun()
             elif login_id in saas_db and saas_db[login_id]["password"] == login_pass:
                 st.session_state.logged_in_user = login_id
+                st.session_state.login_time = datetime.now()
                 st.success("Login Successful!")
                 st.rerun()
             else: st.error("Invalid User ID or Password!")
@@ -178,13 +177,17 @@ else:
                     st.sidebar.success(f"Updated {u_id} to {new_sub}!")
         st.sidebar.markdown("---")
 
-    # --- Sidebar Menu & Session Info ---
+    # --- Sidebar Menu & Real Session Timer Display ---
     st.sidebar.markdown(f"👤 **User:** `{current_user}`")
     st.sidebar.markdown(f"🏢 **Company:** `{user_data['profile']['name']}`")
     st.sidebar.markdown(f"🌟 **Plan:** `{user_data['subscription']}`")
     
     st.sidebar.markdown("---")
-    st.sidebar.info("⏱️ **Session Timer:** Active (15:00)")
+    if st.session_state.login_time:
+        rem_secs = max(0, SESSION_TIMEOUT_SECONDS - int((datetime.now() - st.session_state.login_time).total_seconds()))
+        rem_mins = rem_secs // 60
+        rem_s = rem_secs % 60
+        st.sidebar.info(f"⏱️ **Session Remaining:** `{rem_mins:02d}:{rem_s:02d}`")
 
     st.sidebar.markdown("---")
     menu_option = st.sidebar.radio("Navigation Menu", [
@@ -209,6 +212,7 @@ else:
 
     if menu_option == "🚪 Logout":
         st.session_state.logged_in_user = None
+        st.session_state.login_time = None
         st.rerun()
 
     elif menu_option == "⚙️ Company Profile & Format Settings":
@@ -568,4 +572,3 @@ else:
             """
             st.success("✨ Professional Invoice Generated Successfully!")
             st.components.v1.html(html_content, height=850, scrolling=True)
-
