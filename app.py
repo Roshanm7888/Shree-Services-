@@ -8,86 +8,17 @@ st.set_page_config(page_title="Professional Invoice Portal - SaaS", page_icon="�
 # --- Colorful & Responsive Modern UI CSS ---
 st.markdown("""
     <style>
-    label, p, span, div {
-        color: #1e293b !important;
-    }
-    input, textarea, select {
-        background-color: #ffffff !important;
-        color: #1e293b !important;
-        border: 1px solid #cbd5e1 !important;
-        border-radius: 8px !important;
-    }
-    .stApp {
-        background-color: #f8fafc;
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    }
-    @media (max-width: 600px) {
-        .main-title { padding: 15px !important; }
-        .main-title h1 { font-size: 20px !important; }
-        div[data-testid="stForm"] { padding: 15px !important; }
-    }
-    .main-title {
-        background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
-        color: white;
-        padding: 25px;
-        border-radius: 12px;
-        text-align: center;
-        margin-bottom: 25px;
-        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-    }
+    label, p, span, div { color: #1e293b !important; }
+    input, textarea, select { background-color: #ffffff !important; color: #1e293b !important; border: 1px solid #cbd5e1 !important; border-radius: 8px !important; }
+    .stApp { background-color: #f8fafc; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    .main-title { background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%); color: white; padding: 25px; border-radius: 12px; text-align: center; margin-bottom: 25px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
     .main-title h1 { margin: 0; font-size: 26px; font-weight: 700; color: #ffffff !important; }
     .main-title p { margin: 5px 0 0 0; font-size: 14px; opacity: 0.9; color: #ffffff !important; }
-    div[data-testid="stForm"] {
-        background: #ffffff;
-        padding: 30px;
-        border-radius: 16px;
-        border: 1px solid #e2e8f0;
-        box-shadow: 0 10px 25px rgba(0,0,0,0.05);
-    }
-    .section-box-1 {
-        background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
-        border-left: 5px solid #3b82f6;
-        padding: 12px 15px;
-        border-radius: 8px;
-        color: #1e3a8a;
-        font-weight: 700;
-        font-size: 16px;
-        margin-bottom: 15px;
-    }
-    .section-box-2 {
-        background: linear-gradient(135deg, #fdf4ff 0%, #fae8ff 100%);
-        border-left: 5px solid #d946ef;
-        padding: 12px 15px;
-        border-radius: 8px;
-        color: #86198f;
-        font-weight: 700;
-        font-size: 16px;
-        margin-top: 20px;
-        margin-bottom: 15px;
-    }
-    .section-box-3 {
-        background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
-        border-left: 5px solid #22c55e;
-        padding: 12px 15px;
-        border-radius: 8px;
-        color: #166534;
-        font-weight: 700;
-        font-size: 16px;
-        margin-top: 20px;
-        margin-bottom: 15px;
-    }
-    .stFormSubmitButton button, .stButton button {
-        background: linear-gradient(135deg, #059669 0%, #10b981 100%);
-        color: white !important;
-        font-weight: bold;
-        border-radius: 10px;
-        padding: 12px 20px;
-        width: 100%;
-        border: none;
-        box-shadow: 0 4px 10px rgba(16, 185, 129, 0.3);
-        font-size: 16px;
-        margin-top: 10px;
-    }
+    div[data-testid="stForm"] { background: #ffffff; padding: 30px; border-radius: 16px; border: 1px solid #e2e8f0; box-shadow: 0 10px 25px rgba(0,0,0,0.05); }
+    .section-box-1 { background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%); border-left: 5px solid #3b82f6; padding: 12px 15px; border-radius: 8px; color: #1e3a8a; font-weight: 700; font-size: 16px; margin-bottom: 15px; }
+    .section-box-2 { background: linear-gradient(135deg, #fdf4ff 0%, #fae8ff 100%); border-left: 5px solid #d946ef; padding: 12px 15px; border-radius: 8px; color: #86198f; font-weight: 700; font-size: 16px; margin-top: 20px; margin-bottom: 15px; }
+    .section-box-3 { background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%); border-left: 5px solid #22c55e; padding: 12px 15px; border-radius: 8px; color: #166534; font-weight: 700; font-size: 16px; margin-top: 20px; margin-bottom: 15px; }
+    .stFormSubmitButton button, .stButton button { background: linear-gradient(135deg, #059669 0%, #10b981 100%); color: white !important; font-weight: bold; border-radius: 10px; padding: 12px 20px; width: 100%; border: none; box-shadow: 0 4px 10px rgba(16, 185, 129, 0.3); font-size: 16px; margin-top: 10px; }
     </style>
 """, unsafe_allow_html=True)
 
@@ -96,30 +27,23 @@ USERS_FILE = "saas_users_data.json"
 def load_saas_data():
     if os.path.exists(USERS_FILE):
         try:
-            with open(USERS_FILE, "r") as f:
-                return json.load(f)
-        except:
-            pass
+            with open(USERS_FILE, "r") as f: return json.load(f)
+        except: pass
     return {}
 
 def save_saas_data(data):
-    with open(USERS_FILE, "w") as f:
-        json.dump(data, f, indent=4)
+    with open(USERS_FILE, "w") as f: json.dump(data, f, indent=4)
 
-if "logged_in_user" not in st.session_state:
-    st.session_state.logged_in_user = None
-
+if "logged_in_user" not in st.session_state: st.session_state.logged_in_user = None
 saas_db = load_saas_data()
 
 def get_initials(name):
     words = name.split()
-    if len(words) >= 2:
-        return (words[0][0] + words[1][0]).upper()
-    elif len(words) == 1 and len(words[0]) >= 2:
-        return words[0][:2].upper()
+    if len(words) >= 2: return (words[0][0] + words[1][0]).upper()
+    elif len(words) == 1 and len(words[0]) >= 2: return words[0][:2].upper()
     return "SS"
 
-# --- Direct Authentication & Registration Flow ---
+# --- Authentication & Registration Flow (No OTP) ---
 if not st.session_state.logged_in_user:
     st.markdown("""
         <div class="main-title">
@@ -134,39 +58,21 @@ if not st.session_state.logged_in_user:
             saas_db[master_id] = {
                 "password": "admin",
                 "profile": {
-                    "name": "Shree Services",
-                    "legal": "Roshan Mishra",
+                    "name": "Shree Services", "legal": "Roshan Mishra",
                     "address": "Plot no 64 & 65, Block K-5, Mohan Garden, New Delhi - 110059",
-                    "contact": "7888273972",
-                    "gstin": "07SAMPLEGSTIN",
+                    "contact": "7888273972", "gstin": "07SAMPLEGSTIN",
                     "nature": "Tax Consultancy & Accounting Services",
-                    "format": "Classic Blue (Professional)",
-                    "border_style": "Solid Line",
-                    "gst_enabled": True,
-                    "tax_rate": 18.0,
-                    "watermark_enabled": True,
-                    "watermark_type": "Company Name",
-                    "logo_choice": "Modern Shield (Auto)"
+                    "format": "Classic Blue (Professional)", "border_style": "Solid Line",
+                    "gst_enabled": True, "tax_rate": 18.0, "watermark_enabled": True,
+                    "watermark_type": "Company Name", "logo_choice": "Modern Shield (Auto)"
                 },
                 "history": [],
                 "parties": {
-                    "RKMK Enterprises": {
-                        "legal": "Rinky Acharya",
-                        "address": "Flat No. 34, Ground Floor, Block P Extn, Mohan Garden, New Delhi - 110059",
-                        "gstin": "07DEOPA0606H1ZU"
-                    },
-                    "Chandra Enterprises": {
-                        "legal": "Manoj Kumar",
-                        "address": "2nd Floor Front Side, N Block Extn, Plot No.1 Mohan Garden, New Delhi",
-                        "gstin": "07AMSPK3043R1ZC"
-                    }
+                    "RKMK Enterprises": {"legal": "Rinky Acharya", "address": "Mohan Garden, New Delhi", "gstin": "07DEOPA0606H1ZU"},
+                    "Chandra Enterprises": {"legal": "Manoj Kumar", "address": "Mohan Garden, New Delhi", "gstin": "07AMSPK3043R1ZC"}
                 },
                 "services": ["ITR", "GST", "GST REGISTRATION", "UDYAM", "SHOP ACT"],
-                "stock_items": [
-                    {"name": "GST Monthly Filing", "rate": 700.0},
-                    {"name": "ITR Filing", "rate": 1000.0},
-                    {"name": "Udyam Registration", "rate": 500.0}
-                ]
+                "stock_items": [{"name": "GST Monthly Filing", "rate": 700.0}, {"name": "ITR Filing", "rate": 1000.0}]
             }
             save_saas_data(saas_db)
         st.session_state.logged_in_user = master_id
@@ -178,86 +84,58 @@ if not st.session_state.logged_in_user:
         st.subheader("Existing User Login")
         login_id = st.text_input("Email ID / Mobile Number", key="login_id", placeholder="e.g. user@gmail.com or 9876543210")
         login_pass = st.text_input("Password", type="password", key="login_pass", placeholder="Enter your password")
-        
         if st.button("Login to Portal"):
             if login_id in saas_db and saas_db[login_id]["password"] == login_pass:
                 st.session_state.logged_in_user = login_id
                 st.success("Login Successful!")
                 st.rerun()
-            else:
-                st.error("Invalid User ID or Password!")
+            else: st.error("Invalid User ID or Password!")
                 
     with auth_tab2:
         st.subheader("Create Account & Company Profile")
-        reg_id = st.text_input("Enter Email ID or Mobile Number (User ID)", key="reg_id", placeholder="e.g. client@gmail.com or 9876543210")
-        reg_pass1 = st.text_input("Create Password", type="password", key="reg_pass1", placeholder="Create secure password")
-        reg_pass2 = st.text_input("Confirm Password", type="password", key="reg_pass2", placeholder="Re-enter password")
+        reg_id = st.text_input("Enter Email ID or Mobile Number (User ID)", key="reg_id", placeholder="e.g. client@gmail.com")
+        reg_pass1 = st.text_input("Create Password", type="password", key="reg_pass1")
+        reg_pass2 = st.text_input("Confirm Password", type="password", key="reg_pass2")
         
         st.markdown("---")
         st.markdown("#### 🏢 Company / Business Profile Setup")
         comp_name = st.text_input("Company / Trade Name", key="comp_name", placeholder="e.g. Shree Services")
         comp_legal = st.text_input("Authorized Person / Owner Name", key="comp_legal", placeholder="e.g. Roshan Mishra")
-        comp_address = st.text_input("Company Complete Address", key="comp_address", placeholder="e.g. Plot No 64, Mohan Garden, New Delhi")
+        comp_address = st.text_input("Company Complete Address", key="comp_address", placeholder="e.g. Mohan Garden, New Delhi")
         comp_contact = st.text_input("Contact Number", key="comp_contact", placeholder="e.g. +91 7888273972")
         comp_gstin = st.text_input("Company GSTIN (Optional)", key="comp_gstin", placeholder="e.g. 07XXXXX0000X1Z5")
-        comp_nature = st.text_input("Nature of Business / Dealings", key="comp_nature", placeholder="e.g. Tax Consultancy & Document Services")
+        comp_nature = st.text_input("Nature of Business / Dealings", key="comp_nature", placeholder="e.g. Tax Consultancy")
         
         if st.button("Register & Create Company Account"):
-            if not reg_id or not reg_pass1:
-                st.warning("Please fill User ID and Password fields.")
-            elif reg_pass1 != reg_pass2:
-                st.error("Passwords do not match! Please verify confirmation.")
-            elif reg_id in saas_db:
-                st.error("User ID already registered! Please login.")
-            elif not comp_name:
-                st.warning("Please enter Company Name.")
+            if not reg_id or not reg_pass1: st.warning("Please fill User ID and Password fields.")
+            elif reg_pass1 != reg_pass2: st.error("Passwords do not match!")
+            elif reg_id in saas_db: st.error("User ID already registered! Please login.")
+            elif not comp_name: st.warning("Please enter Company Name.")
             else:
                 saas_db[reg_id] = {
                     "password": reg_pass1,
                     "profile": {
-                        "name": comp_name,
-                        "legal": comp_legal,
-                        "address": comp_address,
-                        "contact": comp_contact,
-                        "gstin": comp_gstin,
-                        "nature": comp_nature,
-                        "format": "Classic Blue (Professional)",
-                        "border_style": "Solid Line",
-                        "gst_enabled": True,
-                        "tax_rate": 18.0,
-                        "watermark_enabled": True,
-                        "watermark_type": "Company Name",
-                        "logo_choice": "Modern Shield (Auto)"
+                        "name": comp_name, "legal": comp_legal, "address": comp_address,
+                        "contact": comp_contact, "gstin": comp_gstin, "nature": comp_nature,
+                        "format": "Classic Blue (Professional)", "border_style": "Solid Line",
+                        "gst_enabled": True, "tax_rate": 18.0, "watermark_enabled": True,
+                        "watermark_type": "Company Name", "logo_choice": "Modern Shield (Auto)"
                     },
-                    "history": [],
-                    "parties": {
-                        "Sample Party": {
-                            "legal": "Client Name",
-                            "address": "Sample Address, Delhi",
-                            "gstin": "07AAAAA0000A1Z5"
-                        }
-                    },
-                    "services": ["ITR", "GST", "GST REGISTRATION", "UDYAM"],
-                    "stock_items": [
-                        {"name": "General Service", "rate": 500.0}
-                    ]
+                    "history": [], "parties": {"Sample Party": {"legal": "Client Name", "address": "Delhi", "gstin": "07AAAAA0000A1Z5"}},
+                    "services": ["ITR", "GST"], "stock_items": [{"name": "General Service", "rate": 500.0}]
                 }
                 save_saas_data(saas_db)
-                st.success("Account Created Successfully! Now you can go to the Login tab and sign in.")
+                st.success("Account Created Successfully! Now you can go to the Login tab.")
 
 else:
     # --- Logged-In User Portal ---
     current_user = st.session_state.logged_in_user
     user_data = saas_db[current_user]
     
-    if "history" not in st.session_state:
-        st.session_state.history = user_data["history"]
-    if "saved_parties" not in st.session_state:
-        st.session_state.saved_parties = user_data["parties"]
-    if "saved_services" not in st.session_state:
-        st.session_state.saved_services = user_data["services"]
-    if "stock_items" not in user_data:
-        user_data["stock_items"] = [{"name": "Default Service", "rate": 500.0}]
+    if "history" not in st.session_state: st.session_state.history = user_data["history"]
+    if "saved_parties" not in st.session_state: st.session_state.saved_parties = user_data["parties"]
+    if "saved_services" not in st.session_state: st.session_state.saved_services = user_data["services"]
+    if "stock_items" not in user_data: user_data["stock_items"] = [{"name": "Default Service", "rate": 500.0}]
 
     # Auto-clean History (24 Days retention)
     current_time = datetime.now()
@@ -283,19 +161,15 @@ else:
         "🚪 Logout"
     ])
 
-    # --- Built-in AI Gemini Assistant Popup Expander in Sidebar ---
+    # --- Integrated AI Gemini Design Studio Widget ---
     st.sidebar.markdown("---")
-    with st.sidebar.expander("🤖 AI Design & Logo Studio (Gemini)"):
-        st.write("Get free AI suggestions for your company branding & invoice formats:")
-        ai_prompt_type = st.selectbox("Select AI Help Type", ["Logo Concept Ideas", "Invoice Layout Theme Suggestions", "Business Tagline Generator"])
-        if st.button("✨ Generate AI Ideas"):
-            comp_n = user_data['profile']['name']
-            if "Logo" in ai_prompt_type:
-                st.info(f"💡 AI Suggestion for **{comp_n}**: Try a minimal geometric shield with initials `{get_initials(comp_n)}` in Royal Blue or Emerald Green.")
-            elif "Layout" in ai_prompt_type:
-                st.info(f"💡 AI Suggestion for **{comp_n}**: Use 'Modern Dark' or 'Classic Blue' with Dotted borders for a clean tax-consultancy look.")
-            else:
-                st.info(f"💡 AI Tagline for **{comp_n}**: 'Your Trusted Partner in Financial & Business Excellence.'")
+    with st.sidebar.expander("🤖 AI Design & Logo Studio"):
+        task = st.selectbox("I need help with:", ["Logo Creation", "Invoice Layout"])
+        req = st.text_area("Describe your requirement (e.g. 'Shree Hindi me circle mein')")
+        if st.button("✨ Generate AI Prompt"):
+            if req:
+                st.info(f"💡 **AI Suggestion:** Create a {task} based on: '{req}'. Focus on professional typography and minimalist aesthetics.")
+            else: st.warning("Type your idea first!")
 
     if menu_option == "🚪 Logout":
         st.session_state.logged_in_user = None
@@ -310,31 +184,9 @@ else:
         """, unsafe_allow_html=True)
         
         prof = user_data["profile"]
-        
-        format_options = [
-            "Classic Blue (Professional)", 
-            "Modern Dark (Executive)", 
-            "Emerald Green (Corporate)", 
-            "Royal Purple (Creative)", 
-            "Minimalist Clean (Simple)", 
-            "Crimson Red (Bold)"
-        ]
-        
-        border_options = [
-            "Solid Line", 
-            "Dotted Border (Stylish)", 
-            "Double Line (Accounting)", 
-            "Dashed Border (Modern)"
-        ]
-
-        logo_choices = [
-            "Modern Shield (Auto)", 
-            "Circular Monogram (Auto)", 
-            "Geometric Badge (Auto)", 
-            "Minimalist Crest (Auto)", 
-            "Classic Starburst (Auto)", 
-            "Sleek Diamond (Auto)"
-        ]
+        format_options = ["Classic Blue (Professional)", "Modern Dark (Executive)", "Emerald Green (Corporate)", "Royal Purple (Creative)", "Minimalist Clean (Simple)", "Crimson Red (Bold)"]
+        border_options = ["Solid Line", "Dotted Border (Stylish)", "Double Line (Accounting)", "Dashed Border (Modern)"]
+        logo_choices = ["Modern Shield (Auto)", "Circular Monogram (Auto)", "Geometric Badge (Auto)", "Minimalist Crest (Auto)", "Classic Starburst (Auto)", "Sleek Diamond (Auto)"]
 
         st.markdown("### 🏢 Business Information")
         up_name = st.text_input("Company / Trade Name", value=prof.get("name", ""))
@@ -345,24 +197,14 @@ else:
         up_nature = st.text_input("Nature of Business / Dealings", value=prof.get("nature", ""))
         
         st.markdown("### 🎨 Invoice Theme & Border Design")
-        current_format = prof.get("format", "Classic Blue (Professional)")
-        fmt_idx = format_options.index(current_format) if current_format in format_options else 0
-        up_format = st.selectbox("Select Invoice Color Theme", format_options, index=fmt_idx)
-
-        current_border = prof.get("border_style", "Solid Line")
-        b_idx = border_options.index(current_border) if current_border in border_options else 0
-        up_border = st.selectbox("Select Invoice Border Style", border_options, index=b_idx)
+        up_format = st.selectbox("Select Invoice Color Theme", format_options, index=format_options.index(prof.get("format", "Classic Blue (Professional)")))
+        up_border = st.selectbox("Select Invoice Border Style", border_options, index=border_options.index(prof.get("border_style", "Solid Line")))
 
         st.markdown("### 🖼️ Logo & Watermark Settings")
-        current_logo = prof.get("logo_choice", "Modern Shield (Auto)")
-        l_idx = logo_choices.index(current_logo) if current_logo in logo_choices else 0
-        up_logo = st.selectbox("Select Auto-Generated Logo Design", logo_choices, index=l_idx)
-
+        up_logo = st.selectbox("Select Auto-Generated Logo Design", logo_choices, index=logo_choices.index(prof.get("logo_choice", "Modern Shield (Auto)")))
         up_custom_logo = st.text_input("Upload / Image URL for Custom Logo (Optional)", value=prof.get("custom_logo", ""))
-
         up_watermark_enabled = st.checkbox("Enable Background Watermark on Invoice", value=prof.get("watermark_enabled", True))
-        wm_type_default = prof.get("watermark_type", "Company Name")
-        up_watermark_type = st.radio("Watermark Content Type", ["Company Name", "Logo Watermark"], index=0 if wm_type_default == "Company Name" else 1)
+        up_watermark_type = st.radio("Watermark Content Type", ["Company Name", "Logo Watermark"], index=0 if prof.get("watermark_type", "Company Name") == "Company Name" else 1)
 
         st.markdown("### 💰 Tax & GST Configuration")
         up_gst_enabled = st.checkbox("Enable GST / Tax Calculation on Invoices", value=prof.get("gst_enabled", True))
@@ -370,20 +212,10 @@ else:
         
         if st.button("💾 Save All Settings Permanently"):
             user_data["profile"] = {
-                "name": up_name,
-                "legal": up_legal,
-                "address": up_address,
-                "contact": up_contact,
-                "gstin": up_gstin,
-                "nature": up_nature,
-                "format": up_format,
-                "border_style": up_border,
-                "logo_choice": up_logo,
-                "custom_logo": up_custom_logo,
-                "watermark_enabled": up_watermark_enabled,
-                "watermark_type": up_watermark_type,
-                "gst_enabled": up_gst_enabled,
-                "tax_rate": up_tax_rate
+                "name": up_name, "legal": up_legal, "address": up_address, "contact": up_contact,
+                "gstin": up_gstin, "nature": up_nature, "format": up_format, "border_style": up_border,
+                "logo_choice": up_logo, "custom_logo": up_custom_logo, "watermark_enabled": up_watermark_enabled,
+                "watermark_type": up_watermark_type, "gst_enabled": up_gst_enabled, "tax_rate": up_tax_rate
             }
             save_saas_data(saas_db)
             st.success("Settings saved successfully!")
@@ -392,61 +224,19 @@ else:
         st.markdown("---")
         st.markdown("### 👁️ Instant Full A4 Size Live Preview (Real-Time)")
         
-        if "Modern Dark" in up_format:
-            p_color = "#0f172a"
-        elif "Emerald Green" in up_format:
-            p_color = "#065f46"
-        elif "Royal Purple" in up_format:
-            p_color = "#581c87"
-        elif "Minimalist Clean" in up_format:
-            p_color = "#334155"
-        elif "Crimson Red" in up_format:
-            p_color = "#991b1b"
-        else:
-            p_color = "#1e3a8a"
-
-        if "Dotted" in up_border:
-            border_css = "2px dotted #1e293b"
-        elif "Dashed" in up_border:
-            border_css = "2px dashed #1e293b"
-        elif "Double" in up_border:
-            border_css = "4px double #1e293b"
-        else:
-            border_css = "1px solid #cbd5e1"
+        p_color = "#0f172a" if "Modern Dark" in up_format else "#065f46" if "Emerald Green" in up_format else "#581c87" if "Royal Purple" in up_format else "#334155" if "Minimalist Clean" in up_format else "#991b1b" if "Crimson Red" in up_format else "#1e3a8a"
+        border_css = "2px dotted #1e293b" if "Dotted" in up_border else "2px dashed #1e293b" if "Dashed" in up_border else "4px double #1e293b" if "Double" in up_border else "1px solid #cbd5e1"
 
         initials = get_initials(up_name)
         logo_html = f"<div style='width: 50px; height: 50px; background: {p_color}; color: #fff; display: flex; align-items: center; justify-content: center; font-weight: bold; border-radius: 8px; font-size: 18px;'>{initials}</div>"
-        if up_custom_logo.strip():
-            logo_html = f"<img src='{up_custom_logo}' style='max-height: 50px; max-width: 50px; object-fit: contain;'>"
+        if up_custom_logo.strip(): logo_html = f"<img src='{up_custom_logo}' style='max-height: 50px; max-width: 50px; object-fit: contain;'>"
 
-        wm_html = ""
-        if up_watermark_enabled:
-            wm_text = up_name if up_watermark_type == "Company Name" else initials
-            wm_html = f"""
-            <div style="position: absolute; top: 40%; left: 20%; transform: rotate(-30deg); font-size: 90px; font-weight: bold; color: rgba(0, 0, 0, 0.04); z-index: 0; pointer-events: none; white-space: nowrap;">
-                {wm_text}
-            </div>
-            """
+        wm_html = f'<div style="position: absolute; top: 40%; left: 20%; transform: rotate(-30deg); font-size: 90px; font-weight: bold; color: rgba(0, 0, 0, 0.04); z-index: 0; pointer-events: none; white-space: nowrap;">{up_name if up_watermark_type == "Company Name" else initials}</div>' if up_watermark_enabled else ""
 
         full_a4_preview_html = f"""
-        <!DOCTYPE html>
-        <html>
-        <head>
-        <meta charset="utf-8">
-        <style>
+        <!DOCTYPE html><html><head><meta charset="utf-8"><style>
             body {{ font-family: 'Helvetica', Arial, sans-serif; color: #1e293b; background: #e2e8f0; margin: 0; padding: 20px; }}
-            .a4-page {{ 
-                width: 210mm; 
-                min-height: 297mm; 
-                margin: auto; 
-                background: #fff; 
-                padding: 15mm 20mm; 
-                box-sizing: border-box; 
-                box-shadow: 0 0 20px rgba(0,0,0,0.15); 
-                border: {border_css};
-                position: relative;
-                overflow: hidden;
-            }}
+            .a4-page {{ width: 210mm; min-height: 297mm; margin: auto; background: #fff; padding: 15mm 20mm; box-sizing: border-box; box-shadow: 0 0 20px rgba(0,0,0,0.15); border: {border_css}; position: relative; overflow: hidden; }}
             .header {{ display: flex; justify-content: space-between; border-bottom: 3px solid {p_color}; padding-bottom: 12px; margin-bottom: 20px; position: relative; z-index: 1; }}
             .company-title {{ font-size: 24px; font-weight: bold; color: {p_color}; }}
             .invoice-title {{ font-size: 26px; font-weight: bold; text-transform: uppercase; color: #1e293b; text-align: right; }}
@@ -459,100 +249,40 @@ else:
             .totals {{ width: 300px; margin-left: auto; font-size: 13px; margin-bottom: 40px; border: 1px solid #cbd5e1; border-collapse: collapse; position: relative; z-index: 1; }}
             .totals td {{ padding: 8px; border: 1px solid #cbd5e1; }}
             .grand-total {{ font-weight: bold; background: #eff6ff; font-size: 14px; color: {p_color}; }}
-        </style>
-        </head>
-        <body>
-        <div class="a4-page">
+        </style></head><body><div class="a4-page">
             {wm_html}
             <div class="header">
                 <div style="display: flex; align-items: flex-start; gap: 15px;">
                     {logo_html}
                     <div>
                         <div class="company-title">{up_name}</div>
-                        <div style="font-size: 12px; color: #475569; margin-top: 5px; line-height: 1.4;">
-                            {up_address}<br>
-                            <strong>Contact:</strong> {up_contact}<br>
-                            <strong>GSTIN:</strong> {up_gstin}
-                        </div>
+                        <div style="font-size: 12px; color: #475569; margin-top: 5px; line-height: 1.4;">{up_address}<br><strong>Contact:</strong> {up_contact}<br><strong>GSTIN:</strong> {up_gstin}</div>
                     </div>
                 </div>
-                <div>
-                    <div class="invoice-title">Tax Invoice</div>
-                    <div style="font-size: 12px; color: #475569; text-align: right; margin-top: 5px; line-height: 1.4;">
-                        <strong>Invoice No:</strong> TAX/2026-27/001<br>
-                        <strong>Date:</strong> July 15, 2026
-                    </div>
-                </div>
+                <div><div class="invoice-title">Tax Invoice</div><div style="font-size: 12px; color: #475569; text-align: right; margin-top: 5px; line-height: 1.4;"><strong>Invoice No:</strong> TAX/2026-27/001<br><strong>Date:</strong> July 15, 2026</div></div>
             </div>
-
-            <table class="billing-table">
-                <tr>
-                    <td><strong>Service Provider:</strong><br>{up_name}</td>
-                    <td><strong>Billed To:</strong><br><strong>Sample Client Enterprises</strong><br>New Delhi</td>
-                </tr>
-            </table>
-
-            <table class="items-table">
-                <thead>
-                    <tr>
-                        <th style="width: 10%;">S.No.</th>
-                        <th style="width: 55%;">Description of Services</th>
-                        <th style="width: 15%;">Period</th>
-                        <th class="right" style="width: 20%;">Amount (Rs.)</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td class="right">1</td>
-                        <td>Sample GST Monthly Filing Service</td>
-                        <td>July 2026</td>
-                        <td class="right">700.00</td>
-                    </tr>
-                </tbody>
-            </table>
-
-            <table class="totals">
-                <tr><td>Subtotal:</td><td class="right">Rs. 700.00</td></tr>
-                <tr><td>GST (18%):</td><td class="right">Rs. 126.00</td></tr>
-                <tr class="grand-total"><td>Total Amount:</td><td class="right">Rs. 826.00</td></tr>
-            </table>
-
-            <div style="text-align: center; font-size: 11px; color: #64748b; position: relative; z-index: 1;">
-                Thank you for your business! Theme: {up_format}
-            </div>
-        </div>
-        </body>
-        </html>
+            <table class="billing-table"><tr><td><strong>Service Provider:</strong><br>{up_name}</td><td><strong>Billed To:</strong><br><strong>Sample Client Enterprises</strong><br>New Delhi</td></tr></table>
+            <table class="items-table"><thead><tr><th style="width: 10%;">S.No.</th><th style="width: 55%;">Description of Services</th><th style="width: 15%;">Period</th><th class="right" style="width: 20%;">Amount (Rs.)</th></tr></thead><tbody><tr><td class='right'>1</td><td>Sample GST Monthly Filing Service</td><td>July 2026</td><td class='right'>700.00</td></tr></tbody></table>
+            <table class="totals"><tr><td>Subtotal:</td><td class="right">Rs. 700.00</td></tr><tr><td>GST (18%):</td><td class="right">Rs. 126.00</td></tr><tr class="grand-total"><td>Total Amount:</td><td class="right">Rs. 826.00</td></tr></table>
+            <div style="text-align: center; font-size: 11px; color: #64748b; position: relative; z-index: 1;">Thank you for your business! Theme: {up_format}</div>
+        </div></body></html>
         """
         st.components.v1.html(full_a4_preview_html, height=800, scrolling=True)
 
     elif menu_option == "📦 Stock & Items Manager":
-        st.markdown("""
-            <div class="main-title">
-                <h1>Stock & Service Items Manager</h1>
-                <p>Manage your standard items and rates for quick billing</p>
-            </div>
-        """, unsafe_allow_html=True)
-        
+        st.markdown("<div class='main-title'><h1>Stock & Service Items Manager</h1></div>", unsafe_allow_html=True)
         with st.form("add_stock_form"):
-            st.markdown("### ➕ Add New Item / Service Rate")
             st_item_name = st.text_input("Item / Service Name", placeholder="e.g. GST Annual Return Filing")
             st_item_rate = st.number_input("Standard Rate (Rs.)", min_value=0.0, value=500.0)
-            st_add_btn = st.form_submit_button("Add Item to Master")
-            
-            if st_add_btn:
+            if st.form_submit_button("Add Item to Master"):
                 if st_item_name.strip():
                     user_data["stock_items"].append({"name": st_item_name.strip(), "rate": st_item_rate})
                     save_saas_data(saas_db)
-                    st.success(f"Item '{st_item_name}' added successfully!")
-                else:
-                    st.warning("Please enter item name.")
-                    
-        st.markdown("### 📋 Current Active Items List")
+                    st.success(f"Item '{st_item_name}' added!")
+                else: st.warning("Enter item name.")
         for idx, item in enumerate(user_data["stock_items"]):
             col1, col2 = st.columns([3, 1])
-            with col1:
-                st.write(f"🔹 **{item['name']}** — Rs. {item['rate']}")
+            with col1: st.write(f"🔹 **{item['name']}** — Rs. {item['rate']}")
             with col2:
                 if st.button("🗑️ Delete", key=f"del_stock_{idx}"):
                     user_data["stock_items"].pop(idx)
@@ -560,369 +290,109 @@ else:
                     st.rerun()
 
     elif menu_option == "📊 Party-wise History & Edit/Delete (24 Days)":
-        st.markdown("""
-            <div class="main-title">
-                <h1>Party-wise Invoice Management</h1>
-                <p>View, Edit, or Delete bills created in the last 24 days</p>
-            </div>
-        """, unsafe_allow_html=True)
-        
-        if not st.session_state.history:
-            st.info("No invoice history available for the last 24 days.")
+        st.markdown("<div class='main-title'><h1>Party-wise Invoice Management</h1></div>", unsafe_allow_html=True)
+        if not st.session_state.history: st.info("No invoice history available.")
         else:
-            all_parties_in_history = list(set([h['client'] for h in st.session_state.history]))
-            selected_history_party = st.selectbox("Select Party to View History", all_parties_in_history)
-            
-            party_bills = [h for h in st.session_state.history if h['client'] == selected_history_party]
-            
-            st.markdown(f"### Bills for: {selected_history_party}")
-            
-            for idx, bill in enumerate(party_bills):
-                with st.expander(f"Invoice No: {bill['invoice_no']} | Date: {bill['date']} | Total: Rs. {bill['total']}"):
-                    edit_key_services = f"edit_serv_{bill['invoice_no']}"
-                    edit_key_paid = f"edit_paid_{bill['invoice_no']}"
-                    
-                    new_serv = st.text_area("Edit Services Details", value=bill.get('services', ''), key=edit_key_services, placeholder="Service Name | Period | Amount")
-                    new_pd = st.number_input("Edit Total Amount Paid (Rs.)", value=float(bill.get('paid', 0.0)), key=edit_key_paid)
-                    
-                    col_save, col_del = st.columns(2)
-                    with col_save:
-                        if st.button("💾 Save Changes", key=f"save_{bill['invoice_no']}"):
-                            lines = new_serv.split('\n')
-                            tot_amt = 0.0
-                            for line in lines:
-                                if line.strip():
-                                    if '|' in line:
-                                        parts = [p.strip() for p in line.split('|')]
-                                        try:
-                                            amt = float(parts[2]) if len(parts) > 2 else float(parts[1])
-                                        except:
-                                            amt = 0.0
-                                    else:
-                                        parts = line.strip().rsplit(' ', 1)
-                                        try:
-                                            amt = float(parts[1])
-                                        except:
-                                            amt = 0.0
-                                    tot_amt += amt
-                            
-                            for item in st.session_state.history:
-                                if item['invoice_no'] == bill['invoice_no']:
-                                    item['services'] = new_serv
-                                    item['total'] = tot_amt
-                                    item['paid'] = new_pd
-                                    item['balance'] = tot_amt - new_pd
-                            
-                            user_data["history"] = st.session_state.history
-                            save_saas_data(saas_db)
-                            st.success(f"Invoice {bill['invoice_no']} updated successfully!")
-                            st.rerun()
-                            
-                    with col_del:
-                        if st.button("❌ Delete Invoice", key=f"del_{bill['invoice_no']}"):
-                            st.session_state.history = [item for item in st.session_state.history if item['invoice_no'] != bill['invoice_no']]
-                            user_data["history"] = st.session_state.history
-                            save_saas_data(saas_db)
-                            st.warning(f"Invoice {bill['invoice_no']} deleted! Sequence adjusted.")
-                            st.rerun()
+            all_parties = list(set([h['client'] for h in st.session_state.history]))
+            sel_party = st.selectbox("Select Party", all_parties)
+            for bill in [h for h in st.session_state.history if h['client'] == sel_party]:
+                with st.expander(f"Invoice No: {bill['invoice_no']} | Total: Rs. {bill['total']}"):
+                    new_serv = st.text_area("Edit Services", value=bill.get('services', ''), key=f"serv_{bill['invoice_no']}")
+                    new_pd = st.number_input("Paid Amount", value=float(bill.get('paid', 0.0)), key=f"pd_{bill['invoice_no']}")
+                    if st.button("💾 Save Changes", key=f"sv_{bill['invoice_no']}"):
+                        tot = sum([float(l.split('|')[-1].strip()) for l in new_serv.split('\n') if l.strip()])
+                        bill.update({'services': new_serv, 'total': tot, 'paid': new_pd, 'balance': tot - new_pd})
+                        user_data["history"] = st.session_state.history
+                        save_saas_data(saas_db)
+                        st.success("Updated!")
+                        st.rerun()
+                    if st.button("❌ Delete Invoice", key=f"dl_{bill['invoice_no']}"):
+                        st.session_state.history = [h for h in st.session_state.history if h['invoice_no'] != bill['invoice_no']]
+                        user_data["history"] = st.session_state.history
+                        save_saas_data(saas_db)
+                        st.warning("Deleted!")
+                        st.rerun()
 
     else:
         # --- Create Invoice Tab ---
         comp_profile = user_data["profile"]
-        
-        st.markdown(f"""
-            <div class="main-title">
-                <h1>{comp_profile.get('name', 'Invoice Portal')}</h1>
-                <p>{comp_profile.get('nature', 'Professional Billing System')} | Theme: {comp_profile.get('format', 'Classic Blue')}</p>
-            </div>
-        """, unsafe_allow_html=True)
+        st.markdown(f"<div class='main-title'><h1>{comp_profile.get('name', 'Invoice Portal')}</h1><p>{comp_profile.get('nature', 'Billing System')}</p></div>", unsafe_allow_html=True)
 
         next_inv_num = len(st.session_state.history) + 1
         current_inv_no = f"TAX/2026-27/{next_inv_num:03d}"
 
         with st.form("invoice_form"):
-            st.markdown('<div class="section-box-1">👤 1. Client / Party Details</div>', unsafe_allow_html=True)
+            st.markdown('<div class="section-box-1">👤 1. Client Details</div>', unsafe_allow_html=True)
             party_names = list(st.session_state.saved_parties.keys())
             selected_party = st.selectbox("Select Existing Party", party_names)
 
-            with st.expander("➕ Click Here to Add New Party"):
-                new_trade_name = st.text_input("New Party Trade Name", placeholder="e.g. Chandra Enterprises")
-                new_legal_name = st.text_input("New Client Legal Name", placeholder="e.g. Manoj Kumar")
-                new_address = st.text_input("New Client Address", placeholder="e.g. 2nd Floor, N Block, Mohan Garden")
-                new_gstin = st.text_input("New Client GSTIN", placeholder="e.g. 07AAAAA0000A1Z5")
+            with st.expander("➕ Add New Party"):
+                new_trade_name = st.text_input("Trade Name")
+                new_legal_name = st.text_input("Legal Name")
+                new_address = st.text_input("Address")
+                new_gstin = st.text_input("GSTIN")
 
             st.markdown('<div class="section-box-2">📋 2. Invoice Details</div>', unsafe_allow_html=True)
-            inv_no = st.text_input("Invoice Number (Auto-generated)", current_inv_no)
+            inv_no = st.text_input("Invoice Number", current_inv_no)
             inv_date = st.text_input("Invoice Date", datetime.now().strftime("%B %d, %Y"))
 
-            st.markdown('<div class="section-box-3">💼 3. Select Services & Add Amount</div>', unsafe_allow_html=True)
-            
-            stock_names = [s['name'] for s in user_data.get("stock_items", [])]
-            quick_selected = st.multiselect("Quick Add from Stock Items", stock_names)
-            
-            default_text = "\n".join([f"{s} | Current | {next((item['rate'] for item in user_data['stock_items'] if item['name'] == s), 500.0)}" for s in quick_selected])
-            
-            services_text = st.text_area("Services Details (Format: Service | Period | Amount)", value=default_text, placeholder="GST Filing | July | 700")
-
+            st.markdown('<div class="section-box-3">💼 3. Services & Amount</div>', unsafe_allow_html=True)
+            quick_selected = st.multiselect("Quick Add from Stock", [s['name'] for s in user_data.get("stock_items", [])])
+            default_text = "\n".join([f"{s} | Current | {next((i['rate'] for i in user_data['stock_items'] if i['name'] == s), 500.0)}" for s in quick_selected])
+            services_text = st.text_area("Services Details (Service | Period | Amount)", value=default_text)
             total_paid = st.number_input("Total Amount Paid (Rs.)", min_value=0.0, value=0.0)
 
             submitted = st.form_submit_button("✨ Generate Exact A4 Invoice Preview")
 
         if submitted:
-            if 'new_trade_name' in locals() and new_trade_name.strip():
-                client_name = new_trade_name.strip()
-                client_legal = new_legal_name.strip()
-                client_address = new_address.strip()
-                client_gstin = new_gstin.strip()
-                st.session_state.saved_parties[client_name] = {
-                    "legal": client_legal,
-                    "address": client_address,
-                    "gstin": client_gstin
-                }
-            else:
-                client_name = selected_party
-                p_info = st.session_state.saved_parties[selected_party]
-                client_legal = p_info["legal"]
-                client_address = p_info["address"]
-                client_gstin = p_info["gstin"]
-
-            lines = services_text.split('\n')
-            items = []
-            subtotal_amt = 0.0
-            for line in lines:
-                if line.strip():
-                    if '|' in line:
-                        parts = [p.strip() for p in line.split('|')]
-                        desc = parts[0]
-                        period = parts[1] if len(parts) > 1 else "-"
-                        try:
-                            amt = float(parts[2]) if len(parts) > 2 else float(parts[1])
-                        except:
-                            amt = 0.0
-                    else:
-                        parts = line.strip().rsplit(' ', 1)
-                        desc = parts[0]
-                        period = "General"
-                        try:
-                            amt = float(parts[1])
-                        except:
-                            amt = 0.0
-                    
-                    items.append((desc, period, amt))
-                    subtotal_amt += amt
-
-            gst_enabled = comp_profile.get("gst_enabled", True)
-            tax_rate = float(comp_profile.get("tax_rate", 18.0)) if gst_enabled else 0.0
-            tax_amount = (subtotal_amt * tax_rate) / 100.0 if gst_enabled else 0.0
+            client_name = new_trade_name.strip() if 'new_trade_name' in locals() and new_trade_name.strip() else selected_party
+            if client_name == new_trade_name.strip() and new_trade_name.strip():
+                st.session_state.saved_parties[client_name] = {"legal": new_legal_name, "address": new_address, "gstin": new_gstin}
+            p_info = st.session_state.saved_parties.get(client_name, {"legal": "-", "address": "-", "gstin": "-"})
+            
+            subtotal_amt = sum([float(l.split('|')[-1].strip()) for l in services_text.split('\n') if l.strip() and '|' in l])
+            tax_rate = float(comp_profile.get("tax_rate", 18.0)) if comp_profile.get("gst_enabled", True) else 0.0
+            tax_amount = (subtotal_amt * tax_rate) / 100.0
             total_amt = subtotal_amt + tax_amount
             balance = total_amt - total_paid
 
-            new_invoice_record = {
-                "invoice_no": inv_no,
-                "client": client_name,
-                "total": total_amt,
-                "paid": total_paid,
-                "balance": balance,
-                "date": inv_date,
-                "services": services_text,
-                "timestamp": datetime.now().isoformat()
-            }
-
-            st.session_state.history.append(new_invoice_record)
-            
+            st.session_state.history.append({
+                "invoice_no": inv_no, "client": client_name, "total": total_amt,
+                "paid": total_paid, "balance": balance, "date": inv_date,
+                "services": services_text, "timestamp": datetime.now().isoformat()
+            })
             user_data["history"] = st.session_state.history
             user_data["parties"] = st.session_state.saved_parties
-            user_data["services"] = st.session_state.saved_services
             save_saas_data(saas_db)
 
-            # --- Theme, Border & Watermark Configuration for Final Invoice ---
-            selected_theme_fmt = comp_profile.get("format", "Classic Blue (Professional)")
-            selected_border = comp_profile.get("border_style", "Solid Line")
-            comp_name_val = comp_profile.get("name", "Company Name")
-            wm_en = comp_profile.get("watermark_enabled", True)
-            wm_tp = comp_profile.get("watermark_type", "Company Name")
-            custom_logo_val = comp_profile.get("custom_logo", "")
+            p_col = "#0f172a" if "Modern Dark" in comp_profile.get("format") else "#1e3a8a"
+            b_css = "2px dotted #1e293b" if "Dotted" in comp_profile.get("border_style") else "1px solid #cbd5e1"
+            init = get_initials(comp_profile.get("name"))
+            l_html = f"<div style='width:50px;height:50px;background:{p_col};color:#fff;display:flex;align-items:center;justify-content:center;font-weight:bold;border-radius:8px;'>{init}</div>"
+            
+            items_html = "".join([f"<tr><td class='right'>{i}</td><td>{l.split('|')[0]}</td><td>{l.split('|')[1]}</td><td class='right'>{l.split('|')[2]}</td></tr>" for i, l in enumerate(services_text.split('\n'), 1) if l.strip() and '|' in l])
 
-            if "Modern Dark" in selected_theme_fmt:
-                primary_color = "#0f172a"
-            elif "Emerald Green" in selected_theme_fmt:
-                primary_color = "#065f46"
-            elif "Royal Purple" in selected_theme_fmt:
-                primary_color = "#581c87"
-            elif "Minimalist Clean" in selected_theme_fmt:
-                primary_color = "#334155"
-            elif "Crimson Red" in selected_theme_fmt:
-                primary_color = "#991b1b"
-            else:
-                primary_color = "#1e3a8a"
-
-            if "Dotted" in selected_border:
-                border_css = "2px dotted #1e293b"
-            elif "Dashed" in selected_border:
-                border_css = "2px dashed #1e293b"
-            elif "Double" in selected_border:
-                border_css = "4px double #1e293b"
-            else:
-                border_css = "1px solid #cbd5e1"
-
-            initials = get_initials(comp_name_val)
-            logo_html = f"<div style='width: 50px; height: 50px; background: {primary_color}; color: #fff; display: flex; align-items: center; justify-content: center; font-weight: bold; border-radius: 8px; font-size: 18px;'>{initials}</div>"
-            if custom_logo_val.strip():
-                logo_html = f"<img src='{custom_logo_val}' style='max-height: 50px; max-width: 50px; object-fit: contain;'>"
-
-            wm_html = ""
-            if wm_en:
-                wm_text = comp_name_val if wm_tp == "Company Name" else initials
-                wm_html = f"""
-                <div style="position: absolute; top: 40%; left: 20%; transform: rotate(-30deg); font-size: 90px; font-weight: bold; color: rgba(0, 0, 0, 0.04); z-index: 0; pointer-events: none; white-space: nowrap;">
-                    {wm_text}
-                </div>
-                """
-
-            # --- Dynamic Company Branded A4 HTML Layout ---
             html_content = f"""
-            <!DOCTYPE html>
-            <html>
-            <head>
-            <meta charset="utf-8">
-            <style>
-                body {{ font-family: 'Helvetica', Arial, sans-serif; color: #1e293b; background: #e2e8f0; margin: 0; padding: 20px; }}
-                .a4-page {{ 
-                    width: 210mm; 
-                    min-height: 297mm; 
-                    margin: auto; 
-                    background: #fff; 
-                    padding: 15mm 20mm; 
-                    box-sizing: border-box; 
-                    box-shadow: 0 0 20px rgba(0,0,0,0.15); 
-                    border: {border_css};
-                    position: relative;
-                    overflow: hidden;
-                }}
-                .header {{ display: flex; justify-content: space-between; border-bottom: 3px solid {primary_color}; padding-bottom: 12px; margin-bottom: 20px; position: relative; z-index: 1; }}
-                .company-title {{ font-size: 24px; font-weight: bold; color: {primary_color}; }}
-                .invoice-title {{ font-size: 26px; font-weight: bold; text-transform: uppercase; color: #1e293b; text-align: right; }}
-                .billing-table {{ width: 100%; border-collapse: collapse; margin-bottom: 25px; border: 1px solid #cbd5e1; background: #f8fafc; position: relative; z-index: 1; }}
-                .billing-table td {{ padding: 12px; vertical-align: top; width: 50%; font-size: 13px; border: 1px solid #cbd5e1; line-height: 1.5; }}
-                .items-table {{ width: 100%; border-collapse: collapse; margin-bottom: 20px; position: relative; z-index: 1; }}
-                .items-table th {{ background-color: {primary_color}; color: #fff; text-align: left; padding: 10px; font-size: 12px; border: 1px solid {primary_color}; }}
+            <!DOCTYPE html><html><head><meta charset="utf-8"><style>
+                body {{ font-family: Helvetica, Arial; color: #1e293b; background: #e2e8f0; padding: 20px; }}
+                .a4-page {{ width: 210mm; min-height: 297mm; margin: auto; background: #fff; padding: 15mm 20mm; box-sizing: border-box; border: {b_css}; position: relative; }}
+                .header {{ display: flex; justify-content: space-between; border-bottom: 3px solid {p_col}; padding-bottom: 12px; margin-bottom: 20px; }}
+                .items-table {{ width: 100%; border-collapse: collapse; margin-bottom: 20px; }}
+                .items-table th {{ background-color: {p_col}; color: #fff; padding: 10px; font-size: 12px; text-align: left; }}
                 .items-table td {{ border: 1px solid #cbd5e1; padding: 10px; font-size: 12px; }}
                 .right {{ text-align: right; }}
-                .totals {{ width: 300px; margin-left: auto; font-size: 13px; margin-bottom: 40px; border: 1px solid #cbd5e1; border-collapse: collapse; position: relative; z-index: 1; }}
+                .totals {{ width: 300px; margin-left: auto; font-size: 13px; border-collapse: collapse; }}
                 .totals td {{ padding: 8px; border: 1px solid #cbd5e1; }}
-                .grand-total {{ font-weight: bold; background: #eff6ff; font-size: 14px; color: {primary_color}; }}
-                .sign-area {{ float: right; text-align: right; margin-top: 30px; font-size: 13px; position: relative; z-index: 1; }}
-                .sign-line {{ border-top: 1px solid #000; width: 180px; margin-top: 50px; text-align: center; font-weight: bold; }}
-                .print-btn-container {{ text-align: center; margin-bottom: 20px; }}
-                .print-btn {{
-                    background-color: #059669;
-                    color: white;
-                    padding: 12px 25px;
-                    font-size: 16px;
-                    font-weight: bold;
-                    border: none;
-                    border-radius: 8px;
-                    cursor: pointer;
-                    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-                }}
-                .print-btn:hover {{ background-color: #047857; }}
-                @media print {{
-                    body {{ background: none; padding: 0; }}
-                    .a4-page {{ box-shadow: none; margin: 0; width: 100%; padding: 10mm; border: none; }}
-                    .no-print {{ display: none !important; }}
-                }}
-            </style>
-            </head>
-            <body>
-            
-            <div class="print-btn-container no-print">
-                <button class="print-btn" onclick="window.print()">🖨️ Print / Save as PDF Directly</button>
-            </div>
-
+                .grand-total {{ font-weight: bold; background: #eff6ff; color: {p_col}; }}
+                @media print {{ body {{ background: none; padding: 0; }} .no-print {{ display: none !important; }} }}
+            </style></head><body>
+            <div class="no-print" style="text-align: center; margin-bottom: 20px;"><button onclick="window.print()" style="background:#059669;color:white;padding:12px 25px;font-weight:bold;border:none;border-radius:8px;cursor:pointer;">🖨️ Print / Save PDF</button></div>
             <div class="a4-page">
-                {wm_html}
-                <div class="header">
-                    <div style="display: flex; align-items: flex-start; gap: 15px;">
-                        {logo_html}
-                        <div>
-                            <div class="company-title">{comp_profile.get('name', 'Company Name')}</div>
-                            <div style="font-size: 12px; color: #475569; margin-top: 5px; line-height: 1.4;">
-                                {comp_profile.get('address', '')}<br>
-                                <strong>Contact:</strong> {comp_profile.get('contact', '')}<br>
-                                <strong>GSTIN:</strong> {comp_profile.get('gstin', 'N/A')}
-                            </div>
-                        </div>
-                    </div>
-                    <div>
-                        <div class="invoice-title">Tax Invoice</div>
-                        <div style="font-size: 12px; color: #475569; text-align: right; margin-top: 5px; line-height: 1.4;">
-                            <strong>Invoice No:</strong> {inv_no}<br>
-                            <strong>Date:</strong> {inv_date}<br>
-                            <strong>Client GSTIN:</strong> {client_gstin}
-                        </div>
-                    </div>
-                </div>
-
-                <table class="billing-table">
-                    <tr>
-                        <td>
-                            <strong>Service Provider:</strong><br>
-                            {comp_profile.get('name', '')} ({comp_profile.get('legal', '')})<br>
-                            {comp_profile.get('address', '')}
-                        </td>
-                        <td>
-                            <strong>Billed To:</strong><br>
-                            <strong>{client_name}</strong><br>
-                            Legal Name: {client_legal}<br>
-                            Address: {client_address}
-                        </td>
-                    </tr>
-                </table>
-
-                <table class="items-table">
-                    <thead>
-                        <tr>
-                            <th style="width: 10%;">S.No.</th>
-                            <th style="width: 55%;">Description of Services</th>
-                            <th style="width: 15%;">Period</th>
-                            <th class="right" style="width: 20%;">Amount (Rs.)</th>
-                        </tr>
-                    </thead>
-                    <tbody>
+                <div class="header"><div style="display:flex;gap:15px;">{l_html}<div><h2 style="margin:0;color:{p_col};">{comp_profile.get('name')}</h2><p style="margin:3px 0;font-size:12px;">{comp_profile.get('address')}</p></div></div><div style="text-align:right;"><h2 style="margin:0;">Tax Invoice</h2><p style="margin:3px 0;font-size:12px;">No: {inv_no}<br>Date: {inv_date}</p></div></div>
+                <table style="width:100%;border-collapse:collapse;margin-bottom:20px;font-size:13px;"><tr><td style="border:1px solid #cbd5e1;padding:10px;"><strong>From:</strong> {comp_profile.get('name')}</td><td style="border:1px solid #cbd5e1;padding:10px;"><strong>Billed To:</strong> {client_name}<br>GSTIN: {p_info.get('gstin')}</td></tr></table>
+                <table class="items-table"><thead><tr><th>S.No.</th><th>Description</th><th>Period</th><th class="right">Amount</th></tr></thead><tbody>{items_html}</tbody></table>
+                <table class="totals"><tr><td>Subtotal:</td><td class="right">Rs. {subtotal_amt:.2f}</td></tr><tr><td>GST ({tax_rate}%):</td><td class="right">Rs. {tax_amount:.2f}</td></tr><tr class="grand-total"><td>Total Amount:</td><td class="right">Rs. {total_amt:.2f}</td></tr><tr><td>Paid:</td><td class="right">Rs. {total_paid:.2f}</td></tr><tr class="grand-total"><td>Balance Due:</td><td class="right">Rs. {balance:.2f}</td></tr></table>
+            </div></body></html>
             """
-            
-            for idx, (desc, period, amt) in enumerate(items, 1):
-                html_content += "<tr><td class='right'>{}</td><td>{}</td><td>{}</td><td class='right'>{:.2f}</td></tr>".format(idx, desc, period, amt)
-
-            gst_html_row = ""
-            if gst_enabled:
-                gst_html_row = f"<tr><td>GST / Tax ({tax_rate}%):</td><td class='right'>Rs. {tax_amount:.2f}</td></tr>"
-
-            html_content += f"""
-                    </tbody>
-                </table>
-
-                <table class="totals">
-                    <tr><td>Subtotal:</td><td class="right">Rs. {subtotal_amt:.2f}</td></tr>
-                    {gst_html_row}
-                    <tr><td>Total Amount:</td><td class="right">Rs. {total_amt:.2f}</td></tr>
-                    <tr><td>Total Paid:</td><td class="right">Rs. {total_paid:.2f}</td></tr>
-                    <tr class="grand-total"><td>Balance Due:</td><td class="right">Rs. {balance:.2f}</td></tr>
-                </table>
-
-                <div style="clear: both;"></div>
-                <div class="sign-area">
-                    For <strong>{comp_profile.get('name', '')}</strong>
-                    <div class="sign-line">Authorised Signatory</div>
-                </div>
-                <div style="clear: both;"></div>
-                <hr style="border:none; border-top:1px solid #cbd5e1; margin-top: 40px; position: relative; z-index: 1;">
-                <div style="text-align: center; font-size: 11px; color: #64748b; position: relative; z-index: 1;">Thank you for your business! This is a computer-generated invoice. Format: {selected_theme_fmt}</div>
-            </div>
-            </body>
-            </html>
-            """
-
-            st.success("✨ Invoice Generated Successfully! Preview below:")
+            st.success("✨ Invoice Generated Successfully!")
             st.components.v1.html(html_content, height=800, scrolling=True)
-
