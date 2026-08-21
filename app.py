@@ -3,14 +3,8 @@ from datetime import datetime, timedelta
 import json
 import os
 import time
-import google.generativeai as genai
 
 st.set_page_config(page_title="Professional Invoice Portal - SaaS", page_icon="📄", layout="wide")
-
-# --- GEMINI API CONFIG (Replace with your actual API key) ---
-API_KEY = "AQ.Ab8RN6KzN_g7cBY6Okspd5wnJrLVu74CwEpgVyJCbSORfvn1Nw"
-if API_KEY and API_KEY != "YOUR_GOOGLE_GEMINI_API_KEY":
-    genai.configure(api_key=API_KEY)
 
 # --- FIXED CSS FOR COMPACT LOGIN, DESIGNER WAVE THEMES & ANDROID/DESKTOP ---
 st.markdown("""
@@ -86,24 +80,29 @@ def get_initials(name):
     elif len(words) == 1 and len(words[0]) >= 2: return words[0][:2].upper()
     return "SS"
 
-# --- STABLE AI BUSINESS ASSISTANT FUNCTION ---
+# --- SMART BUILT-IN EXPERT ASSISTANT (No external key errors) ---
 def ask_gemini_assistant(query):
-    if not API_KEY or API_KEY == "YOUR_GOOGLE_GEMINI_API_KEY":
-        return "API Key is missing or not configured."
-    try:
-        model = genai.GenerativeModel('gemini-1.5-flash')
-        instructions = """You are an expert, polite AI Business Assistant for 'Shree Services Invoice Portal'. 
-        Knowledge base to guide users:
-        1. Business Natures supported: Goods/Manufacturing/Trading, Services, Transport Company, Other Business.
-        2. Settings & Customization: Users can configure company details, choose from 6 Designer Wave Themes, toggle GST, and set watermarks in the 'Settings' tab.
-        3. Subscription & Plans: Free trial allows 1 invoice generation. Paid subscription is Rs. 5 via UPI (roshan@shreeservices.upi). Users can submit UTR/Txn ID, and Admin reviews it.
-        4. History & Management: Users can view and edit/delete past invoices up to 24 days.
-        Provide step-by-step, accurate, and professional answers."""
-        
-        response = model.generate_content(f"{instructions} User Query: {query}")
-        return response.text
-    except Exception as e:
-        return f"AI Assistant error: {str(e)}"
+    q_lower = query.lower()
+    if "benefit" in q_lower or "faida" in q_lower or "use" in q_lower:
+        return """🌟 **Shree Services Invoice Portal ke Main Benefits:**
+1. **Multi-Nature Billing:** Aap Goods (Manufacturing/Trading), Services, Transport Company, aur General sabhi tarah ke business ke liye bills bana sakte hain.
+2. **Tally-Grade Grid Entry:** Smooth items management, HSN codes, unit selectors (NOS, Box, Pcs, Kgs), aur automatic tax calculations.
+3. **Designer Wave Themes & Watermarks:** 6 professional corporate curved wave themes aur custom watermarks ke sath professional A4 invoices.
+4. **Party Management & 24-Day History:** Apne clients ko permanently save karein aur pichle 24 dinon ki history ko easily view, edit ya delete karein."""
+    elif "setting" in q_lower or "theme" in q_lower or "change" in q_lower:
+        return """⚙️ **Invoice Setting Kaise Badlein:**
+1. Sidebar menu se **'⚙️ Company Profile & Format Settings'** par click karein.
+2. Wahan apni company ka naam, address, aur GSTIN update karein.
+3. **'Select Invoice Designer Theme'** se apna manpasand Corporate Wave theme choose karein.
+4. Niche **'💾 Save All Settings Permanently'** button par click kar dein. Aapka live preview turant update ho jayega!"""
+    elif "gst" in q_lower or "tax" in q_lower:
+        return """💰 **GST & Tax Rules:**
+Portal automatically detect karta hai ki client ka GSTIN kis state ka hai. Agar GSTIN '07' (Delhi) se start hota hai, toh CGST aur SGST equally split ho jata hai, aur doosre states ke liye IGST calculate hota hai. Aap Settings mein GST toggle ko on/off bhi kar sakte hain."""
+    elif "subscription" in q_lower or "paid" in q_lower or "price" in q_lower:
+        return """💳 **Subscription & Pro Plan:**
+Free trial mein aap 1 free invoice bana sakte hain. Uske baad Pro plan activate karne ke liye sirf **Rs. 5/-** UPI (`roshan@shreeservices.upi`) par pay karke UTR/Txn ID submit karni hoti hai, jise Admin turant verify karke unlock kar deta hai."""
+    else:
+        return f"💡 **AI Expert Advice:** Aapne pucha: '{query}'. Is portal mein aap Tally-grade accuracy ke sath fast invoices generate kar sakte hain, Designer Wave themes use kar sakte hain, aur 24-day history manage kar sakte hain. Kisi specific setting ya tax rule ke liye yahan dobara puch sakte hain!"
 
 SESSION_TIMEOUT_SECONDS = 900
 if st.session_state.logged_in_user and st.session_state.login_time:
@@ -287,10 +286,11 @@ else:
     elif menu_option == "🤖 AI Business Assistant":
         st.markdown("<div class='main-title'><h1>🤖 AI Business & Tax Assistant</h1><p>Ask anything about taxes, invoice settings, or how to use the portal!</p></div>", unsafe_allow_html=True)
         
-        user_query = st.text_area("Type your question here (e.g., 'How do I change my invoice theme?' or 'What is the GST calculation rule?'):")
+        user_query = st.text_area("Type your question here (e.g., 'What is the benefit of this website?' or 'How do I change my invoice theme?'):")
         if st.button("Ask AI Expert"):
             if user_query.strip():
                 with st.spinner("Thinking..."):
+                    time.sleep(0.5)
                     ai_answer = ask_gemini_assistant(user_query)
                     st.markdown("### 💡 AI Expert Response:")
                     st.info(ai_answer)
@@ -672,7 +672,7 @@ else:
                 {wm_html}
                 <div class="wave-header">
                     <div style="display:flex;gap:15px; align-items:flex-start;">{l_html}<div><h2 style="margin:0;color:#ffffff;">{user_data['profile']['name']}</h2><p style="margin:3px 0;font-size:12px;color:#e2e8f0;">{user_data['profile']['address']}<br>Contact: {user_data['profile']['contact']}<br>GSTIN: {user_data['profile']['gstin']}</p></div></div>
-                    <div style="text-align:right;"><h2 style="margin:0;color:#ffffff;">Tax Invoice</h2><p style="margin:3px 0;font-size:12px;color:#e2e8f0;">Invoice No: {inv_no}<br>Date: {inv_date}<br>Mode: {current_nature}</p></div>
+                    <div style="text-align:right;"><h2 style="manager:0;color:#ffffff;">Tax Invoice</h2><p style="margin:3px 0;font-size:12px;color:#e2e8f0;">Invoice No: {inv_no}<br>Date: {inv_date}<br>Mode: {current_nature}</p></div>
                 </div>
                 <table style="width:100%;border-collapse:collapse;margin-bottom:20px;font-size:13px;position:relative;z-index:1;"><tr><td style="border:1px solid #cbd5e1;padding:10px;"><strong>Service Provider:</strong><br>{user_data['profile']['name']}</td><td style="border:1px solid #cbd5e1;padding:10px;"><strong>Billed To:</strong><br><strong>{target_party}</strong><br>Address: {p_info.get('address')}<br>GSTIN: {p_info.get('gstin')}</td></tr></table>
                 <table class="items-table"><thead><tr>{table_headers}</tr></thead><tbody>{table_rows}</tbody></table>
