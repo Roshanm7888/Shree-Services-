@@ -118,7 +118,6 @@ if "temp_reg_data" not in st.session_state:
 
 saas_db = load_saas_data()
 
-# Helper function to get initials for auto-logo
 def get_initials(name):
     words = name.split()
     if len(words) >= 2:
@@ -220,7 +219,7 @@ if not st.session_state.logged_in_user:
             comp_address = st.text_input("Company Complete Address", key="comp_address", placeholder="e.g. Plot No 64, Mohan Garden, New Delhi")
             comp_contact = st.text_input("Contact Number", key="comp_contact", placeholder="e.g. +91 7888273972")
             comp_gstin = st.text_input("Company GSTIN (Optional)", key="comp_gstin", placeholder="e.g. 07XXXXX0000X1Z5")
-            comp_nature = st.text_input("Nature of Business / Dealings", key="comp_nature", placeholder="e.g. Tax Consultancy & Accounting Services")
+            comp_nature = st.text_input("Nature of Business / Dealings", key="comp_nature", placeholder="e.g. Tax Consultancy & Document Services")
             
             if st.button("Send Verification OTP"):
                 if not reg_id or not reg_pass1:
@@ -343,7 +342,7 @@ else:
         st.markdown("""
             <div class="main-title">
                 <h1>Settings & Format Customizer</h1>
-                <p>Configure company branding, themes, borders, watermarks, and auto/custom logos</p>
+                <p>Configure company branding, themes, borders, watermarks, and instant live preview</p>
             </div>
         """, unsafe_allow_html=True)
         
@@ -373,107 +372,96 @@ else:
             "Classic Starburst (Auto)", 
             "Sleek Diamond (Auto)"
         ]
+
+        # Real-time interactive controls (Without form block for instant live preview updates)
+        st.markdown("### 🏢 Business Information")
+        up_name = st.text_input("Company / Trade Name", value=prof.get("name", ""))
+        up_legal = st.text_input("Authorized Person / Owner Name", value=prof.get("legal", ""))
+        up_address = st.text_input("Company Complete Address", value=prof.get("address", ""))
+        up_contact = st.text_input("Contact Number", value=prof.get("contact", ""))
+        up_gstin = st.text_input("Company GSTIN", value=prof.get("gstin", ""))
+        up_nature = st.text_input("Nature of Business / Dealings", value=prof.get("nature", ""))
         
-        with st.form("profile_form"):
-            st.markdown("### 🏢 Business Information")
-            up_name = st.text_input("Company / Trade Name", value=prof.get("name", ""), placeholder="e.g. Shree Services")
-            up_legal = st.text_input("Authorized Person / Owner Name", value=prof.get("legal", ""), placeholder="e.g. Roshan Mishra")
-            up_address = st.text_input("Company Complete Address", value=prof.get("address", ""), placeholder="e.g. Plot No 64, Mohan Garden, New Delhi")
-            up_contact = st.text_input("Contact Number", value=prof.get("contact", ""), placeholder="e.g. +91 7888273972")
-            up_gstin = st.text_input("Company GSTIN", value=prof.get("gstin", ""), placeholder="e.g. 07XXXXX0000X1Z5")
-            up_nature = st.text_input("Nature of Business / Dealings", value=prof.get("nature", ""), placeholder="e.g. Tax Consultancy & Document Services")
-            
-            st.markdown("### 🎨 Invoice Theme & Border Design")
-            current_format = prof.get("format", "Classic Blue (Professional)")
-            fmt_idx = format_options.index(current_format) if current_format in format_options else 0
-            up_format = st.selectbox("Select Invoice Color Theme", format_options, index=fmt_idx)
+        st.markdown("### 🎨 Invoice Theme & Border Design")
+        current_format = prof.get("format", "Classic Blue (Professional)")
+        fmt_idx = format_options.index(current_format) if current_format in format_options else 0
+        up_format = st.selectbox("Select Invoice Color Theme", format_options, index=fmt_idx)
 
-            current_border = prof.get("border_style", "Solid Line")
-            b_idx = border_options.index(current_border) if current_border in border_options else 0
-            up_border = st.selectbox("Select Invoice Border Style", border_options, index=b_idx)
+        current_border = prof.get("border_style", "Solid Line")
+        b_idx = border_options.index(current_border) if current_border in border_options else 0
+        up_border = st.selectbox("Select Invoice Border Style", border_options, index=b_idx)
 
-            st.markdown("### 🖼️ Logo & Watermark Settings")
-            current_logo = prof.get("logo_choice", "Modern Shield (Auto)")
-            l_idx = logo_choices.index(current_logo) if current_logo in logo_choices else 0
-            up_logo = st.selectbox("Select Auto-Generated Logo Design (Based on Company Initials)", logo_choices, index=l_idx)
+        st.markdown("### 🖼️ Logo & Watermark Settings")
+        current_logo = prof.get("logo_choice", "Modern Shield (Auto)")
+        l_idx = logo_choices.index(current_logo) if current_logo in logo_choices else 0
+        up_logo = st.selectbox("Select Auto-Generated Logo Design", logo_choices, index=l_idx)
 
-            up_custom_logo = st.text_input("Or Upload / Image URL for Custom Logo (Optional)", value=prof.get("custom_logo", ""), placeholder="Paste image link if you have a personal logo")
+        up_custom_logo = st.text_input("Upload / Image URL for Custom Logo (Optional)", value=prof.get("custom_logo", ""))
 
-            up_watermark_enabled = st.checkbox("Enable Background Watermark on Invoice", value=prof.get("watermark_enabled", True))
-            up_watermark_type = st.radio("Watermark Content Type", ["Company Name", "Logo Watermark"], index=0 if prof.get("watermark_type", "Company Name") == "Company Name" else 1)
+        up_watermark_enabled = st.checkbox("Enable Background Watermark on Invoice", value=prof.get("watermark_enabled", True))
+        wm_type_default = prof.get("watermark_type", "Company Name")
+        up_watermark_type = st.radio("Watermark Content Type", ["Company Name", "Logo Watermark"], index=0 if wm_type_default == "Company Name" else 1)
 
-            st.markdown("### 💰 Tax & GST Configuration")
-            up_gst_enabled = st.checkbox("Enable GST / Tax Calculation on Invoices", value=prof.get("gst_enabled", True))
-            up_tax_rate = st.number_input("Default Tax / GST Rate (%)", min_value=0.0, max_value=28.0, value=float(prof.get("tax_rate", 18.0)))
-            
-            up_submit = st.form_submit_button("💾 Save All Settings")
-            if up_submit:
-                user_data["profile"] = {
-                    "name": up_name,
-                    "legal": up_legal,
-                    "address": up_address,
-                    "contact": up_contact,
-                    "gstin": up_gstin,
-                    "nature": up_nature,
-                    "format": up_format,
-                    "border_style": up_border,
-                    "logo_choice": up_logo,
-                    "custom_logo": up_custom_logo,
-                    "watermark_enabled": up_watermark_enabled,
-                    "watermark_type": up_watermark_type,
-                    "gst_enabled": up_gst_enabled,
-                    "tax_rate": up_tax_rate
-                }
-                save_saas_data(saas_db)
-                st.success("Settings and Invoice Format updated successfully!")
-                st.rerun()
+        st.markdown("### 💰 Tax & GST Configuration")
+        up_gst_enabled = st.checkbox("Enable GST / Tax Calculation on Invoices", value=prof.get("gst_enabled", True))
+        up_tax_rate = st.number_input("Default Tax / GST Rate (%)", min_value=0.0, max_value=28.0, value=float(prof.get("tax_rate", 18.0)))
+        
+        if st.button("💾 Save All Settings Permanently"):
+            user_data["profile"] = {
+                "name": up_name,
+                "legal": up_legal,
+                "address": up_address,
+                "contact": up_contact,
+                "gstin": up_gstin,
+                "nature": up_nature,
+                "format": up_format,
+                "border_style": up_border,
+                "logo_choice": up_logo,
+                "custom_logo": up_custom_logo,
+                "watermark_enabled": up_watermark_enabled,
+                "watermark_type": up_watermark_type,
+                "gst_enabled": up_gst_enabled,
+                "tax_rate": up_tax_rate
+            }
+            save_saas_data(saas_db)
+            st.success("Settings saved successfully!")
 
-        # --- Full A4 Size Live Preview Box on Settings Page ---
+        # --- Instant Full A4 Size Live Preview Box (Updates instantly as you change dropdowns) ---
         st.markdown("---")
-        st.markdown("### 👁️ Full A4 Size Live Preview of Selected Settings & Theme")
+        st.markdown("### 👁️ Instant Full A4 Size Live Preview (Real-Time)")
         
-        live_theme = up_format if 'up_format' in locals() else prof.get("format", "Classic Blue")
-        live_border = up_border if 'up_border' in locals() else prof.get("border_style", "Solid Line")
-        live_comp_name = up_name if 'up_name' in locals() else prof.get('name', 'Company Name')
-        live_address = up_address if 'up_address' in locals() else prof.get('address', 'Company Address')
-        live_contact = up_contact if 'up_contact' in locals() else prof.get('contact', '7888273972')
-        live_gstin = up_gstin if 'up_gstin' in locals() else prof.get('gstin', 'N/A')
-        live_wm_en = up_watermark_enabled if 'up_watermark_enabled' in locals() else prof.get('watermark_enabled', True)
-        live_wm_type = up_watermark_type if 'up_watermark_type' in locals() else prof.get('watermark_type', 'Company Name')
-        live_custom_logo = up_custom_logo if 'up_custom_logo' in locals() else prof.get('custom_logo', '')
-
-        if "Modern Dark" in live_theme:
+        if "Modern Dark" in up_format:
             p_color = "#0f172a"
-        elif "Emerald Green" in live_theme:
+        elif "Emerald Green" in up_format:
             p_color = "#065f46"
-        elif "Royal Purple" in live_theme:
+        elif "Royal Purple" in up_format:
             p_color = "#581c87"
-        elif "Minimalist Clean" in live_theme:
+        elif "Minimalist Clean" in up_format:
             p_color = "#334155"
-        elif "Crimson Red" in live_theme:
+        elif "Crimson Red" in up_format:
             p_color = "#991b1b"
         else:
             p_color = "#1e3a8a"
 
-        if "Dotted" in live_border:
+        if "Dotted" in up_border:
             border_css = "2px dotted #1e293b"
-        elif "Dashed" in live_border:
+        elif "Dashed" in up_border:
             border_css = "2px dashed #1e293b"
-        elif "Double" in live_border:
+        elif "Double" in up_border:
             border_css = "4px double #1e293b"
         else:
             border_css = "1px solid #cbd5e1"
 
-        initials = get_initials(live_comp_name)
-        logo_html = f"<div style='width: 45px; height: 45px; background: {p_color}; color: #fff; display: flex; align-items: center; justify-content: center; font-weight: bold; border-radius: 8px; font-size: 16px;'>{initials}</div>"
-        if live_custom_logo.strip():
-            logo_html = f"<img src='{live_custom_logo}' style='max-height: 45px; max-width: 45px; object-fit: contain;'>"
+        initials = get_initials(up_name)
+        logo_html = f"<div style='width: 50px; height: 50px; background: {p_color}; color: #fff; display: flex; align-items: center; justify-content: center; font-weight: bold; border-radius: 8px; font-size: 18px;'>{initials}</div>"
+        if up_custom_logo.strip():
+            logo_html = f"<img src='{up_custom_logo}' style='max-height: 50px; max-width: 50px; object-fit: contain;'>"
 
         wm_html = ""
-        if live_wm_en:
-            wm_text = live_comp_name if live_wm_type == "Company Name" else initials
+        if up_watermark_enabled:
+            wm_text = up_name if up_watermark_type == "Company Name" else initials
             wm_html = f"""
-            <div style="position: absolute; top: 40%; left: 20%; transform: rotate(-30deg); font-size: 80px; font-weight: bold; color: rgba(0, 0, 0, 0.04); z-index: 0; pointer-events: none; white-space: nowrap;">
+            <div style="position: absolute; top: 40%; left: 20%; transform: rotate(-30deg); font-size: 90px; font-weight: bold; color: rgba(0, 0, 0, 0.04); z-index: 0; pointer-events: none; white-space: nowrap;">
                 {wm_text}
             </div>
             """
@@ -499,15 +487,15 @@ else:
                 overflow: hidden;
             }}
             .header {{ display: flex; justify-content: space-between; border-bottom: 3px solid {p_color}; padding-bottom: 12px; margin-bottom: 20px; position: relative; z-index: 1; }}
-            .company-title {{ font-size: 22px; font-weight: bold; color: {p_color}; }}
-            .invoice-title {{ font-size: 22px; font-weight: bold; text-transform: uppercase; color: #1e293b; text-align: right; }}
+            .company-title {{ font-size: 24px; font-weight: bold; color: {p_color}; }}
+            .invoice-title {{ font-size: 24px; font-weight: bold; text-transform: uppercase; color: #1e293b; text-align: right; }}
             .billing-table {{ width: 100%; border-collapse: collapse; margin-bottom: 20px; border: 1px solid #cbd5e1; background: #f8fafc; position: relative; z-index: 1; }}
             .billing-table td {{ padding: 10px; vertical-align: top; width: 50%; font-size: 12px; border: 1px solid #cbd5e1; line-height: 1.4; }}
             .items-table {{ width: 100%; border-collapse: collapse; margin-bottom: 20px; position: relative; z-index: 1; }}
             .items-table th {{ background-color: {p_color}; color: #fff; text-align: left; padding: 8px; font-size: 11px; }}
             .items-table td {{ border: 1px solid #cbd5e1; padding: 8px; font-size: 11px; }}
             .right {{ text-align: right; }}
-            .totals {{ width: 250px; margin-left: auto; font-size: 12px; margin-bottom: 30px; border: 1px solid #cbd5e1; border-collapse: collapse; position: relative; z-index: 1; }}
+            .totals {{ width: 280px; margin-left: auto; font-size: 12px; margin-bottom: 30px; border: 1px solid #cbd5e1; border-collapse: collapse; position: relative; z-index: 1; }}
             .totals td {{ padding: 6px; border: 1px solid #cbd5e1; }}
             .grand-total {{ font-weight: bold; background: #eff6ff; color: {p_color}; }}
         </style>
@@ -516,14 +504,14 @@ else:
         <div class="a4-preview-page">
             {wm_html}
             <div class="header">
-                <div style="display: flex; align-items: flex-start; gap: 12px;">
+                <div style="display: flex; align-items: flex-start; gap: 15px;">
                     {logo_html}
                     <div>
-                        <div class="company-title">{live_comp_name}</div>
+                        <div class="company-title">{up_name}</div>
                         <div style="font-size: 11px; color: #475569; margin-top: 3px; line-height: 1.3;">
-                            {live_address}<br>
-                            <strong>Contact:</strong> {live_contact}<br>
-                            <strong>GSTIN:</strong> {live_gstin}
+                            {up_address}<br>
+                            <strong>Contact:</strong> {up_contact}<br>
+                            <strong>GSTIN:</strong> {up_gstin}
                         </div>
                     </div>
                 </div>
@@ -538,7 +526,7 @@ else:
 
             <table class="billing-table">
                 <tr>
-                    <td><strong>Service Provider:</strong><br>{live_comp_name}</td>
+                    <td><strong>Service Provider:</strong><br>{up_name}</td>
                     <td><strong>Billed To:</strong><br><strong>Sample Client Enterprises</strong><br>New Delhi</td>
                 </tr>
             </table>
@@ -569,13 +557,13 @@ else:
             </table>
 
             <div style="text-align: center; font-size: 10px; color: #64748b; margin-top: 40px; position: relative; z-index: 1;">
-                Thank you for your business! Theme: {live_theme} | Border: {live_border}
+                Thank you for your business! Theme: {up_format} | Border: {up_border}
             </div>
         </div>
         </body>
         </html>
         """
-        st.components.v1.html(full_a4_preview_html, height=750, scrolling=True)
+        st.components.v1.html(full_a4_preview_html, height=780, scrolling=True)
 
     elif menu_option == "📦 Stock & Items Manager":
         st.markdown("""
@@ -976,3 +964,4 @@ else:
 
             st.success("✨ Invoice Generated Successfully! Preview below:")
             st.components.v1.html(html_content, height=800, scrolling=True)
+
