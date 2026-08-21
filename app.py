@@ -5,9 +5,10 @@ import os
 
 st.set_page_config(page_title="Professional Invoice Portal - SaaS", page_icon="📄", layout="wide")
 
-# --- CSS STYLING & MOBILE RESPONSIVENESS ---
+# --- FIXED CSS FOR ANDROID & DESKTOP (Dark Sidebar & Dropdown Fix) ---
 st.markdown("""
     <style>
+    /* Mobile & Android responsiveness */
     @media (max-width: 600px) {
         .main-title { padding: 15px !important; }
         .main-title h1 { font-size: 18px !important; }
@@ -15,8 +16,25 @@ st.markdown("""
         div[data-testid="column"] { width: 100% !important; margin-bottom: 8px; }
         .stButton button { width: 100% !important; }
     }
+    
+    /* General text and input styling */
     label, p, span, div { color: #1e293b !important; }
-    input, textarea, select { background-color: #ffffff !important; color: #1e293b !important; border: 1px solid #cbd5e1 !important; border-radius: 8px !important; }
+    input, textarea { background-color: #ffffff !important; color: #1e293b !important; border: 1px solid #cbd5e1 !important; border-radius: 8px !important; }
+    
+    /* Fix for Sidebar text color on mobile/desktop */
+    section[data-testid="stSidebar"] label, section[data-testid="stSidebar"] p, section[data-testid="stSidebar"] span, section[data-testid="stSidebar"] div, section[data-testid="stSidebar"] .stRadio label {
+        color: #f8fafc !important;
+    }
+    section[data-testid="stSidebar"] {
+        background-color: #0f172a !important;
+    }
+
+    /* Fix for dropdown select boxes and options list */
+    select, option, div[data-baseweb="select"] * {
+        background-color: #ffffff !important;
+        color: #1e293b !important;
+    }
+
     .stApp { background-color: #f8fafc; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
     .main-title { background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%); color: white; padding: 25px; border-radius: 12px; text-align: center; margin-bottom: 25px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
     .main-title h1 { margin: 0; font-size: 26px; font-weight: 700; color: #ffffff !important; }
