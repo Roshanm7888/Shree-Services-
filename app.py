@@ -1,5 +1,5 @@
 import streamlit as st
-from datetime import datetime
+from datetime import datetime, timedelta
 
 st.set_page_config(page_title="Shree Services - Invoice Portal", page_icon="📄", layout="centered")
 
@@ -22,7 +22,6 @@ st.markdown("""
     .main-title h1 { margin: 0; font-size: 26px; font-weight: 700; }
     .main-title p { margin: 5px 0 0 0; font-size: 14px; opacity: 0.9; }
 
-    /* Form Card Container Styling */
     div[data-testid="stForm"] {
         background: #ffffff;
         padding: 30px;
@@ -31,7 +30,6 @@ st.markdown("""
         box-shadow: 0 10px 25px rgba(0,0,0,0.05);
     }
 
-    /* Colorful Section Headings / Banners inside form */
     .section-box-1 {
         background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
         border-left: 5px solid #3b82f6;
@@ -65,7 +63,6 @@ st.markdown("""
         margin-bottom: 15px;
     }
 
-    /* Main Submit Button */
     .stFormSubmitButton button {
         background: linear-gradient(135deg, #059669 0%, #10b981 100%);
         color: white;
@@ -96,6 +93,13 @@ if "invoice_count" not in st.session_state:
     st.session_state.invoice_count = 1
 if "history" not in st.session_state:
     st.session_state.history = []
+
+# --- Auto-clean History: Keep only last 24 days records ---
+current_time = datetime.now()
+st.session_state.history = [
+    h for h in st.session_state.history 
+    if current_time - datetime.fromisoformat(h.get('timestamp', current_time.isoformat())) <= timedelta(days=24)
+]
 
 if "saved_parties" not in st.session_state:
     st.session_state.saved_parties = {
@@ -129,7 +133,6 @@ if "edit_paid" not in st.session_state:
     st.session_state.edit_paid = 0.0
 
 with st.form("invoice_form"):
-    # Section 1: Client Details
     st.markdown('<div class="section-box-1">👤 1. Client / Party Details</div>', unsafe_allow_html=True)
     party_names = list(st.session_state.saved_parties.keys())
     
@@ -139,20 +142,17 @@ with st.form("invoice_form"):
 
     selected_party = st.selectbox("Select Existing Party", party_names, index=default_party_idx)
 
-    # Collapsible Expander inside Form for Adding New Party
     with st.expander("➕ Click Here to Add New Party"):
         new_trade_name = st.text_input("New Party Trade Name", "")
         new_legal_name = st.text_input("New Client Legal Name", "")
         new_address = st.text_input("New Client Address", "")
         new_gstin = st.text_input("New Client GSTIN", "")
 
-    # Section 2: Invoice Details
     st.markdown('<div class="section-box-2">📋 2. Invoice Details</div>', unsafe_allow_html=True)
     current_inv_no = f"TAX/2026-27/{st.session_state.invoice_count:03d}"
     inv_no = st.text_input("Invoice Number (Auto-generated)", current_inv_no)
     inv_date = st.text_input("Invoice Date", datetime.now().strftime("%B %d, %Y"))
 
-    # Section 3: Services & Pricing
     st.markdown('<div class="section-box-3">💼 3. Select Services & Add Amount</div>', unsafe_allow_html=True)
     selected_services = st.multiselect("Select Services from Library", st.session_state.saved_services, default=["GST"])
     new_service_input = st.text_input("Add New Service (Agar upar list mein na ho)", "")
@@ -219,7 +219,8 @@ if submitted:
         "paid": total_paid,
         "balance": balance,
         "date": inv_date,
-        "services": services_text
+        "services": services_text,
+        "timestamp": datetime.now().isoformat()
     })
 
     st.session_state.invoice_count += 1
@@ -361,10 +362,10 @@ if submitted:
     st.success("✨ Invoice Generated Successfully! Preview below:")
     st.components.v1.html(html_content, height=800, scrolling=True)
 
-# --- Recent History with Edit Option ---
+# --- Recent History (Kept for 24 Days) ---
 if st.session_state.history:
     st.markdown("---")
-    st.markdown("### 📊 Recent Generated Invoices History & Edit")
+    st.markdown("### 📊 Recent Generated Invoices History (Auto-deletes after 24 Days)")
     for i, h in enumerate(reversed(st.session_state.history)):
         col1, col2 = st.columns([4, 1])
         with col1:
