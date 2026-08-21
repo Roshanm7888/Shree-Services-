@@ -5,14 +5,14 @@ from datetime import datetime
 st.set_page_config(page_title="Invoice Generator - Roshan Mishra", layout="centered")
 
 st.title("📄 Professional Invoice Generator & Portal")
-st.write("Smart Party & Service Auto-save ke sath apna professional invoice generate karein.")
+st.write("Tally-style Party Master & Service Library ke sath invoice generate karein.")
 
 if "invoice_count" not in st.session_state:
     st.session_state.invoice_count = 1
 if "history" not in st.session_state:
     st.session_state.history = []
 
-# Saved Parties
+# Saved Parties Master (Tally Style)
 if "saved_parties" not in st.session_state:
     st.session_state.saved_parties = {
         "RKMK Enterprises": {
@@ -33,25 +33,18 @@ if "saved_services" not in st.session_state:
     ]
 
 with st.form("invoice_form"):
-    st.subheader("1. Client Details")
-    party_list = list(st.session_state.saved_parties.keys()) + ["+ Add New Party"]
-    selected_party = st.selectbox("Select Party", party_list)
+    st.subheader("1. Client / Party Details")
+    
+    # Party Dropdown Selection
+    party_names = list(st.saved_parties.keys()) if "saved_parties" in st.session_state else ["RKMK Enterprises"]
+    selected_party = st.selectbox("Select Existing Party", party_names)
 
-    if selected_party == "+ Add New Party":
-        client_name = st.text_input("Enter New Party Trade Name", "")
-        client_legal = st.text_input("Enter Client Legal Name", "")
-        client_address = st.text_input("Enter Client Address", "")
-        client_gstin = st.text_input("Enter Client GSTIN", "")
-    else:
-        p_info = st.session_state.saved_parties[selected_party]
-        client_name = selected_party
-        st.write(f"**Legal Name:** {p_info['legal']}")
-        st.write(f"**Address:** {p_info['address']}")
-        st.write(f"**GSTIN:** {p_info['gstin']}")
-        # Hidden inputs to keep values active inside form
-        client_legal = p_info["legal"]
-        client_address = p_info["address"]
-        client_gstin = p_info["gstin"]
+    st.markdown("---")
+    st.markdown("### ➕ Nayi Party Add Karein (Agar list mein na ho)")
+    new_trade_name = st.text_input("New Party Trade Name", "")
+    new_legal_name = st.text_input("New Client Legal Name", "")
+    new_address = st.text_input("New Client Address", "")
+    new_gstin = st.text_input("New Client GSTIN", "")
 
     st.subheader("2. Invoice Details")
     current_inv_no = f"TAX/2026-27/{st.session_state.invoice_count:03d}"
@@ -71,13 +64,26 @@ with st.form("invoice_form"):
     submitted = st.form_submit_button("Generate Invoice & Save")
 
 if submitted:
-    if selected_party == "+ Add New Party" and client_name.strip():
-        st.session_state.saved_parties[client_name.strip()] = {
+    # Determine final active party details
+    if new_trade_name.strip():
+        client_name = new_trade_name.strip()
+        client_legal = new_legal_name.strip()
+        client_address = new_address.strip()
+        client_gstin = new_gstin.strip()
+        # Save new party permanently to master directory
+        st.session_state.saved_parties[client_name] = {
             "legal": client_legal,
             "address": client_address,
             "gstin": client_gstin
         }
+    else:
+        client_name = selected_party
+        p_info = st.session_state.saved_parties[selected_party]
+        client_legal = p_info["legal"]
+        client_address = p_info["address"]
+        client_gstin = p_info["gstin"]
 
+    # Save new service if entered
     if new_service_input and new_service_input.upper() not in [s.upper() for s in st.session_state.saved_services]:
         st.session_state.saved_services.append(new_service_input.upper())
 
@@ -222,7 +228,7 @@ if submitted:
     </html>
     """.format(total_amt, total_paid, balance)
 
-    st.success("Invoice generated & party saved successfully!")
+    st.success("Invoice generated successfully!")
     st.components.v1.html(html_content, height=650, scrolling=True)
 
     b64 = base64.b64encode(html_content.encode('utf-8')).decode()
