@@ -18,6 +18,11 @@ if "saved_parties" not in st.session_state:
             "legal": "Rinky Acharya",
             "address": "Flat No. 34, Ground Floor, Block P Extn, Mohan Garden, New Delhi - 110059",
             "gstin": "07DEOPA0606H1ZU"
+        },
+        "Chandra Enterprises": {
+            "legal": "Manoj Kumar",
+            "address": "2nd Floor Front Side, Left Side L Type, N Block Extn, Plot No.1 Mohan Garden, DK Road, New Delhi",
+            "gstin": "07AMSPK3043R1ZC"
         }
     }
 
@@ -51,8 +56,8 @@ with st.form("invoice_form"):
     selected_services = st.multiselect("Select Services from Library", st.session_state.saved_services, default=["GST"])
     new_service_input = st.text_input("Add New Service (Agar upar list mein na ho)", "")
     
-    st.markdown("💡 *Format: Service Name | Period | Amount (Jaise: GST | November | 700)*")
-    default_text = "\n".join([f"{s} | November | 700" for s in selected_services])
+    st.markdown("💡 *Format: Service Name | Period | Amount (Jaise: GST Filing | July | 700)*")
+    default_text = "\n".join([f"{s} | July | 700" for s in selected_services])
     services_text = st.text_area("Services Details", default_text)
 
     total_paid = st.number_input("Total Amount Paid (Rs.)", min_value=0.0, value=0.0)
@@ -149,7 +154,6 @@ if submitted:
     
     pdf.ln(10)
     # Table Header
-    pdf.set_fill_origin()
     pdf.set_fill_color(26, 54, 93)
     pdf.set_text_color(255, 255, 255)
     pdf.set_font("Helvetica", "B", 10)
@@ -204,4 +208,3 @@ if st.session_state.history:
     st.subheader("📊 Recent Generated Invoices History")
     for i, h in enumerate(reversed(st.session_state.history)):
         st.write(f"🔹 **{h['invoice_no']}** | Party: **{h['client']}** | Total: Rs. {h['total']} | Paid: Rs. {h['paid']} | Balance: Rs. {h['balance']}")
-
