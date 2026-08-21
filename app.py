@@ -327,11 +327,21 @@ else:
         st.markdown("""
             <div class="main-title">
                 <h1>Settings & Format Customizer</h1>
-                <p>Configure company branding, 6 invoice formats/themes, and tax options</p>
+                <p>Configure company branding, 6 invoice formats/themes, and tax options with Instant Live Preview</p>
             </div>
         """, unsafe_allow_html=True)
         
         prof = user_data["profile"]
+        
+        format_options = [
+            "Classic Blue (Professional)", 
+            "Modern Dark (Executive)", 
+            "Emerald Green (Corporate)", 
+            "Royal Purple (Creative)", 
+            "Minimalist Clean (Simple)", 
+            "Crimson Red (Bold)"
+        ]
+        
         with st.form("profile_form"):
             st.markdown("### 🏢 Business Information")
             up_name = st.text_input("Company / Trade Name", value=prof.get("name", ""), placeholder="e.g. Shree Services")
@@ -342,14 +352,6 @@ else:
             up_nature = st.text_input("Nature of Business / Dealings", value=prof.get("nature", ""), placeholder="e.g. Tax Consultancy & Document Services")
             
             st.markdown("### 🎨 Invoice Format & Themes (6 Types)")
-            format_options = [
-                "Classic Blue (Professional)", 
-                "Modern Dark (Executive)", 
-                "Emerald Green (Corporate)", 
-                "Royal Purple (Creative)", 
-                "Minimalist Clean (Simple)", 
-                "Crimson Red (Bold)"
-            ]
             current_format = prof.get("format", "Classic Blue (Professional)")
             fmt_idx = format_options.index(current_format) if current_format in format_options else 0
             up_format = st.selectbox("Select Invoice Design Format & Color Theme", format_options, index=fmt_idx)
@@ -373,6 +375,55 @@ else:
                 }
                 save_saas_data(saas_db)
                 st.success("Settings and Invoice Format updated successfully!")
+                st.rerun()
+
+        # --- Instant Live Format Preview Box on Settings Page ---
+        st.markdown("---")
+        st.markdown("### 👁️ Instant Live Preview of Selected Theme")
+        
+        # Determine theme color based on current selection in form or profile
+        live_theme = up_format if 'up_format' in locals() else prof.get("format", "Classic Blue")
+        if "Modern Dark" in live_theme:
+            prev_color = "#0f172a"
+        elif "Emerald Green" in live_theme:
+            prev_color = "#065f46"
+        elif "Royal Purple" in live_theme:
+            prev_color = "#581c87"
+        elif "Minimalist Clean" in live_theme:
+            prev_color = "#334155"
+        elif "Crimson Red" in live_theme:
+            prev_color = "#991b1b"
+        else:
+            prev_color = "#1e3a8a"
+
+        sample_preview_html = f"""
+        <div style="background: #fff; border: 2px dashed {prev_color}; padding: 20px; border-radius: 12px; font-family: sans-serif;">
+            <div style="display: flex; justify-content: space-between; border-bottom: 2px solid {prev_color}; padding-bottom: 8px; margin-bottom: 15px;">
+                <div>
+                    <h3 style="margin: 0; color: {prev_color};">{up_name if 'up_name' in locals() else prof.get('name')}</h3>
+                    <p style="margin: 3px 0 0 0; font-size: 11px; color: #64748b;">{up_address if 'up_address' in locals() else prof.get('address')}</p>
+                </div>
+                <div style="text-align: right;">
+                    <h4 style="margin: 0; color: #1e293b;">TAX INVOICE</h4>
+                    <p style="margin: 3px 0 0 0; font-size: 11px; color: #64748b;">Theme: {live_theme}</p>
+                </div>
+            </div>
+            <table style="width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 10px;">
+                <tr style="background: {prev_color}; color: #fff;">
+                    <th style="padding: 6px; text-align: left;">Service Description</th>
+                    <th style="padding: 6px; text-align: right;">Amount</th>
+                </tr>
+                <tr>
+                    <td style="padding: 6px; border-bottom: 1px solid #cbd5e1;">Sample GST Filing (July)</td>
+                    <td style="padding: 6px; border-bottom: 1px solid #cbd5e1; text-align: right;">Rs. 700.00</td>
+                </tr>
+            </table>
+            <div style="text-align: right; font-size: 13px; font-weight: bold; color: {prev_color};">
+                Total Amount: Rs. 826.00 (Incl. Tax)
+            </div>
+        </div>
+        """
+        st.components.v1.html(sample_preview_html, height=220, scrolling=False)
 
     elif menu_option == "📦 Stock & Items Manager":
         st.markdown("""
@@ -723,9 +774,9 @@ else:
                 </table>
 
                 <div style="clear: both;"></div>
-                <div class="sign-area">
+                <div class="sign-align" style="float: right; text-align: right; margin-top: 30px; font-size: 13px;">
                     For <strong>{comp_profile.get('name', '')}</strong>
-                    <div class="sign-line">Authorised Signatory</div>
+                    <div style="border-top: 1px solid #000; width: 180px; margin-top: 50px; text-align: center; font-weight: bold;">Authorised Signatory</div>
                 </div>
                 <div style="clear: both;"></div>
                 <hr style="border:none; border-top:1px solid #cbd5e1; margin-top: 40px;">
