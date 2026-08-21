@@ -6,7 +6,7 @@ import time
 
 st.set_page_config(page_title="Professional Invoice Portal - SaaS", page_icon="📄", layout="wide")
 
-# --- FIXED CSS FOR ANDROID & DESKTOP ---
+# --- FIXED CSS FOR COMPACT LOGIN & ANDROID/DESKTOP OPTIMIZATION ---
 st.markdown("""
     <style>
     @media (max-width: 600px) {
@@ -16,6 +16,31 @@ st.markdown("""
         div[data-testid="column"] { width: 100% !important; margin-bottom: 8px; }
         .stButton button { width: 100% !important; }
     }
+    
+    /* Compact Login Card Styling for Desktop */
+    .login-container {
+        max-width: 500px;
+        margin: 0 auto;
+        background: #ffffff;
+        padding: 30px;
+        border-radius: 16px;
+        border: 1px solid #e2e8f0;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+    }
+
+    /* Benefits Grid Styling */
+    .benefit-card {
+        background: #ffffff;
+        padding: 20px;
+        border-radius: 12px;
+        border: 1px solid #e2e8f0;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+        margin-bottom: 15px;
+        text-align: center;
+    }
+    .benefit-card h3 { color: #1e3a8a !important; font-size: 16px; margin-bottom: 8px; font-weight: 700; }
+    .benefit-card p { color: #475569 !important; font-size: 13px; margin: 0; }
+
     label, p, span, div { color: #1e293b !important; }
     input, textarea { background-color: #ffffff !important; color: #1e293b !important; border: 1px solid #cbd5e1 !important; border-radius: 8px !important; }
     section[data-testid="stSidebar"] label, section[data-testid="stSidebar"] p, section[data-testid="stSidebar"] span, section[data-testid="stSidebar"] div, section[data-testid="stSidebar"] .stRadio label { color: #f8fafc !important; }
@@ -57,7 +82,6 @@ def get_initials(name):
     elif len(words) == 1 and len(words[0]) >= 2: return words[0][:2].upper()
     return "SS"
 
-# --- CHECK SESSION TIMEOUT (15 Minutes = 900 seconds) ---
 SESSION_TIMEOUT_SECONDS = 900
 if st.session_state.logged_in_user and st.session_state.login_time:
     elapsed_time = (datetime.now() - st.session_state.login_time).total_seconds()
@@ -67,7 +91,7 @@ if st.session_state.logged_in_user and st.session_state.login_time:
         st.warning("⏱️ Session expired due to inactivity. Please login again.")
         st.rerun()
 
-# --- AUTHENTICATION & REGISTRATION ---
+# --- AUTHENTICATION & LANDING PAGE ---
 if not st.session_state.logged_in_user:
     st.markdown("""
         <div class="main-title">
@@ -76,68 +100,103 @@ if not st.session_state.logged_in_user:
         </div>
     """, unsafe_allow_html=True)
     
-    auth_tab1, auth_tab2 = st.tabs(["🔐 Login", "📝 New User & Company Registration"])
-    
-    with auth_tab1:
-        st.subheader("Existing User Login")
-        login_id = st.text_input("Email ID / Mobile Number", key="login_id", value="", placeholder="Enter your email or mobile")
-        login_pass = st.text_input("Password", type="password", key="login_pass", value="", placeholder="Enter password")
-        if st.button("Login to Portal"):
-            if login_id == "roshan@shreeservices.com" and login_pass == "admin":
-                if login_id not in saas_db:
-                    saas_db[login_id] = {
-                        "password": "admin",
-                        "profile": {"name": "Shree Services", "legal": "Roshan Mishra", "address": "Mohan Garden, New Delhi", "contact": "7888273972", "gstin": "07SAMPLEGSTIN", "nature": "Goods / Manufacturing / Trading", "format": "Classic Blue (Professional)", "border_style": "Solid Line", "gst_enabled": True, "watermark_enabled": True, "watermark_type": "Company Name"},
-                        "history": [], "parties": {"RKMK Enterprises": {"legal": "Rinky", "address": "Delhi", "gstin": "07DEOPA0606H1ZU"}},
-                        "subscription": "Paid", "bills_created": 0
+    # Compact Login Centered Layout
+    col_l1, col_l2, col_l3 = st.columns([1, 2, 1])
+    with col_l2:
+        auth_tab1, auth_tab2 = st.tabs(["🔐 Login", "📝 New Registration"])
+        
+        with auth_tab1:
+            st.subheader("Existing User Login")
+            login_id = st.text_input("Email ID / Mobile Number", key="login_id", value="", placeholder="Enter email or mobile")
+            login_pass = st.text_input("Password", type="password", key="login_pass", value="", placeholder="Enter password")
+            if st.button("Login to Portal"):
+                if login_id == "roshan@shreeservices.com" and login_pass == "admin":
+                    if login_id not in saas_db:
+                        saas_db[login_id] = {
+                            "password": "admin",
+                            "profile": {"name": "Shree Services", "legal": "Roshan Mishra", "address": "Mohan Garden, New Delhi", "contact": "7888273972", "gstin": "07SAMPLEGSTIN", "nature": "Goods / Manufacturing / Trading", "format": "Classic Blue (Professional)", "border_style": "Solid Line", "gst_enabled": True, "watermark_enabled": True, "watermark_type": "Company Name"},
+                            "history": [], "parties": {"RKMK Enterprises": {"legal": "Rinky", "address": "Delhi", "gstin": "07DEOPA0606H1ZU"}},
+                            "subscription": "Paid", "bills_created": 0
+                        }
+                        save_saas_data(saas_db)
+                    st.session_state.logged_in_user = login_id
+                    st.session_state.login_time = datetime.now()
+                    st.success("Admin Login Successful!")
+                    st.rerun()
+                elif login_id in saas_db and saas_db[login_id]["password"] == login_pass:
+                    st.session_state.logged_in_user = login_id
+                    st.session_state.login_time = datetime.now()
+                    st.success("Login Successful!")
+                    st.rerun()
+                else: st.error("Invalid User ID or Password!")
+                    
+        with auth_tab2:
+            st.subheader("Create Company Account")
+            reg_id = st.text_input("Enter User ID (Email/Mobile)", key="reg_id", value="", placeholder="e.g. name@company.com")
+            reg_pass1 = st.text_input("Create Password", type="password", key="reg_pass1", value="", placeholder="Create password")
+            reg_pass2 = st.text_input("Confirm Password", type="password", key="reg_pass2", value="", placeholder="Confirm password")
+            
+            comp_name = st.text_input("Company / Trade Name", key="comp_name", value="", placeholder="e.g. My Business")
+            comp_legal = st.text_input("Authorized Person Name", key="comp_legal", value="", placeholder="e.g. John Doe")
+            comp_address = st.text_input("Complete Address", key="comp_address", value="", placeholder="Enter full address")
+            comp_contact = st.text_input("Contact Number", key="comp_contact", value="", placeholder="10-digit mobile")
+            comp_gstin = st.text_input("Company GSTIN (Optional)", key="comp_gstin", value="", placeholder="07AAAAA0000A1Z5")
+            
+            nature_options = ["Goods / Manufacturing / Trading", "Services", "Transport Company", "Other Business"]
+            comp_nature = st.selectbox("Fixed Business Nature (Format)", nature_options, key="comp_nature")
+            
+            if st.button("Register & Create Company Account"):
+                if not reg_id or not reg_pass1: st.warning("Please fill User ID and Password fields.")
+                elif reg_pass1 != reg_pass2: st.error("Passwords do not match!")
+                elif reg_id in saas_db: st.error("User ID already registered!")
+                elif not comp_name: st.warning("Please enter Company Name.")
+                else:
+                    saas_db[reg_id] = {
+                        "password": reg_pass1,
+                        "profile": {
+                            "name": comp_name, "legal": comp_legal, "address": comp_address,
+                            "contact": comp_contact, "gstin": comp_gstin, "nature": comp_nature,
+                            "format": "Classic Blue (Professional)", "border_style": "Solid Line",
+                            "gst_enabled": True, "watermark_enabled": True, "watermark_type": "Company Name"
+                        },
+                        "history": [], "parties": {"Sample Party": {"legal": "Client Name", "address": "Delhi", "gstin": "07AAAAA0000A1Z5"}},
+                        "subscription": "Trial", "bills_created": 0
                     }
                     save_saas_data(saas_db)
-                st.session_state.logged_in_user = login_id
-                st.session_state.login_time = datetime.now()
-                st.success("Admin Login Successful!")
-                st.rerun()
-            elif login_id in saas_db and saas_db[login_id]["password"] == login_pass:
-                st.session_state.logged_in_user = login_id
-                st.session_state.login_time = datetime.now()
-                st.success("Login Successful!")
-                st.rerun()
-            else: st.error("Invalid User ID or Password!")
-                
-    with auth_tab2:
-        st.subheader("Create Account & Company Profile")
-        reg_id = st.text_input("Enter User ID (Email/Mobile)", key="reg_id", value="", placeholder="e.g. name@company.com")
-        reg_pass1 = st.text_input("Create Password", type="password", key="reg_pass1", value="", placeholder="Create password")
-        reg_pass2 = st.text_input("Confirm Password", type="password", key="reg_pass2", value="", placeholder="Confirm password")
-        
-        st.markdown("---")
-        comp_name = st.text_input("Company / Trade Name", key="comp_name", value="", placeholder="e.g. My Business")
-        comp_legal = st.text_input("Authorized Person / Owner Name", key="comp_legal", value="", placeholder="e.g. John Doe")
-        comp_address = st.text_input("Company Complete Address", key="comp_address", value="", placeholder="Enter full address")
-        comp_contact = st.text_input("Contact Number", key="comp_contact", value="", placeholder="10-digit mobile number")
-        comp_gstin = st.text_input("Company GSTIN (Optional)", key="comp_gstin", value="", placeholder="07AAAAA0000A1Z5")
-        
-        nature_options = ["Goods / Manufacturing / Trading", "Services", "Transport Company", "Other Business"]
-        comp_nature = st.selectbox("Fixed Business Nature (Format)", nature_options, key="comp_nature")
-        
-        if st.button("Register & Create Company Account"):
-            if not reg_id or not reg_pass1: st.warning("Please fill User ID and Password fields.")
-            elif reg_pass1 != reg_pass2: st.error("Passwords do not match!")
-            elif reg_id in saas_db: st.error("User ID already registered!")
-            elif not comp_name: st.warning("Please enter Company Name.")
-            else:
-                saas_db[reg_id] = {
-                    "password": reg_pass1,
-                    "profile": {
-                        "name": comp_name, "legal": comp_legal, "address": comp_address,
-                        "contact": comp_contact, "gstin": comp_gstin, "nature": comp_nature,
-                        "format": "Classic Blue (Professional)", "border_style": "Solid Line",
-                        "gst_enabled": True, "watermark_enabled": True, "watermark_type": "Company Name"
-                    },
-                    "history": [], "parties": {"Sample Party": {"legal": "Client Name", "address": "Delhi", "gstin": "07AAAAA0000A1Z5"}},
-                    "subscription": "Trial", "bills_created": 0
-                }
-                save_saas_data(saas_db)
-                st.success("Account Created Successfully! Free Trial Activated (1 Free Bill). Go to Login tab.")
+                    st.success("Account Created Successfully! Free Trial Activated. Go to Login tab.")
+
+    # --- WEBSITE KEY BENEFITS & FEATURES SECTION ---
+    st.markdown("<br><hr><h2 style='text-align: center; color: #1e3a8a;'>🌟 Why Businesses Choose Our Portal</h2><p style='text-align: center; color: #64748b;'>Built specifically for Indian MSMEs, Accountants, and Service Providers with Tally-grade accuracy.</p><br>", unsafe_allow_html=True)
+    
+    b_col1, b_col2, b_col3, b_col4 = st.columns(4)
+    with b_col1:
+        st.markdown("""
+            <div class="benefit-card">
+                <h3>⚡ Smart Multi-Nature Billing</h3>
+                <p>Supports Goods (Manufacturing/Trading), Services, Transport (LR No/Vehicle), and General businesses with auto-adjusted columns.</p>
+            </div>
+        """, unsafe_allow_html=True)
+    with b_col2:
+        st.markdown("""
+            <div class="benefit-card">
+                <h3>📊 Tally-Grade Grid Entry</h3>
+                <p>Smooth item creation with unit selectors (NOS, Box, Pcs, Kgs), HSN codes, Nil Rated vs Taxable selection, and auto-calculations.</p>
+            </div>
+        """, unsafe_allow_html=True)
+    with b_col3:
+        st.markdown("""
+            <div class="benefit-card">
+                <h3>🎨 6 Pro Themes & Watermarks</h3>
+                <p>Customize your professional A4 invoices with 6 color palettes, custom border styles, company logos, and dynamic watermarks.</p>
+            </div>
+        """, unsafe_allow_html=True)
+    with b_col4:
+        st.markdown("""
+            <div class="benefit-card">
+                <h3>🛡️ Secure & GST Compliant</h3>
+                <p>Automatic CGST/SGST split or IGST calculation based on state codes, complete party management, and 24-day history records.</p>
+            </div>
+        """, unsafe_allow_html=True)
 
 else:
     # --- LOGGED-IN USER PORTAL ---
@@ -153,7 +212,6 @@ else:
     if "subscription" not in user_data: user_data["subscription"] = "Trial"
     if "bills_created" not in user_data: user_data["bills_created"] = len(user_data["history"])
 
-    # Auto-clean History (24 Days retention)
     current_time = datetime.now()
     cleaned_history = [
         h for h in st.session_state.history 
@@ -177,7 +235,7 @@ else:
                     st.sidebar.success(f"Updated {u_id} to {new_sub}!")
         st.sidebar.markdown("---")
 
-    # --- Sidebar Menu & Real Session Timer Display ---
+    # --- Sidebar Menu & Session Info ---
     st.sidebar.markdown(f"👤 **User:** `{current_user}`")
     st.sidebar.markdown(f"🏢 **Company:** `{user_data['profile']['name']}`")
     st.sidebar.markdown(f"🌟 **Plan:** `{user_data['subscription']}`")
@@ -356,7 +414,6 @@ else:
         # --- CREATE INVOICE TAB ---
         st.markdown(f"<div class='main-title'><h1>{user_data['profile']['name']}</h1><p>Invoice Mode: <b>{current_nature}</b> | Plan: <b>{user_data['subscription']}</b></p></div>", unsafe_allow_html=True)
 
-        # --- SUBSCRIPTION TRIAL LIMIT POP-UP LOCK ---
         if user_data["subscription"] == "Trial" and user_data.get("bills_created", 0) >= 1:
             st.error("🚨 **Free Trial Limit Reached!** You have already generated 1 free invoice on your trial account.")
             st.warning("💳 **Subscribe to Pro Plan (Rs. 5/- only)**")
@@ -481,7 +538,6 @@ else:
             total_amt = subtotal_amt + total_tax_amt
             balance = total_amt - total_paid
 
-            # Increment bill counter for trial limit
             user_data["bills_created"] = user_data.get("bills_created", 0) + 1
 
             st.session_state.history.append({
@@ -572,3 +628,4 @@ else:
             """
             st.success("✨ Professional Invoice Generated Successfully!")
             st.components.v1.html(html_content, height=850, scrolling=True)
+
