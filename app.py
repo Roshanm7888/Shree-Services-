@@ -1,14 +1,13 @@
 import streamlit as st
-import base64
 from datetime import datetime
 
 st.set_page_config(page_title="Shree Services - Invoice Portal", page_icon="📄", layout="centered")
 
-# --- Modern UI CSS ---
+# --- Colorful & Modern UI CSS ---
 st.markdown("""
     <style>
     .stApp {
-        background-color: #f1f5f9;
+        background-color: #f8fafc;
         font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     }
     .main-title {
@@ -23,32 +22,64 @@ st.markdown("""
     .main-title h1 { margin: 0; font-size: 26px; font-weight: 700; }
     .main-title p { margin: 5px 0 0 0; font-size: 14px; opacity: 0.9; }
 
+    /* Form Card Container Styling */
     div[data-testid="stForm"] {
         background: #ffffff;
-        padding: 25px;
-        border-radius: 12px;
+        padding: 30px;
+        border-radius: 16px;
         border: 1px solid #e2e8f0;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        box-shadow: 0 10px 25px rgba(0,0,0,0.05);
     }
-    h3 {
+
+    /* Colorful Section Headings / Banners inside form */
+    .section-box-1 {
+        background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+        border-left: 5px solid #3b82f6;
+        padding: 12px 15px;
+        border-radius: 8px;
         color: #1e3a8a;
-        font-size: 17px !important;
-        border-bottom: 2px solid #eff6ff;
-        padding-bottom: 8px;
-        margin-top: 15px !important;
+        font-weight: 700;
+        font-size: 16px;
+        margin-bottom: 15px;
     }
+    .section-box-2 {
+        background: linear-gradient(135deg, #fdf4ff 0%, #fae8ff 100%);
+        border-left: 5px solid #d946ef;
+        padding: 12px 15px;
+        border-radius: 8px;
+        color: #86198f;
+        font-weight: 700;
+        font-size: 16px;
+        margin-top: 20px;
+        margin-bottom: 15px;
+    }
+    .section-box-3 {
+        background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+        border-left: 5px solid #22c55e;
+        padding: 12px 15px;
+        border-radius: 8px;
+        color: #166534;
+        font-weight: 700;
+        font-size: 16px;
+        margin-top: 20px;
+        margin-bottom: 15px;
+    }
+
+    /* Main Submit Button */
     .stFormSubmitButton button {
-        background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+        background: linear-gradient(135deg, #059669 0%, #10b981 100%);
         color: white;
         font-weight: bold;
-        border-radius: 8px;
-        padding: 10px 20px;
+        border-radius: 10px;
+        padding: 12px 20px;
         width: 100%;
         border: none;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        box-shadow: 0 4px 10px rgba(16, 185, 129, 0.3);
+        font-size: 16px;
+        margin-top: 20px;
     }
     .stFormSubmitButton button:hover {
-        background: linear-gradient(135deg, #1d4ed8 0%, #2563eb 100%);
+        background: linear-gradient(135deg, #047857 0%, #059669 100%);
     }
     </style>
 """, unsafe_allow_html=True)
@@ -60,6 +91,7 @@ st.markdown("""
     </div>
 """, unsafe_allow_html=True)
 
+# --- Session States Initialization ---
 if "invoice_count" not in st.session_state:
     st.session_state.invoice_count = 1
 if "history" not in st.session_state:
@@ -88,37 +120,52 @@ if "saved_services" not in st.session_state:
         "SHOP ACT"
     ]
 
+# Edit Mode State Handlers
+if "edit_party" not in st.session_state:
+    st.session_state.edit_party = ""
+if "edit_services" not in st.session_state:
+    st.session_state.edit_services = "GST | July | 700"
+if "edit_paid" not in st.session_state:
+    st.session_state.edit_paid = 0.0
+
 with st.form("invoice_form"):
-    st.markdown("### 1. Client / Party Details")
+    # Section 1: Client Details
+    st.markdown('<div class="section-box-1">👤 1. Client / Party Details</div>', unsafe_allow_html=True)
     party_names = list(st.session_state.saved_parties.keys())
-    selected_party = st.selectbox("Select Existing Party", party_names)
+    
+    default_party_idx = 0
+    if st.session_state.edit_party in party_names:
+        default_party_idx = party_names.index(st.session_state.edit_party)
 
-    st.markdown("---")
-    st.markdown("**➕ Nayi Party Add Karein (Agar list mein na ho):**")
-    new_trade_name = st.text_input("New Party Trade Name", "")
-    new_legal_name = st.text_input("New Client Legal Name", "")
-    new_address = st.text_input("New Client Address", "")
-    new_gstin = st.text_input("New Client GSTIN", "")
+    selected_party = st.selectbox("Select Existing Party", party_names, index=default_party_idx)
 
-    st.markdown("### 2. Invoice Details")
+    # Collapsible Expander inside Form for Adding New Party
+    with st.expander("➕ Click Here to Add New Party"):
+        new_trade_name = st.text_input("New Party Trade Name", "")
+        new_legal_name = st.text_input("New Client Legal Name", "")
+        new_address = st.text_input("New Client Address", "")
+        new_gstin = st.text_input("New Client GSTIN", "")
+
+    # Section 2: Invoice Details
+    st.markdown('<div class="section-box-2">📋 2. Invoice Details</div>', unsafe_allow_html=True)
     current_inv_no = f"TAX/2026-27/{st.session_state.invoice_count:03d}"
     inv_no = st.text_input("Invoice Number (Auto-generated)", current_inv_no)
     inv_date = st.text_input("Invoice Date", datetime.now().strftime("%B %d, %Y"))
 
-    st.markdown("### 3. Select Services & Add Amount")
+    # Section 3: Services & Pricing
+    st.markdown('<div class="section-box-3">💼 3. Select Services & Add Amount</div>', unsafe_allow_html=True)
     selected_services = st.multiselect("Select Services from Library", st.session_state.saved_services, default=["GST"])
     new_service_input = st.text_input("Add New Service (Agar upar list mein na ho)", "")
     
     st.markdown("💡 *Format: Service Name | Period | Amount (Jaise: GST Filing | July | 700)*")
-    default_text = "\n".join([f"{s} | July | 700" for s in selected_services])
-    services_text = st.text_area("Services Details", default_text)
+    services_text = st.text_area("Services Details", value=st.session_state.edit_services)
 
-    total_paid = st.number_input("Total Amount Paid (Rs.)", min_value=0.0, value=0.0)
+    total_paid = st.number_input("Total Amount Paid (Rs.)", min_value=0.0, value=st.session_state.edit_paid)
 
     submitted = st.form_submit_button("✨ Generate Exact A4 Invoice Preview")
 
 if submitted:
-    if new_trade_name.strip():
+    if 'new_trade_name' in locals() and new_trade_name.strip():
         client_name = new_trade_name.strip()
         client_legal = new_legal_name.strip()
         client_address = new_address.strip()
@@ -171,10 +218,14 @@ if submitted:
         "total": total_amt,
         "paid": total_paid,
         "balance": balance,
-        "date": inv_date
+        "date": inv_date,
+        "services": services_text
     })
 
     st.session_state.invoice_count += 1
+    st.session_state.edit_party = ""
+    st.session_state.edit_services = "GST | July | 700"
+    st.session_state.edit_paid = 0.0
 
     # --- Perfect A4 Layout HTML & CSS with Built-in Print Button ---
     html_content = f"""
@@ -308,15 +359,19 @@ if submitted:
     """.format(total_amt, total_paid, balance)
 
     st.success("✨ Invoice Generated Successfully! Preview below:")
-    st.components.v1.html(html_content, height=850, scrolling=True)
+    st.components.v1.html(html_content, height=800, scrolling=True)
 
-    # Standard Download Backup Button
-    b64 = base64.b64encode(html_content.encode('utf-8')).decode()
-    href = f'<a href="data:text/html;charset=utf-8;base64,{b64}" download="Invoice_{client_name.replace(" ", "_")}_{inv_no.replace("/", "-")}.html" style="display:block; text-align:center; padding:12px; background-color:#1e3a8a; color:white; text-decoration:none; border-radius:8px; font-weight:bold; margin-top:10px;">📥 Download HTML File Backup</a>'
-    st.markdown(href, unsafe_allow_html=True)
-
+# --- Recent History with Edit Option ---
 if st.session_state.history:
     st.markdown("---")
-    st.markdown("### 📊 Recent Generated Invoices History")
+    st.markdown("### 📊 Recent Generated Invoices History & Edit")
     for i, h in enumerate(reversed(st.session_state.history)):
-        st.info(f"🔹 **{h['invoice_no']}** | Party: **{h['client']}** | Total: Rs. {h['total']} | Paid: Rs. {h['paid']} | Balance: Rs. {h['balance']}")
+        col1, col2 = st.columns([4, 1])
+        with col1:
+            st.info(f"🔹 **{h['invoice_no']}** | Party: **{h['client']}** | Total: Rs. {h['total']} | Paid: Rs. {h['paid']} | Balance: Rs. {h['balance']}")
+        with col2:
+            if st.button("✏️ Edit", key=f"edit_{i}"):
+                st.session_state.edit_party = h['client']
+                st.session_state.edit_services = h.get('services', 'GST | July | 700')
+                st.session_state.edit_paid = h['paid']
+                st.rerun()
