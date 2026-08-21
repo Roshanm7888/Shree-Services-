@@ -1,32 +1,40 @@
 import streamlit as st
 import base64
+from datetime import datetime
 
 st.set_page_config(page_title="Invoice Generator - Roshan Mishra", layout="centered")
 
-st.title("📄 Professional Invoice Generator")
-st.write("Apni party ki details bhar kar instant professional invoice generate karein.")
+st.title("📄 Professional Invoice Generator & Portal")
+st.write("Party ki details bharein, auto-numbering aur history ke sath professional invoice generate karein.")
+
+# Session state for tracking invoice numbers and history
+if "invoice_count" not in st.session_state:
+    st.session_state.invoice_count = 1
+if "history" not in st.session_state:
+    st.session_state.history = []
 
 with st.form("invoice_form"):
     st.subheader("1. Client Details")
-    client_name = st.text_input("Client Trade Name", "Mishra & Alliance")
-    client_legal = st.text_input("Client Legal Name", "Roshan Mishra")
-    client_address = st.text_input("Client Address", "Shivaji nagar satpur nashik 4220012")
-    client_gstin = st.text_input("Client GSTIN", "")
+    client_name = st.text_input("Client Trade Name", "RKMK Enterprises")
+    client_legal = st.text_input("Client Legal Name", "Rinky Acharya")
+    client_address = st.text_input("Client Address", "Flat No. 34, Ground Floor, Block P Extn, Mohan Garden, New Delhi - 110059")
+    client_gstin = st.text_input("Client GSTIN", "07DEOPA0606H1ZU")
 
     st.subheader("2. Invoice Details")
-    inv_no = st.text_input("Invoice Number", "TAX/2026-27/002")
-    inv_date = st.text_input("Invoice Date", "August 21, 2026")
+    current_inv_no = f"TAX/2026-27/{st.session_state.invoice_count:03d}"
+    inv_no = st.text_input("Invoice Number (Auto-generated)", current_inv_no)
+    inv_date = st.text_input("Invoice Date", datetime.now().strftime("%B %d, %Y"))
 
     st.subheader("3. Services & Amounts")
     st.markdown("💡 *Format: Service Name | Period | Amount (Jaise: GST Filing | November | 700)*")
     services_text = st.text_area(
         "Enter services (Ek line mein ek service)",
-        "GST Filing Charges | November | 700\nITR Filing Charges | FY 2025-26 | 2500"
+        "GST Filing Charges | November | 700\nUdyam Registration | One-time | 200"
     )
 
     total_paid = st.number_input("Total Amount Paid (₹)", min_value=0.0, value=0.0)
 
-    submitted = st.form_submit_button("Generate Invoice Preview & Download")
+    submitted = st.form_submit_button("Generate Invoice & Save to History")
 
 if submitted:
     lines = services_text.split('\n')
@@ -43,7 +51,6 @@ if submitted:
                 except:
                     amt = 0.0
             else:
-                # Agar pipe nahi lagaya toh space ya last word ko amount maan lega
                 parts = line.strip().rsplit(' ', 1)
                 desc = parts[0]
                 period = "General"
@@ -56,6 +63,19 @@ if submitted:
             total_amt += amt
 
     balance = total_amt - total_paid
+
+    # Save to history session
+    st.session_state.history.append({
+        "invoice_no": inv_no,
+        "client": client_name,
+        "total": total_amt,
+        "paid": total_paid,
+        "balance": balance,
+        "date": inv_date
+    })
+
+    # Increment invoice counter for next time
+    st.session_state.invoice_count += 1
 
     html_content = f"""
     <!DOCTYPE html>
@@ -155,10 +175,16 @@ if submitted:
     </html>
     """.format(total_amt, total_paid, balance)
 
-    st.success("Invoice generated successfully!")
+    st.success("Invoice generated & saved successfully!")
     st.components.v1.html(html_content, height=650, scrolling=True)
 
     b64 = base64.b64encode(html_content.encode()).decode()
-    href = f'<a href="data:text/html;base64,{b64}" download="Invoice_{client_name.replace(" ", "_")}.html" style="display:inline-block; padding:10px 20px; background-color:#1a365d; color:white; text-decoration:none; border-radius:5px; font-weight:bold; margin-top:20px;">📥 Download Invoice File</a>'
+    href = f'<a href="data:text/html;base64,{b64}" download="Invoice_{client_name.replace(" ", "_")}_{inv_no.replace("/", "-")}.html" style="display:inline-block; padding:10px 20px; background-color:#1a365d; color:white; text-decoration:none; border-radius:5px; font-weight:bold; margin-top:20px;">📥 Download Invoice File</a>'
     st.markdown(href, unsafe_allow_html=True)
-    st.info("💡 Tip: Downloaded file ko open karke aap browser se seedha Print ya Save as PDF kar sakte hain!")
+
+# Display Invoice History Section below
+if st.session_state.history:
+    st.markdown("---")
+    st.subheader("📊 Recent Generated Invoices History")
+    for h in reversed(st.session_state.history):
+        st.write(f"🔹 **{h['invoice_no']}** | Party: **{h['client']}** | Total: ₹{h['total']} | Paid: ₹{h['paid']} | Balance: ₹{h['balance']} ({h['date']})")
