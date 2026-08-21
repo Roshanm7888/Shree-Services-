@@ -1,7 +1,5 @@
+fpdf2
 streamlit
-pandas
-requests
-openpyxl
 
 
 
