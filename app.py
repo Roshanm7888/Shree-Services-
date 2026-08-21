@@ -1,146 +1,143 @@
 import streamlit as st
-import pandas as pd
-import urllib.parse
-from datetime import datetime
+from weasyprint import HTML
+import tempfile
+import os
 
-# 1. Page Configuration
-st.set_page_config(page_title="Shree Services - Master Portal", layout="wide", page_icon="🏢")
+st.set_page_config(page_title="Invoice Generator - Roshan Mishra", layout="centered")
 
-# Master Styling
-st.markdown("""
-<style>
-[data-testid="stSidebar"] { display: none; }
-#MainMenu {visibility: hidden;} footer {visibility: hidden;} header {visibility: hidden;}
-.main-header { background: #1e3a8a; color: white; padding: 25px; border-radius: 15px; text-align: center; margin-bottom: 20px;}
-.stButton>button { border-radius: 10px; height: 3.5em; font-weight: bold; border: 2px solid #1e3a8a; width: 100%; background: #1e3a8a; color: white; }
-.service-box, .reminder-box { background: white !important; padding: 20px; border-radius: 12px; border: 1px solid #ddd; border-left: 10px solid #1e3a8a; margin-bottom: 15px; color: black !important; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-.bill-container { background: white; border: 2px solid #000; padding: 35px; color: black; max-width: 800px; margin: auto; font-family: Arial; }
-.pay-section { display: flex; align-items: center; justify-content: space-around; border: 1px dashed #333; padding: 15px; margin-top: 15px; }
-</style>
-""", unsafe_allow_html=True)
+st.title("📄 Professional Invoice Generator")
+st.write("Apni party ki details aur services bhar kar instant PDF invoice download karein.")
 
-# 2. Data Loading
-SHEET_ID = "1NVNjNawK0026WPsd6P_X-lSd6LoLWqXo8dG1m7Ou098"
-SHEET_URL = f"https://docs.google.com/spreadsheets/d/{SHEET_ID}/export?format=csv"
-PORTAL_LINK = "https://shree-services.streamlit.app"
-FIXED_UPI = "7888273972-2@ybl"
+with st.form("invoice_form"):
+    st.subheader("1. Client (Party) Details")
+    client_trade_name = st.text_input("Client Trade Name (e.g., RKMK Enterprises)", "RKMK Enterprises")
+    client_legal_name = st.text_input("Client Legal Name", "Rinky Acharya")
+    client_address = st.text_input("Client Address", "Flat No. 34, Ground Floor, Block P Extn, Mohan Garden, New Delhi - 110059")
+    client_gstin = st.text_input("Client GSTIN", "07DEOPA0606H1ZU")
 
-@st.cache_data(ttl=2)
-def load_data():
-    try:
-        d = pd.read_csv(SHEET_URL)
-        d.columns = d.columns.str.strip()
-        return d
-    except: return pd.DataFrame()
+    st.subheader("2. Invoice Meta Details")
+    invoice_no = st.text_input("Invoice Number", "TAX/2026-27/001")
+    invoice_date = st.text_input("Invoice Date", "August 21, 2026")
 
-df = load_data()
-if 'page' not in st.session_state:
-    # URL params check for deep linking (Ledger/Upload)
-    params = st.query_params
-    st.session_state.page = params.get("page", "home")
+    st.subheader("3. Billing Items (Services & Amounts)")
+    st.write("Yahan aap items add kar sakte hain (Comma separated ya basic rows ke roop mein)")
+    
+    # Simple dynamic rows representation via text area for ease, or standard items
+    # For quick entry: Item Name, Period, Amount
+    item_desc_1 = st.text_input("Item 1 Description", "GST Filing Charges")
+    item_period_1 = st.text_input("Item 1 Period/Details", "November")
+    item_amount_1 = st.number_format_val = st.number_input("Item 1 Amount (₹)", value=700.0)
 
-# 3. Header & Navigation
-st.markdown('<div class="main-header"><h1>Shree Services - Master Portal</h1><p>Accounting, GST & Taxation Solutions</p></div>', unsafe_allow_html=True)
+    item_desc_2 = st.text_input("Item 2 Description", "Udyam Registration")
+    item_period_2 = st.text_input("Item 2 Period/Details", "One-time")
+    item_amount_2 = st.number_input("Item 2 Amount (₹)", value=200.0)
 
-nav_cols = st.columns(5)
-pages = ["🏠 HOME", "🧾 BILL", "🔔 REMINDER", "📤 UPLOAD", "📊 LEDGER"]
-for i, col in enumerate(nav_cols):
-    if col.button(pages[i]):
-        st.session_state.page = pages[i].split()[-1].lower()
-        st.query_params.clear() # Clear params on manual nav
+    item_desc_3 = st.text_input("Item 3 Description", "GST Filing Charges")
+    item_period_3 = st.text_input("Item 3 Period/Details", "December")
+    item_amount_3 = st.number_input("Item 3 Amount (₹)", value=700.0)
 
-# 4. Page Logic
+    st.subheader("4. Payment Summary")
+    total_paid = st.number_input("Total Amount Paid (₹)", value=2000.0)
 
-# --- HOME PAGE ---
-if st.session_state.page == "home":
-    st.write("### 🛠️ Our Professional Services")
-    services = {
-        "📊 Taxation": "GST Filing (R1 & 3B), Income Tax Returns, Audit Support.",
-        "🛡️ Insurance": "Life, Health & Vehicle Insurance with best premiums.",
-        "📝 Online Work": "PAN Card, Aadhar Updates, GST New Registration."
-    }
-    for title, desc in services.items():
-        st.markdown(f'<div class="service-box"><h3>{title}</h3><p>{desc}</p></div>', unsafe_allow_html=True)
-        with st.expander(f"Apply for {title}"):
-            m = st.text_input("Mobile Number", key=f"m_{title}")
-            r = st.text_area("Details", key=f"r_{title}")
-            if st.button(f"Submit {title} Inquiry"):
-                wa_msg = f"Inquiry for {title}\nMobile: {m}\nDetails: {r}"
-                st.markdown(f'<a href="https://wa.me/917888273972?text={urllib.parse.quote(wa_msg)}" target="_blank"><div style="background:#25d366; color:white; padding:10px; text-align:center; border-radius:10px;">📲 Send to Roshan Mishra</div></a>', unsafe_allow_html=True)
+    submitted = st.form_submit_button("Generate & Download PDF Invoice")
 
-# --- BILL PAGE ---
-elif st.session_state.page == "bill":
-    st.title("📑 Generate Bill")
-    if not df.empty:
-        party = st.selectbox("Select Party Name", df.iloc[:,0].unique())
-        amt = st.number_input("Amount (₹)", value=800)
-        qr = f"https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=upi://pay?pa={FIXED_UPI}&pn=Shree%20Services&am={amt}&cu=INR"
-        st.markdown(f"""
-        <div class="bill-container">
-            <h2 style="text-align:center; color:#1e3a8a; margin:0;">SHREE SERVICES</h2>
-            <p style="text-align:center; margin:5px;">Mohan Garden, New Delhi | Mob: 7888273972</p><hr>
-            <p><b>Client:</b> {party} <span style="float:right;"><b>Date:</b> {datetime.now().strftime('%d/%m/%Y')}</span></p>
-            <table style="width:100%; border:1px solid #000; border-collapse:collapse; margin:15px 0;">
-                <tr style="background:#eee;"><th>Description</th><th style="text-align:right;">Amount</th></tr>
-                <tr><td style="padding:10px; height:80px;">Professional GST Filing Fees</td><td style="text-align:right; padding:10px;">₹{amt}.00</td></tr>
-            </table>
-            <div class="pay-section">
-                <div style="text-align:center;"><img src="{qr}" width="130"><br><small>Scan & Pay</small></div>
-                <div style="text-align:left;"><p><b>Payment Info:</b><br>UPI ID: {FIXED_UPI}<br>Name: Roshan Mishra</p></div>
-            </div>
-        </div>""", unsafe_allow_html=True)
-        wa_b = f"Namaste 🙏, Bill for {party}: ₹{amt}. Pay via UPI: {FIXED_UPI}"
-        st.markdown(f'<a href="https://wa.me/?text={urllib.parse.quote(wa_b)}" target="_blank"><div style="background:#25d366; color:white; padding:12px; text-align:center; border-radius:10px; font-weight:bold;">📲 Send Bill on WhatsApp</div></a>', unsafe_allow_html=True)
+if submitted:
+    # Calculations
+    items = [
+        (item_desc_1, item_period_1, item_amount_1),
+        (item_desc_2, item_period_2, item_amount_2),
+        (item_desc_3, item_period_3, item_amount_3),
+    ]
+    total_amount = sum([amt for _, _, amt in items])
+    balance_pending = total_amount - total_paid
 
-# --- REMINDER PAGE ---
-elif st.session_state.page == "reminder" or st.session_state.page == "rem":
-    st.title("🔔 Reminder System")
-    if not df.empty:
-        party = st.selectbox("Choose Client", df.iloc[:,0].unique())
-        mode = st.radio("Select Type", ["GSTR-1 (Sale)", "GST-3B (Purchase)", "Payment Pending"])
-        
-        final_msg = ""
-        if mode == "GSTR-1 (Sale)":
-            final_msg = f"Namaste 🙏, *Shree Services*.\nReminder for *{party}*.\n\n*GSTR-1* ki date kareeb hai. Sale bills yahan upload karein:\n👉 {PORTAL_LINK}?page=upload&mode=sale"
-        elif mode == "GST-3B (Purchase)":
-            final_msg = f"Namaste 🙏, *Shree Services*.\nReminder for *{party}*.\n\n*GST-3B* ki date kareeb hai. Purchase bills yahan upload karein:\n👉 {PORTAL_LINK}?page=upload&mode=purchase"
-        else:
-            sel_months = st.multiselect("Mahine chunein:", ["April", "May", "June", "July", "August", "September", "October", "November", "December", "January", "February", "March"])
-            if sel_months:
-                breakdown = "\n".join([f"• {m}: ₹800" for m in sel_months])
-                final_msg = f"Namaste 🙏, *Shree Services*.\nReminder for *{party}*.\n\nAapka Payment pending hai:\n{breakdown}\n*Total Amount: ₹{len(sel_months)*800}*\n\n*Pay UPI:* {FIXED_UPI}\n*Ledger:* {PORTAL_LINK}?page=ledger"
-        
-        if final_msg:
-            st.markdown(f'<div class="reminder-box"><h3>Generated Message:</h3><p style="white-space: pre-wrap;">{final_msg}</p></div>', unsafe_allow_html=True)
-            if st.button("📲 Send WhatsApp"):
-                st.markdown(f'<a href="https://wa.me/?text={urllib.parse.quote(final_msg)}" target="_blank">✅ Click to Confirm Send</a>', unsafe_allow_html=True)
+    # HTML Template generation
+    html_content = f"""
+    <!DOCTYPE html>
+    <html>
+    <head>
+    <style>
+        @page {{ size: A4; margin: 10mm; }}
+        body {{ font-family: 'Helvetica', Arial, sans-serif; color: #2c3e50; line-height: 1.2; margin: 0; padding: 0; font-size: 11px; }}
+        .invoice-container {{ max-width: 800px; margin: auto; }}
+        .header-table {{ width: 100%; border-collapse: collapse; margin-bottom: 10px; }}
+        .company-title {{ font-size: 18px; font-weight: bold; color: #1a365d; }}
+        .invoice-title {{ font-size: 20px; font-weight: bold; color: #2c3e50; text-align: right; text-transform: uppercase; }}
+        .billing-section {{ width: 100%; border-collapse: collapse; margin: 10px 0; background: #f8fafc; border: 1px solid #e2e8f0; }}
+        .billing-section td {{ padding: 8px; vertical-align: top; width: 50%; }}
+        .section-title {{ font-weight: bold; color: #1a365d; margin-bottom: 2px; font-size: 11px; text-transform: uppercase; border-bottom: 1px solid #cbd5e1; }}
+        .items-table {{ width: 100%; border-collapse: collapse; margin: 10px 0; }}
+        .items-table th {{ background-color: #1a365d; color: #ffffff; text-align: left; padding: 6px; font-size: 11px; }}
+        .items-table td {{ border-bottom: 1px solid #e2e8f0; padding: 6px; font-size: 11px; }}
+        .totals-table {{ width: 250px; margin-left: auto; border-collapse: collapse; margin-top: 5px; }}
+        .totals-table td {{ padding: 4px; font-size: 11px; }}
+        .grand-total {{ font-weight: bold; background: #f1f5f9; border-top: 1px solid #1a365d; border-bottom: 1px solid #1a365d; }}
+        .signature-line {{ border-top: 1px solid #000; width: 200px; margin-top: 40px; text-align: center; font-weight: bold; float: right; }}
+        .footer {{ margin-top: 20px; text-align: center; font-size: 10px; color: #718096; border-top: 1px solid #e2e8f0; padding-top: 5px; }}
+    </style>
+    </head>
+    <body>
+    <div class="invoice-container">
+        <table class="header-table">
+            <tr>
+                <td>
+                    <div class="company-title">Roshan Mishra</div>
+                    <div style="font-size: 10px;">Plot no 64 & 65, Block K-5, Near Star Shine Public School, Mohan Garden, New Delhi - 110059<br><strong>Contact:</strong> 7888273972</div>
+                </td>
+                <td>
+                    <div class="invoice-title">Tax Invoice</div>
+                    <div style="text-align: right; font-size: 10px;"><strong>Invoice No:</strong> {invoice_no}<br><strong>Date:</strong> {invoice_date}<br><strong>GSTIN:</strong> {client_gstin}</div>
+                </td>
+            </tr>
+        </table>
+        <table class="billing-section">
+            <tr>
+                <td>
+                    <div class="section-title">Service Provider</div>
+                    <strong>Accountant:</strong> Roshan Mishra<br>Plot no 64 & 65, Block K-5, Mohan Garden, New Delhi - 110059
+                </td>
+                <td>
+                    <div class="section-title">Billed To</div>
+                    <strong>{client_trade_name}</strong><br><strong>Legal Name:</strong> {client_legal_name}<br><strong>Address:</strong> {client_address}
+                </td>
+            </tr>
+        </table>
+        <table class="items-table">
+            <thead><tr><th>S.No.</th><th>Description</th><th>Period</th><th>Amount (₹)</th></tr></thead>
+            <tbody>
+    """
+    
+    for idx, (desc, period, amt) in enumerate(items, 1):
+        html_content += f"<tr><td>{idx}</td><td>{desc}</td><td>{period}</td><td>{amt:.2f}</td></tr>"
 
-# --- UPLOAD PAGE ---
-elif st.session_state.page == "upload":
-    st.title("📤 Document Portal")
-    mode = st.query_params.get("mode", "all")
-    st.info(f"Uploading for: {mode.upper()}")
-    st.file_uploader("Select Files", accept_multiple_files=True)
-    if st.button("Submit"): st.success("Files Submitted!")
+    html_content += f"""
+            </tbody>
+        </table>
+        <table class="totals-table">
+            <tr><td>Total:</td><td style="text-align:right;">₹{total_amount:.2f}</td></tr>
+            <tr><td>Paid:</td><td style="text-align:right;">₹{total_paid:.2f}</td></tr>
+            <tr class="grand-total"><td>Balance:</td><td style="text-align:right;">₹{balance_pending:.2f}</td></tr>
+        </table>
+        <div class="signature-line">Authorised Signatory</div>
+        <div style="clear:both;"></div>
+        <div class="footer">Thank you for your business! This is a computer-generated tax invoice.</div>
+    </div>
+    </body>
+    </html>
+    """
 
-# --- LEDGER PAGE ---
-elif st.session_state.page == "ledger":
-    st.title("📊 Client Ledger Status")
-    if not df.empty:
-        firm = st.selectbox("Select Firm", df.iloc[:,0].unique())
-        f_df = df[df.iloc[:,0] == firm]
-        c1, c2, c3 = st.columns(3)
-        with c1: yr = st.selectbox("Year", f_df['Year'].unique() if 'Year' in f_df.columns else ["2025-26"])
-        with c2: qtr = st.selectbox("Quarter", f_df['Quarter'].unique() if 'Quarter' in f_df.columns else ["Apr-Jun"])
-        with c3: view = st.selectbox("Check", ["GST Status", "Payment Status"])
-        
-        res = f_df[(f_df['Year'] == yr)] # Simplified filter for safety
-        if view == "GST Status":
-            c_r1 = next((c for c in res.columns if "R1" in c or "GSTR1" in c), res.columns[4])
-            c_3b = next((c for c in res.columns if "3B" in c or "GST3B" in c), res.columns[5])
-            st.table(res[['Month', c_r1, c_3b]])
-        else:
-            p_col = next((c for c in res.columns if "Pay" in c), res.columns[-1])
-            st.table(res[['Month', p_col]])
+    # Create temporary PDF
+    with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp:
+        HTML(string=html_content).write_pdf(tmp.name)
+        pdf_path = tmp.name
 
-st.markdown('<div class="main-header" style="margin-top:20px; padding:10px;">📞 Roshan Mishra: 7888273972</div>', unsafe_allow_html=True)
+    with open(pdf_path, "rb") as f:
+        pdf_bytes = f.read()
+
+    st.success("Invoice successfully generated!")
+    st.download_button(
+        label="📥 Download Invoice PDF",
+        data=pdf_bytes,
+        file_name=f"Invoice_{client_trade_name.replace(' ', '_')}.pdf",
+        mime="application/pdf"
+    )
