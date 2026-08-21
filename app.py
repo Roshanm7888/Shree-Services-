@@ -5,7 +5,7 @@ from fpdf import FPDF
 st.set_page_config(page_title="Invoice Generator - Roshan Mishra", layout="centered")
 
 st.title("📄 Professional Invoice Generator & Portal")
-st.write("A4 Preview aur Direct PDF Download ke sath apna professional invoice generate karein.")
+st.write("A4 Preview aur Perfect Wrapped PDF Download ke sath apna professional invoice generate karein.")
 
 if "invoice_count" not in st.session_state:
     st.session_state.invoice_count = 1
@@ -226,13 +226,15 @@ if submitted:
     st.success("Invoice generated successfully! A4 Preview below:")
     st.components.v1.html(html_content, height=750, scrolling=True)
 
-    # --- 2. Generate Real PDF for Direct Download ---
+    # --- 2. Generate Properly Wrapped PDF for Direct Download ---
     pdf = FPDF()
     pdf.add_page()
+    
+    # Title & Header
     pdf.set_font("Helvetica", "B", 18)
     pdf.cell(190, 10, "TAX INVOICE", ln=True, align="Right")
     
-    pdf.set_font("Helvetica", "B", 12)
+    pdf.set_font("Helvetica", "B", 11)
     pdf.cell(100, 6, "Roshan Mishra", ln=False)
     pdf.set_font("Helvetica", "", 10)
     pdf.cell(90, 6, f"Invoice No: {inv_no}", ln=True, align="Right")
@@ -242,20 +244,21 @@ if submitted:
     pdf.cell(100, 5, "Contact: 7888273972", ln=False)
     pdf.cell(90, 5, f"Client GSTIN: {client_gstin}", ln=True, align="Right")
     
-    pdf.ln(10)
-    pdf.set_font("Helvetica", "B", 11)
+    pdf.ln(8)
+    
+    # Billing Section with MultiCell to prevent overlap
+    pdf.set_font("Helvetica", "B", 10)
     pdf.cell(95, 6, "Billed To:", ln=False)
     pdf.cell(95, 6, "Service Provider:", ln=True)
     
-    pdf.set_font("Helvetica", "", 10)
-    pdf.cell(95, 5, f"Trade Name: {client_name}", ln=False)
-    pdf.cell(95, 5, "Roshan Mishra (Accountant)", ln=True)
-    pdf.cell(95, 5, f"Legal Name: {client_legal}", ln=False)
-    pdf.cell(95, 5, "Plot no 64 & 65, Block K-5,", ln=True)
-    pdf.cell(95, 5, f"Address: {client_address}", ln=False)
-    pdf.cell(95, 5, "Mohan Garden, New Delhi - 110059", ln=True)
+    pdf.set_font("Helvetica", "", 9)
+    # Using multi_cell for proper wrapping
+    pdf.multi_cell(95, 5, f"Trade Name: {client_name}\nLegal Name: {client_legal}\nAddress: {client_address}")
+    # Move back up for right column
+    pdf.set_xy(105, pdf.get_y() - 15)
+    pdf.multi_cell(95, 5, "Roshan Mishra (Accountant)\nPlot no 64 & 65, Block K-5,\nMohan Garden, New Delhi - 110059")
     
-    pdf.ln(12)
+    pdf.ln(10)
     
     # Table Header
     pdf.set_fill_color(26, 54, 93)
