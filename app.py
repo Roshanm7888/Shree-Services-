@@ -5,14 +5,15 @@ from datetime import datetime
 st.set_page_config(page_title="Invoice Generator - Roshan Mishra", layout="centered")
 
 st.title("📄 Professional Invoice Generator & Portal")
-st.write("Tally-style party saving aur auto-fill ke sath apna professional invoice generate karein.")
+st.write("Smart Party & Service Auto-save ke sath apna professional invoice generate karein.")
 
 if "invoice_count" not in st.session_state:
     st.session_state.invoice_count = 1
 if "history" not in st.session_state:
     st.session_state.history = []
+
+# Saved Parties
 if "saved_parties" not in st.session_state:
-    # Default party jo pehle banayi thi
     st.session_state.saved_parties = {
         "RKMK Enterprises": {
             "legal": "Rinky Acharya",
@@ -21,29 +22,32 @@ if "saved_parties" not in st.session_state:
         }
     }
 
-# Session states for form fields
-if "sel_client" not in st.session_state:
-    st.session_state.sel_client = "RKMK Enterprises"
+# 5 Compulsory Services + Custom Saved Services
+if "saved_services" not in st.session_state:
+    st.session_state.saved_services = [
+        "ITR",
+        "GST",
+        "GST REGISTRATION",
+        "UDYAM",
+        "SHOP ACT"
+    ]
+
+# Session states for editing
 if "edit_legal" not in st.session_state:
     st.session_state.edit_legal = "Rinky Acharya"
 if "edit_address" not in st.session_state:
     st.session_state.edit_address = "Flat No. 34, Ground Floor, Block P Extn, Mohan Garden, New Delhi - 110059"
 if "edit_gstin" not in st.session_state:
     st.session_state.edit_gstin = "07DEOPA0606H1ZU"
-if "edit_services" not in st.session_state:
-    st.session_state.edit_services = "GST Filing Charges | November | 700\nUdyam Registration | One-time | 200"
 if "edit_paid" not in st.session_state:
     st.session_state.edit_paid = 0.0
 
 with st.form("invoice_form"):
     st.subheader("1. Client Details")
-    
-    # Party Selection Dropdown + Option for New Party
     party_list = list(st.session_state.saved_parties.keys()) + ["+ Add New Party"]
-    selected_party = st.selectbox("Select Party (Tally Style)", party_list)
+    selected_party = st.selectbox("Select Party", party_list)
 
     if selected_party != "+ Add New Party":
-        # Auto-fill from saved database
         p_info = st.session_state.saved_parties[selected_party]
         client_name = selected_party
         client_legal = st.text_input("Client Legal Name", p_info["legal"])
@@ -60,24 +64,35 @@ with st.form("invoice_form"):
     inv_no = st.text_input("Invoice Number (Auto-generated)", current_inv_no)
     inv_date = st.text_input("Invoice Date", datetime.now().strftime("%B %d, %Y"))
 
-    st.subheader("3. Services & Amounts")
+    st.subheader("3. Select Services & Add Amount")
+    
+    # Multi-select for saved services
+    selected_services = st.multiselect("Select Services from Library", st.session_state.saved_services, default=["GST"])
+    
+    # Custom new service option
+    new_service_input = st.text_input("Add New Service (Agar upar list mein na ho)", "")
+    
     st.markdown("💡 *Format: Service Name | Period | Amount (Jaise: GST Filing | November | 700)*")
-    services_text = st.text_area(
-        "Enter services (Ek line mein ek service)",
-        st.session_state.edit_services
-    )
+    
+    # Default text area populated with selected services
+    default_text = "\n".join([f"{s} | November | 700" for s in selected_services])
+    services_text = st.text_area("Services Details (Aap yahan edit bhi kar sakte hain)", default_text)
 
     total_paid = st.number_input("Total Amount Paid (Rs.)", min_value=0.0, value=st.session_state.edit_paid)
 
-    submitted = st.form_submit_button("Generate Invoice & Save Party")
+    submitted = st.form_submit_button("Generate Invoice & Save")
 
 if submitted:
-    # Save party to directory permanently for this session
+    # Save party
     st.session_state.saved_parties[client_name] = {
         "legal": client_legal,
         "address": client_address,
         "gstin": client_gstin
     }
+
+    # Save new service if entered
+    if new_service_input and new_service_input.upper() not in [s.upper() for s in st.session_state.saved_services]:
+        st.session_state.saved_services.append(new_service_input.upper())
 
     lines = services_text.split('\n')
     items = []
@@ -220,7 +235,7 @@ if submitted:
     </html>
     """.format(total_amt, total_paid, balance)
 
-    st.success("Invoice generated & party saved successfully!")
+    st.success("Invoice generated successfully!")
     st.components.v1.html(html_content, height=650, scrolling=True)
 
     b64 = base64.b64encode(html_content.encode('utf-8')).decode()
@@ -231,11 +246,4 @@ if st.session_state.history:
     st.markdown("---")
     st.subheader("📊 Recent Generated Invoices History")
     for i, h in enumerate(reversed(st.session_state.history)):
-        cols = st.columns([4, 1])
-        with cols[0]:
-            st.write(f"🔹 **{h['invoice_no']}** | Party: **{h['client']}** | Total: Rs. {h['total']} | Paid: Rs. {h['paid']} | Balance: Rs. {h['balance']}")
-        with cols[1]:
-            if st.button("✏️ Edit / Load", key=f"load_{i}"):
-                st.session_state.edit_services = h['services']
-                st.session_state.edit_paid = h['paid']
-                st.rerun()
+        st.write(f"🔹 **{h['invoice_no']}** | Party: **{h['client']}** | Total: Rs. {h['total']} | Paid: Rs. {h['paid']} | Balance: Rs. {h['balance']}")
