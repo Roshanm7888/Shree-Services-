@@ -12,12 +12,26 @@ if "invoice_count" not in st.session_state:
 if "history" not in st.session_state:
     st.session_state.history = []
 
+# Temporary storage for editing/loading history
+if "edit_client" not in st.session_state:
+    st.session_state.edit_client = "RKMK Enterprises"
+if "edit_legal" not in st.session_state:
+    st.session_state.edit_legal = "Rinky Acharya"
+if "edit_address" not in st.session_state:
+    st.session_state.edit_address = "Flat No. 34, Ground Floor, Block P Extn, Mohan Garden, New Delhi - 110059"
+if "edit_gstin" not in st.session_state:
+    st.session_state.edit_gstin = "07DEOPA0606H1ZU"
+if "edit_services" not in st.session_state:
+    st.session_state.edit_services = "GST Filing Charges | November | 700\nUdyam Registration | One-time | 200"
+if "edit_paid" not in st.session_state:
+    st.session_state.edit_paid = 0.0
+
 with st.form("invoice_form"):
     st.subheader("1. Client Details")
-    client_name = st.text_input("Client Trade Name", "RKMK Enterprises")
-    client_legal = st.text_input("Client Legal Name", "Rinky Acharya")
-    client_address = st.text_input("Client Address", "Flat No. 34, Ground Floor, Block P Extn, Mohan Garden, New Delhi - 110059")
-    client_gstin = st.text_input("Client GSTIN", "07DEOPA0606H1ZU")
+    client_name = st.text_input("Client Trade Name", st.session_state.edit_client)
+    client_legal = st.text_input("Client Legal Name", st.session_state.edit_legal)
+    client_address = st.text_input("Client Address", st.session_state.edit_address)
+    client_gstin = st.text_input("Client GSTIN", st.session_state.edit_gstin)
 
     st.subheader("2. Invoice Details")
     current_inv_no = f"TAX/2026-27/{st.session_state.invoice_count:03d}"
@@ -28,10 +42,10 @@ with st.form("invoice_form"):
     st.markdown("💡 *Format: Service Name | Period | Amount (Jaise: GST Filing | November | 700)*")
     services_text = st.text_area(
         "Enter services (Ek line mein ek service)",
-        "GST Filing Charges | November | 700\nUdyam Registration | One-time | 200"
+        st.session_state.edit_services
     )
 
-    total_paid = st.number_input("Total Amount Paid (Rs.)", min_value=0.0, value=0.0)
+    total_paid = st.number_input("Total Amount Paid (Rs.)", min_value=0.0, value=st.session_state.edit_paid)
 
     submitted = st.form_submit_button("Generate Invoice & Save to History")
 
@@ -66,6 +80,10 @@ if submitted:
     st.session_state.history.append({
         "invoice_no": inv_no,
         "client": client_name,
+        "legal": client_legal,
+        "address": client_address,
+        "gstin": client_gstin,
+        "services": services_text,
         "total": total_amt,
         "paid": total_paid,
         "balance": balance,
@@ -182,6 +200,17 @@ if submitted:
 
 if st.session_state.history:
     st.markdown("---")
-    st.subheader("📊 Recent Generated Invoices History")
-    for h in reversed(st.session_state.history):
-        st.write(f"🔹 **{h['invoice_no']}** | Party: **{h['client']}** | Total: Rs. {h['total']} | Paid: Rs. {h['paid']} | Balance: Rs. {h['balance']} ({h['date']})")
+    st.subheader("📊 Recent Generated Invoices History & Edit")
+    for i, h in enumerate(reversed(st.session_state.history)):
+        cols = st.columns([4, 1])
+        with cols[0]:
+            st.write(f"🔹 **{h['invoice_no']}** | Party: **{h['client']}** | Total: Rs. {h['total']} | Paid: Rs. {h['paid']} | Balance: Rs. {h['balance']}")
+        with cols[1]:
+            if st.button("✏️ Edit / Load", key=f"load_{i}"):
+                st.session_state.edit_client = h['client']
+                st.session_state.edit_legal = h['legal']
+                st.session_state.edit_address = h['address']
+                st.session_state.edit_gstin = h['gstin']
+                st.session_state.edit_services = h['services']
+                st.session_state.edit_paid = h['paid']
+                st.rerun()
