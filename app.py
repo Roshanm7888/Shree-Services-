@@ -2,7 +2,6 @@ import streamlit as st
 from datetime import datetime, timedelta
 import json
 import os
-import random
 
 st.set_page_config(page_title="Professional Invoice Portal - SaaS", page_icon="📄", layout="centered")
 
@@ -109,12 +108,6 @@ def save_saas_data(data):
 
 if "logged_in_user" not in st.session_state:
     st.session_state.logged_in_user = None
-if "reg_step" not in st.session_state:
-    st.session_state.reg_step = 1
-if "generated_otp" not in st.session_state:
-    st.session_state.generated_otp = None
-if "temp_reg_data" not in st.session_state:
-    st.session_state.temp_reg_data = {}
 
 saas_db = load_saas_data()
 
@@ -126,12 +119,12 @@ def get_initials(name):
         return words[0][:2].upper()
     return "SS"
 
-# --- Authentication & Registration Flow with Instant Secure OTP ---
+# --- Direct Authentication & Registration Flow (No OTP) ---
 if not st.session_state.logged_in_user:
     st.markdown("""
         <div class="main-title">
             <h1>SaaS Invoice Management Portal</h1>
-            <p>Secure Login & Instant OTP Verified Registration System</p>
+            <p>Secure Login & Direct Company Registration System</p>
         </div>
     """, unsafe_allow_html=True)
     
@@ -179,11 +172,11 @@ if not st.session_state.logged_in_user:
         st.session_state.logged_in_user = master_id
         st.rerun()
 
-    auth_tab1, auth_tab2 = st.tabs(["🔐 Login", "📝 New User Registration (Instant OTP)"])
+    auth_tab1, auth_tab2 = st.tabs(["🔐 Login", "📝 New User & Company Registration"])
     
     with auth_tab1:
         st.subheader("Existing User Login")
-        login_id = st.text_input("Email ID / Mobile Number", key="login_id", placeholder="e.g. user@gmail.com")
+        login_id = st.text_input("Email ID / Mobile Number", key="login_id", placeholder="e.g. user@gmail.com or 9876543210")
         login_pass = st.text_input("Password", type="password", key="login_pass", placeholder="Enter your password")
         
         if st.button("Login to Portal"):
@@ -195,95 +188,62 @@ if not st.session_state.logged_in_user:
                 st.error("Invalid User ID or Password!")
                 
     with auth_tab2:
-        if st.session_state.reg_step == 1:
-            st.subheader("Step 1: Enter Account & Company Details")
-            reg_id = st.text_input("Enter Email ID / Mobile Number (User ID)", key="reg_id", placeholder="e.g. client@gmail.com")
-            reg_pass1 = st.text_input("Create Password", type="password", key="reg_pass1", placeholder="Create secure password")
-            reg_pass2 = st.text_input("Confirm Password", type="password", key="reg_pass2", placeholder="Re-enter password")
-            
-            st.markdown("---")
-            st.markdown("#### 🏢 Company / Business Profile Setup")
-            comp_name = st.text_input("Company / Trade Name", key="comp_name", placeholder="e.g. Shree Services")
-            comp_legal = st.text_input("Authorized Person / Owner Name", key="comp_legal", placeholder="e.g. Roshan Mishra")
-            comp_address = st.text_input("Company Complete Address", key="comp_address", placeholder="e.g. Plot No 64, Mohan Garden, New Delhi")
-            comp_contact = st.text_input("Contact Number", key="comp_contact", placeholder="e.g. +91 7888273972")
-            comp_gstin = st.text_input("Company GSTIN (Optional)", key="comp_gstin", placeholder="e.g. 07XXXXX0000X1Z5")
-            comp_nature = st.text_input("Nature of Business / Dealings", key="comp_nature", placeholder="e.g. Tax Consultancy & Document Services")
-            
-            if st.button("Send Verification OTP"):
-                if not reg_id or not reg_pass1:
-                    st.warning("Please fill User ID and Password fields.")
-                elif reg_pass1 != reg_pass2:
-                    st.error("Passwords do not match! Please verify confirmation.")
-                elif reg_id in saas_db:
-                    st.error("User ID already registered! Please login.")
-                elif not comp_name:
-                    st.warning("Please enter Company Name.")
-                else:
-                    otp = str(random.randint(100000, 999999))
-                    st.session_state.generated_otp = otp
-                    st.session_state.temp_reg_data = {
-                        "id": reg_id,
-                        "password": reg_pass1,
-                        "profile": {
-                            "name": comp_name,
-                            "legal": comp_legal,
-                            "address": comp_address,
-                            "contact": comp_contact,
-                            "gstin": comp_gstin,
-                            "nature": comp_nature,
-                            "format": "Classic Blue (Professional)",
-                            "border_style": "Solid Line",
-                            "gst_enabled": True,
-                            "tax_rate": 18.0,
-                            "watermark_enabled": True,
-                            "watermark_type": "Company Name",
-                            "logo_choice": "Modern Shield (Auto)"
+        st.subheader("Create Account & Company Profile")
+        reg_id = st.text_input("Enter Email ID or Mobile Number (User ID)", key="reg_id", placeholder="e.g. client@gmail.com or 9876543210")
+        reg_pass1 = st.text_input("Create Password", type="password", key="reg_pass1", placeholder="Create secure password")
+        reg_pass2 = st.text_input("Confirm Password", type="password", key="reg_pass2", placeholder="Re-enter password")
+        
+        st.markdown("---")
+        st.markdown("#### 🏢 Company / Business Profile Setup")
+        comp_name = st.text_input("Company / Trade Name", key="comp_name", placeholder="e.g. Shree Services")
+        comp_legal = st.text_input("Authorized Person / Owner Name", key="comp_legal", placeholder="e.g. Roshan Mishra")
+        comp_address = st.text_input("Company Complete Address", key="comp_address", placeholder="e.g. Plot No 64, Mohan Garden, New Delhi")
+        comp_contact = st.text_input("Contact Number", key="comp_contact", placeholder="e.g. +91 7888273972")
+        comp_gstin = st.text_input("Company GSTIN (Optional)", key="comp_gstin", placeholder="e.g. 07XXXXX0000X1Z5")
+        comp_nature = st.text_input("Nature of Business / Dealings", key="comp_nature", placeholder="e.g. Tax Consultancy & Document Services")
+        
+        if st.button("Register & Create Company Account"):
+            if not reg_id or not reg_pass1:
+                st.warning("Please fill User ID and Password fields.")
+            elif reg_pass1 != reg_pass2:
+                st.error("Passwords do not match! Please verify confirmation.")
+            elif reg_id in saas_db:
+                st.error("User ID already registered! Please login.")
+            elif not comp_name:
+                st.warning("Please enter Company Name.")
+            else:
+                saas_db[reg_id] = {
+                    "password": reg_pass1,
+                    "profile": {
+                        "name": comp_name,
+                        "legal": comp_legal,
+                        "address": comp_address,
+                        "contact": comp_contact,
+                        "gstin": comp_gstin,
+                        "nature": comp_nature,
+                        "format": "Classic Blue (Professional)",
+                        "border_style": "Solid Line",
+                        "gst_enabled": True,
+                        "tax_rate": 18.0,
+                        "watermark_enabled": True,
+                        "watermark_type": "Company Name",
+                        "logo_choice": "Modern Shield (Auto)"
+                    },
+                    "history": [],
+                    "parties": {
+                        "Sample Party": {
+                            "legal": "Client Name",
+                            "address": "Sample Address, Delhi",
+                            "gstin": "07AAAAA0000A1Z5"
                         }
-                    }
-                    st.session_state.reg_step = 2
-                    st.success(f"OTP Generated Successfully! Your Secure Code is: **{otp}**")
-                    st.rerun()
-                    
-        elif st.session_state.reg_step == 2:
-            st.subheader("Step 2: Enter Verification OTP")
-            st.info(f"Enter the 6-digit verification code sent/generated for **{st.session_state.temp_reg_data.get('id')}**")
-            
-            entered_otp = st.text_input("Enter 6-Digit OTP", max_chars=6, placeholder="e.g. 123456")
-            
-            col_ver, col_back = st.columns(2)
-            with col_ver:
-                if st.button("Verify & Complete Registration"):
-                    if entered_otp == st.session_state.generated_otp:
-                        reg_data = st.session_state.temp_reg_data
-                        saas_db[reg_data["id"]] = {
-                            "password": reg_data["password"],
-                            "profile": reg_data["profile"],
-                            "history": [],
-                            "parties": {
-                                "Sample Party": {
-                                    "legal": "Client Name",
-                                    "address": "Sample Address, Delhi",
-                                    "gstin": "07AAAAA0000A1Z5"
-                                }
-                            },
-                            "services": ["ITR", "GST", "GST REGISTRATION", "UDYAM"],
-                            "stock_items": [
-                                {"name": "General Service", "rate": 500.0}
-                            ]
-                        }
-                        save_saas_data(saas_db)
-                        st.success("Account Verified & Registered Successfully! Please go to Login tab.")
-                        st.session_state.reg_step = 1
-                        st.session_state.generated_otp = None
-                        st.session_state.temp_reg_data = {}
-                        st.rerun()
-                    else:
-                        st.error("Invalid OTP! Please check and try again.")
-            with col_back:
-                if st.button("Back / Resend"):
-                    st.session_state.reg_step = 1
-                    st.rerun()
+                    },
+                    "services": ["ITR", "GST", "GST REGISTRATION", "UDYAM"],
+                    "stock_items": [
+                        {"name": "General Service", "rate": 500.0}
+                    ]
+                }
+                save_saas_data(saas_db)
+                st.success("Account Created Successfully! Now you can go to the Login tab and sign in.")
 
 else:
     # --- Logged-In User Portal ---
@@ -414,7 +374,7 @@ else:
             save_saas_data(saas_db)
             st.success("Settings saved successfully!")
 
-        # --- Instant Full A4 Size Live Preview Box (Synchronized with Print layout) ---
+        # --- Instant Full A4 Size Live Preview Box ---
         st.markdown("---")
         st.markdown("### 👁️ Instant Full A4 Size Live Preview (Real-Time)")
         
