@@ -8,7 +8,7 @@ import google.generativeai as genai
 st.set_page_config(page_title="Professional Invoice Portal - SaaS", page_icon="📄", layout="wide")
 
 # --- GEMINI API CONFIG (Replace with your actual API key) ---
-API_KEY = "YOUR_GOOGLE_GEMINI_API_KEY"
+API_KEY = "AQ.Ab8RN6KzN_g7cBY6Okspd5wnJrLVu74CwEpgVyJCbSORfvn1Nw"
 genai.configure(api_key=API_KEY)
 
 # --- FIXED CSS FOR COMPACT LOGIN, DESIGNER WAVE THEMES & ANDROID/DESKTOP ---
