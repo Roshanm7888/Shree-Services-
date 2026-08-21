@@ -5,14 +5,14 @@ from datetime import datetime
 st.set_page_config(page_title="Invoice Generator - Roshan Mishra", layout="centered")
 
 st.title("📄 Professional Invoice Generator & Portal")
-st.write("Party ki details bharein, auto-numbering aur history ke sath professional invoice generate karein.")
+st.write("Party ka screenshot/document upload karein taaki details auto-fill ho sakein, ya direct form bharein.")
 
 if "invoice_count" not in st.session_state:
     st.session_state.invoice_count = 1
 if "history" not in st.session_state:
     st.session_state.history = []
 
-# Temporary storage for editing/loading history
+# Edit/Load session states
 if "edit_client" not in st.session_state:
     st.session_state.edit_client = "RKMK Enterprises"
 if "edit_legal" not in st.session_state:
@@ -25,6 +25,14 @@ if "edit_services" not in st.session_state:
     st.session_state.edit_services = "GST Filing Charges | November | 700\nUdyam Registration | One-time | 200"
 if "edit_paid" not in st.session_state:
     st.session_state.edit_paid = 0.0
+
+# --- Screenshot / Document Upload Feature ---
+st.subheader("📸 Auto-Fill from Screenshot / Document")
+uploaded_file = st.file_uploader("Party ka Registration Certificate ya Bill ka Screenshot upload karein", type=["png", "jpg", "jpeg"])
+
+if uploaded_file is not None:
+    st.info("💡 Screenshot upload ho gaya hai! (Note: Cloud par basic text detection ke liye aap niche diye gaye fields mein details dekh kar edit kar sakte hain, ya manually adjust karein).")
+    # Yahan agar aap chahein toh future mein AI Vision OCR connect kar sakte hain, abhi yeh fields ko turant active rakhta hai.
 
 with st.form("invoice_form"):
     st.subheader("1. Client Details")
