@@ -45,7 +45,6 @@ if submitted:
 
     balance = total_amt - total_paid
 
-    # Generate professional HTML Invoice view
     html_content = f"""
     <!DOCTYPE html>
     <html>
@@ -119,16 +118,16 @@ if submitted:
     """
     
     for idx, (desc, period, amt) in enumerate(items, 1):
-        html_content += f"<tr><td>{idx}</td><td>{desc}</td><td>{period}</td><td class="right">{amt:.2f}</td></tr>"
+        html_content += "<tr><td>{}</td><td>{}</td><td>{}</td><td class='right'>{:.2f}</td></tr>".format(idx, desc, period, amt)
 
-    html_content += f"""
+    html_content += """
             </tbody>
         </table>
 
         <table class="totals">
-            <tr><td>Total Amount:</td><td class="right">₹{total_amt:.2f}</td></tr>
-            <tr><td>Total Paid:</td><td class="right">₹{total_paid:.2f}</td></tr>
-            <tr class="grand-total"><td>Balance Due:</td><td class="right">₹{balance:.2f}</td></tr>
+            <tr><td>Total Amount:</td><td class="right">₹{:.2f}</td></tr>
+            <tr><td>Total Paid:</td><td class="right">₹{:.2f}</td></tr>
+            <tr class="grand-total"><td>Balance Due:</td><td class="right">₹{:.2f}</td></tr>
         </table>
 
         <div style="clear: both;"></div>
@@ -142,14 +141,11 @@ if submitted:
     </div>
     </body>
     </html>
-    """
+    """.format(total_amt, total_paid, balance)
 
     st.success("Invoice generated successfully!")
-    
-    # Render preview inside Streamlit
     st.components.v1.html(html_content, height=650, scrolling=True)
 
-    # Provide download option as HTML file (which opens directly in any browser and can be printed/saved as PDF using Ctrl+P)
     b64 = base64.b64encode(html_content.encode()).decode()
     href = f'<a href="data:text/html;base64,{b64}" download="Invoice_{client_name.replace(" ", "_")}.html" style="display:inline-block; padding:10px 20px; background-color:#1a365d; color:white; text-decoration:none; border-radius:5px; font-weight:bold; margin-top:20px;">📥 Download Invoice File</a>'
     st.markdown(href, unsafe_allow_html=True)
