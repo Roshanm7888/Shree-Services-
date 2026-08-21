@@ -3,13 +3,14 @@ from datetime import datetime, timedelta
 import json
 import os
 import time
-from google import genai
+import google.generativeai as genai
 
 st.set_page_config(page_title="Professional Invoice Portal - SaaS", page_icon="📄", layout="wide")
 
 # --- GEMINI API CONFIG (Replace with your actual API key) ---
 API_KEY = "YOUR_GOOGLE_GEMINI_API_KEY"
-client = genai.Client(api_key=API_KEY) if API_KEY and API_KEY != "YOUR_GOOGLE_GEMINI_API_KEY" else None
+if API_KEY and API_KEY != "YOUR_GOOGLE_GEMINI_API_KEY":
+    genai.configure(api_key=API_KEY)
 
 # --- FIXED CSS FOR COMPACT LOGIN, DESIGNER WAVE THEMES & ANDROID/DESKTOP ---
 st.markdown("""
@@ -85,11 +86,12 @@ def get_initials(name):
     elif len(words) == 1 and len(words[0]) >= 2: return words[0][:2].upper()
     return "SS"
 
-# --- UPDATED AI BUSINESS ASSISTANT FUNCTION (google-genai standard) ---
+# --- STABLE AI BUSINESS ASSISTANT FUNCTION ---
 def ask_gemini_assistant(query):
-    if not client:
-        return "API Key is missing or not configured properly."
+    if not API_KEY or API_KEY == "YOUR_GOOGLE_GEMINI_API_KEY":
+        return "API Key is missing or not configured."
     try:
+        model = genai.GenerativeModel('gemini-1.5-flash')
         instructions = """You are an expert, polite AI Business Assistant for 'Shree Services Invoice Portal'. 
         Knowledge base to guide users:
         1. Business Natures supported: Goods/Manufacturing/Trading, Services, Transport Company, Other Business.
@@ -98,10 +100,7 @@ def ask_gemini_assistant(query):
         4. History & Management: Users can view and edit/delete past invoices up to 24 days.
         Provide step-by-step, accurate, and professional answers."""
         
-        response = client.models.generate_content(
-            model='gemini-2.5-flash',
-            contents=f"{instructions} User Query: {query}"
-        )
+        response = model.generate_content(f"{instructions} User Query: {query}")
         return response.text
     except Exception as e:
         return f"AI Assistant error: {str(e)}"
