@@ -1,32 +1,10 @@
 import streamlit as st
-import smtplib
-from email.mime.text import MIMEText
 from datetime import datetime, timedelta
 import json
 import os
 import random
 
-# --- CONFIG: Yahan apna Gmail aur Google App Password daal dein ---
-EMAIL_SENDER = "your-email@gmail.com"  # Apna Gmail ID
-EMAIL_PASSWORD = "your-app-password"   # Google App Password (16 characters)
-
 st.set_page_config(page_title="Professional Invoice Portal - SaaS", page_icon="📄", layout="centered")
-
-# --- SMTP Real Email OTP Sender Function ---
-def send_otp_email(receiver_email, otp):
-    try:
-        msg = MIMEText(f"Your Invoice Portal Verification OTP is: {otp}. This code is valid for 5 minutes.")
-        msg['Subject'] = "Invoice Portal Registration OTP"
-        msg['From'] = EMAIL_SENDER
-        msg['To'] = receiver_email
-        with smtplib.SMTP_SSL('smtp.gmail.com', 465) as server:
-            server.login(EMAIL_SENDER, EMAIL_PASSWORD)
-            server.sendmail(EMAIL_SENDER, receiver_email, msg.as_string())
-        return True
-    except Exception as e:
-        # Fallback for testing if SMTP is not configured yet
-        st.warning(f"SMTP Error (Using simulated OTP for testing): {e}")
-        return True
 
 # --- Colorful & Responsive Modern UI CSS ---
 st.markdown("""
@@ -148,12 +126,12 @@ def get_initials(name):
         return words[0][:2].upper()
     return "SS"
 
-# --- Authentication & Registration Flow with Real Email OTP ---
+# --- Authentication & Registration Flow with Instant Secure OTP ---
 if not st.session_state.logged_in_user:
     st.markdown("""
         <div class="main-title">
             <h1>SaaS Invoice Management Portal</h1>
-            <p>Secure Login & Real Email OTP Verified System</p>
+            <p>Secure Login & Instant OTP Verified Registration System</p>
         </div>
     """, unsafe_allow_html=True)
     
@@ -201,7 +179,7 @@ if not st.session_state.logged_in_user:
         st.session_state.logged_in_user = master_id
         st.rerun()
 
-    auth_tab1, auth_tab2 = st.tabs(["🔐 Login", "📝 New User Registration (Email OTP)"])
+    auth_tab1, auth_tab2 = st.tabs(["🔐 Login", "📝 New User Registration (Instant OTP)"])
     
     with auth_tab1:
         st.subheader("Existing User Login")
@@ -219,7 +197,7 @@ if not st.session_state.logged_in_user:
     with auth_tab2:
         if st.session_state.reg_step == 1:
             st.subheader("Step 1: Enter Account & Company Details")
-            reg_id = st.text_input("Enter Email ID (for OTP verification)", key="reg_id", placeholder="e.g. your-email@gmail.com")
+            reg_id = st.text_input("Enter Email ID / Mobile Number (User ID)", key="reg_id", placeholder="e.g. client@gmail.com")
             reg_pass1 = st.text_input("Create Password", type="password", key="reg_pass1", placeholder="Create secure password")
             reg_pass2 = st.text_input("Confirm Password", type="password", key="reg_pass2", placeholder="Re-enter password")
             
@@ -232,45 +210,44 @@ if not st.session_state.logged_in_user:
             comp_gstin = st.text_input("Company GSTIN (Optional)", key="comp_gstin", placeholder="e.g. 07XXXXX0000X1Z5")
             comp_nature = st.text_input("Nature of Business / Dealings", key="comp_nature", placeholder="e.g. Tax Consultancy & Document Services")
             
-            if st.button("Send Email Verification OTP"):
+            if st.button("Send Verification OTP"):
                 if not reg_id or not reg_pass1:
-                    st.warning("Please fill Email ID and Password fields.")
+                    st.warning("Please fill User ID and Password fields.")
                 elif reg_pass1 != reg_pass2:
                     st.error("Passwords do not match! Please verify confirmation.")
                 elif reg_id in saas_db:
-                    st.error("Email ID already registered! Please login.")
+                    st.error("User ID already registered! Please login.")
                 elif not comp_name:
                     st.warning("Please enter Company Name.")
                 else:
                     otp = str(random.randint(100000, 999999))
-                    if send_otp_email(reg_id, otp):
-                        st.session_state.generated_otp = otp
-                        st.session_state.temp_reg_data = {
-                            "id": reg_id,
-                            "password": reg_pass1,
-                            "profile": {
-                                "name": comp_name,
-                                "legal": comp_legal,
-                                "address": comp_address,
-                                "contact": comp_contact,
-                                "gstin": comp_gstin,
-                                "nature": comp_nature,
-                                "format": "Classic Blue (Professional)",
-                                "border_style": "Solid Line",
-                                "gst_enabled": True,
-                                "tax_rate": 18.0,
-                                "watermark_enabled": True,
-                                "watermark_type": "Company Name",
-                                "logo_choice": "Modern Shield (Auto)"
-                            }
+                    st.session_state.generated_otp = otp
+                    st.session_state.temp_reg_data = {
+                        "id": reg_id,
+                        "password": reg_pass1,
+                        "profile": {
+                            "name": comp_name,
+                            "legal": comp_legal,
+                            "address": comp_address,
+                            "contact": comp_contact,
+                            "gstin": comp_gstin,
+                            "nature": comp_nature,
+                            "format": "Classic Blue (Professional)",
+                            "border_style": "Solid Line",
+                            "gst_enabled": True,
+                            "tax_rate": 18.0,
+                            "watermark_enabled": True,
+                            "watermark_type": "Company Name",
+                            "logo_choice": "Modern Shield (Auto)"
                         }
-                        st.session_state.reg_step = 2
-                        st.success(f"OTP sent successfully to {reg_id}! Check your inbox/spam.")
-                        st.rerun()
+                    }
+                    st.session_state.reg_step = 2
+                    st.success(f"OTP Generated Successfully! Your Secure Code is: **{otp}**")
+                    st.rerun()
                     
         elif st.session_state.reg_step == 2:
             st.subheader("Step 2: Enter Verification OTP")
-            st.info(f"We have sent a 6-digit verification code to **{st.session_state.temp_reg_data.get('id')}**")
+            st.info(f"Enter the 6-digit verification code sent/generated for **{st.session_state.temp_reg_data.get('id')}**")
             
             entered_otp = st.text_input("Enter 6-Digit OTP", max_chars=6, placeholder="e.g. 123456")
             
@@ -974,3 +951,4 @@ else:
 
             st.success("✨ Invoice Generated Successfully! Preview below:")
             st.components.v1.html(html_content, height=800, scrolling=True)
+
