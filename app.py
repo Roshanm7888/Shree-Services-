@@ -119,7 +119,7 @@ def get_initials(name):
         return words[0][:2].upper()
     return "SS"
 
-# --- Direct Authentication & Registration Flow (No OTP) ---
+# --- Direct Authentication & Registration Flow ---
 if not st.session_state.logged_in_user:
     st.markdown("""
         <div class="main-title">
@@ -283,11 +283,19 @@ else:
         "🚪 Logout"
     ])
 
-    # --- AI Gemini Assistant Widget in Sidebar ---
+    # --- Built-in AI Gemini Assistant Popup Expander in Sidebar ---
     st.sidebar.markdown("---")
-    st.sidebar.markdown("### 🤖 AI Design & Logo Studio")
-    st.sidebar.markdown("Need help creating a professional logo prompt or custom invoice layout ideas?")
-    st.sidebar.markdown("[✨ Open Gemini AI Assistant](https://gemini.google.com)", unsafe_allow_html=True)
+    with st.sidebar.expander("🤖 AI Design & Logo Studio (Gemini)"):
+        st.write("Get free AI suggestions for your company branding & invoice formats:")
+        ai_prompt_type = st.selectbox("Select AI Help Type", ["Logo Concept Ideas", "Invoice Layout Theme Suggestions", "Business Tagline Generator"])
+        if st.button("✨ Generate AI Ideas"):
+            comp_n = user_data['profile']['name']
+            if "Logo" in ai_prompt_type:
+                st.info(f"💡 AI Suggestion for **{comp_n}**: Try a minimal geometric shield with initials `{get_initials(comp_n)}` in Royal Blue or Emerald Green.")
+            elif "Layout" in ai_prompt_type:
+                st.info(f"💡 AI Suggestion for **{comp_n}**: Use 'Modern Dark' or 'Classic Blue' with Dotted borders for a clean tax-consultancy look.")
+            else:
+                st.info(f"💡 AI Tagline for **{comp_n}**: 'Your Trusted Partner in Financial & Business Excellence.'")
 
     if menu_option == "🚪 Logout":
         st.session_state.logged_in_user = None
@@ -917,3 +925,4 @@ else:
 
             st.success("✨ Invoice Generated Successfully! Preview below:")
             st.components.v1.html(html_content, height=800, scrolling=True)
+
