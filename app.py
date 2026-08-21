@@ -6,6 +6,16 @@ import time
 
 st.set_page_config(page_title="Professional Invoice Portal - SaaS", page_icon="📄", layout="wide")
 
+# --- GLOBAL SETTINGS ---
+FORMAT_OPTIONS = [
+    "Corporate Curve Wave (New Professional)", 
+    "Emerald Green Wave (Modern)", 
+    "Sunset Orange Wave (Vibrant)", 
+    "Royal Purple Curve (Creative)", 
+    "Minimalist Clean (Simple)", 
+    "Classic Blue (Standard)"
+]
+
 # --- FIXED CSS FOR COMPACT LOGIN, DESIGNER WAVE THEMES & ANDROID/DESKTOP ---
 st.markdown("""
     <style>
@@ -80,29 +90,36 @@ def get_initials(name):
     elif len(words) == 1 and len(words[0]) >= 2: return words[0][:2].upper()
     return "SS"
 
-# --- SMART BUILT-IN EXPERT ASSISTANT (No external key errors) ---
+# --- SMART INTERACTIVE AI ASSISTANT FUNCTION ---
 def ask_gemini_assistant(query):
     q_lower = query.lower()
-    if "benefit" in q_lower or "faida" in q_lower or "use" in q_lower:
+    if "invoice" in q_lower or "bill" in q_lower or "bana" in q_lower or "create" in q_lower:
+        return """📝 **Invoice Create Karne ka Step-by-Step Process:**
+1. Sidebar navigation menu se **'Create Invoice'** tab par click karein.
+2. **Section 1 (Client / Party Details):** Apne client ko select karein ya '+ Add New Party' par click karke naye client ki details (Trade Name, Address, GSTIN) save karein.
+3. **Section 2 (Invoice Meta Details):** Invoice Number aur Date check karein.
+4. **Section 3 (Items & Grid Entry):** Apne business nature ke mutabik items ki description, HSN code, quantity, rate aur tax % enter karein. (Aap '➕ Add Row' karke aur items bhi jod sakte hain).
+5. Niche diye gaye **'✨ Finalize & Generate Exact A4 Invoice'** button par click karein. Aapka professional A4 invoice tayar ho jayega jise aap print ya PDF save kar sakte hain!"""
+    elif "benefit" in q_lower or "faida" in q_lower or "use" in q_lower:
         return """🌟 **Shree Services Invoice Portal ke Main Benefits:**
-1. **Multi-Nature Billing:** Aap Goods (Manufacturing/Trading), Services, Transport Company, aur General sabhi tarah ke business ke liye bills bana sakte hain.
-2. **Tally-Grade Grid Entry:** Smooth items management, HSN codes, unit selectors (NOS, Box, Pcs, Kgs), aur automatic tax calculations.
-3. **Designer Wave Themes & Watermarks:** 6 professional corporate curved wave themes aur custom watermarks ke sath professional A4 invoices.
-4. **Party Management & 24-Day History:** Apne clients ko permanently save karein aur pichle 24 dinon ki history ko easily view, edit ya delete karein."""
+1. **Multi-Nature Billing:** Goods (Manufacturing/Trading), Services, Transport Company, aur General sabhi ke liye bills.
+2. **Tally-Grade Grid Entry:** Smooth items management, HSN codes, unit selectors, aur automatic tax calculations.
+3. **Designer Wave Themes & Watermarks:** 6 professional corporate curved wave themes aur custom watermarks.
+4. **Party Management & 24-Day History:** Pichle 24 dinon ki history ko view, edit ya delete karne ki suvidha."""
     elif "setting" in q_lower or "theme" in q_lower or "change" in q_lower:
-        return """⚙️ **Invoice Setting Kaise Badlein:**
+        return """⚙️ **Invoice Setting & Theme Badalne ka Tarika:**
 1. Sidebar menu se **'⚙️ Company Profile & Format Settings'** par click karein.
-2. Wahan apni company ka naam, address, aur GSTIN update karein.
+2. Apni company details update karein.
 3. **'Select Invoice Designer Theme'** se apna manpasand Corporate Wave theme choose karein.
-4. Niche **'💾 Save All Settings Permanently'** button par click kar dein. Aapka live preview turant update ho jayega!"""
+4. Niche **'💾 Save All Settings Permanently'** button dabayein."""
     elif "gst" in q_lower or "tax" in q_lower:
         return """💰 **GST & Tax Rules:**
-Portal automatically detect karta hai ki client ka GSTIN kis state ka hai. Agar GSTIN '07' (Delhi) se start hota hai, toh CGST aur SGST equally split ho jata hai, aur doosre states ke liye IGST calculate hota hai. Aap Settings mein GST toggle ko on/off bhi kar sakte hain."""
+Portal automatically client ke GSTIN state code ko detect karta hai (jaise Delhi ke liye '07'). Uske hisab se CGST/SGST ya IGST calculate hota hai. Aap Settings se GST toggle on/off kar sakte hain."""
     elif "subscription" in q_lower or "paid" in q_lower or "price" in q_lower:
         return """💳 **Subscription & Pro Plan:**
-Free trial mein aap 1 free invoice bana sakte hain. Uske baad Pro plan activate karne ke liye sirf **Rs. 5/-** UPI (`roshan@shreeservices.upi`) par pay karke UTR/Txn ID submit karni hoti hai, jise Admin turant verify karke unlock kar deta hai."""
+Free trial mein 1 free invoice banta hai. Pro plan ke liye sirf **Rs. 5/-** UPI (`roshan@shreeservices.upi`) par pay karke UTR/Txn ID submit karein, jise Admin verify karke turant unlock kar dega."""
     else:
-        return f"💡 **AI Expert Advice:** Aapne pucha: '{query}'. Is portal mein aap Tally-grade accuracy ke sath fast invoices generate kar sakte hain, Designer Wave themes use kar sakte hain, aur 24-day history manage kar sakte hain. Kisi specific setting ya tax rule ke liye yahan dobara puch sakte hain!"
+        return f"💡 **AI Assistant Guide:** Aapne pucha: '{query}'. Invoice banane ke liye 'Create Invoice' tab par jayein, party select karein, items add karein aur 'Finalize & Generate' dabayein. Kisi aur sahayata ke liye yahan dobara puchein!"
 
 SESSION_TIMEOUT_SECONDS = 900
 if st.session_state.logged_in_user and st.session_state.login_time:
@@ -286,11 +303,11 @@ else:
     elif menu_option == "🤖 AI Business Assistant":
         st.markdown("<div class='main-title'><h1>🤖 AI Business & Tax Assistant</h1><p>Ask anything about taxes, invoice settings, or how to use the portal!</p></div>", unsafe_allow_html=True)
         
-        user_query = st.text_area("Type your question here (e.g., 'What is the benefit of this website?' or 'How do I change my invoice theme?'):")
+        user_query = st.text_area("Type your question here (e.g., 'How do I create an invoice?' or 'What is the benefit of this website?'):")
         if st.button("Ask AI Expert"):
             if user_query.strip():
                 with st.spinner("Thinking..."):
-                    time.sleep(0.5)
+                    time.sleep(0.4)
                     ai_answer = ask_gemini_assistant(user_query)
                     st.markdown("### 💡 AI Expert Response:")
                     st.info(ai_answer)
@@ -306,14 +323,6 @@ else:
         """, unsafe_allow_html=True)
         
         prof = user_data["profile"]
-        format_options = [
-            "Corporate Curve Wave (New Professional)", 
-            "Emerald Green Wave (Modern)", 
-            "Sunset Orange Wave (Vibrant)", 
-            "Royal Purple Curve (Creative)", 
-            "Minimalist Clean (Simple)", 
-            "Classic Blue (Standard)"
-        ]
         border_options = ["Solid Line", "Dotted Border (Stylish)", "Double Line (Accounting)", "Dashed Border (Modern)"]
 
         st.markdown("### 🏢 Business Information")
@@ -327,9 +336,9 @@ else:
         up_nature = st.selectbox("Fixed Business Nature (Format)", nature_options, index=nat_idx)
         
         st.markdown("### 🎨 Invoice Theme & Designer Wave Layout")
-        fmt_val = prof.get("format", format_options[0])
-        fmt_idx = format_options.index(fmt_val) if fmt_val in format_options else 0
-        up_format = st.selectbox("Select Invoice Designer Theme", format_options, index=fmt_idx)
+        fmt_val = prof.get("format", FORMAT_OPTIONS[0])
+        fmt_idx = FORMAT_OPTIONS.index(fmt_val) if fmt_val in FORMAT_OPTIONS else 0
+        up_format = st.selectbox("Select Invoice Designer Theme", FORMAT_OPTIONS, index=fmt_idx)
 
         b_val = prof.get("border_style", "Solid Line")
         b_idx = border_options.index(b_val) if b_val in border_options else 0
@@ -591,7 +600,7 @@ else:
             user_data["history"] = st.session_state.history
             save_saas_data(saas_db)
 
-            sel_theme = user_data["profile"].get("format", format_options[0])
+            sel_theme = user_data["profile"].get("format", FORMAT_OPTIONS[0])
             if "Emerald Green" in sel_theme:
                 p_col = "#065f46"
                 wave_gradient = "linear-gradient(135deg, #059669 0%, #10b981 100%)"
@@ -672,7 +681,7 @@ else:
                 {wm_html}
                 <div class="wave-header">
                     <div style="display:flex;gap:15px; align-items:flex-start;">{l_html}<div><h2 style="margin:0;color:#ffffff;">{user_data['profile']['name']}</h2><p style="margin:3px 0;font-size:12px;color:#e2e8f0;">{user_data['profile']['address']}<br>Contact: {user_data['profile']['contact']}<br>GSTIN: {user_data['profile']['gstin']}</p></div></div>
-                    <div style="text-align:right;"><h2 style="manager:0;color:#ffffff;">Tax Invoice</h2><p style="margin:3px 0;font-size:12px;color:#e2e8f0;">Invoice No: {inv_no}<br>Date: {inv_date}<br>Mode: {current_nature}</p></div>
+                    <div style="text-align:right;"><h2 style="margin:0;color:#ffffff;">Tax Invoice</h2><p style="margin:3px 0;font-size:12px;color:#e2e8f0;">Invoice No: {inv_no}<br>Date: {inv_date}<br>Mode: {current_nature}</p></div>
                 </div>
                 <table style="width:100%;border-collapse:collapse;margin-bottom:20px;font-size:13px;position:relative;z-index:1;"><tr><td style="border:1px solid #cbd5e1;padding:10px;"><strong>Service Provider:</strong><br>{user_data['profile']['name']}</td><td style="border:1px solid #cbd5e1;padding:10px;"><strong>Billed To:</strong><br><strong>{target_party}</strong><br>Address: {p_info.get('address')}<br>GSTIN: {p_info.get('gstin')}</td></tr></table>
                 <table class="items-table"><thead><tr>{table_headers}</tr></thead><tbody>{table_rows}</tbody></table>
