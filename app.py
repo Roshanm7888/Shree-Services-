@@ -193,7 +193,7 @@ if submitted:
     pdf.cell(150, 5, "", ln=False)
     pdf.cell(40, 5, "Authorised Signatory", ln=True, align="C")
 
-    pdf_bytes = pdf.output()
+    pdf_bytes = bytes(pdf.output())
 
     st.success("Invoice PDF generated successfully!")
     st.download_button(
@@ -208,3 +208,4 @@ if st.session_state.history:
     st.subheader("📊 Recent Generated Invoices History")
     for i, h in enumerate(reversed(st.session_state.history)):
         st.write(f"🔹 **{h['invoice_no']}** | Party: **{h['client']}** | Total: Rs. {h['total']} | Paid: Rs. {h['paid']} | Balance: Rs. {h['balance']}")
+
