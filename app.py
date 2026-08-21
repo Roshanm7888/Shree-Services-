@@ -45,7 +45,7 @@ def get_initials(name):
     elif len(words) == 1 and len(words[0]) >= 2: return words[0][:2].upper()
     return "SS"
 
-# --- AUTHENTICATION (Clean Fields without Autofill Data) ---
+# --- AUTHENTICATION ---
 if not st.session_state.logged_in_user:
     st.markdown("""
         <div class="main-title">
