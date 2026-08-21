@@ -8,22 +8,23 @@ st.write("Apni party ki details bhar kar instant professional invoice generate k
 
 with st.form("invoice_form"):
     st.subheader("1. Client Details")
-    client_name = st.text_input("Client Trade Name", "RKMK Enterprises")
-    client_legal = st.text_input("Client Legal Name", "Rinky Acharya")
-    client_address = st.text_input("Client Address", "Flat No. 34, Ground Floor, Block P Extn, Mohan Garden, New Delhi - 110059")
-    client_gstin = st.text_input("Client GSTIN", "07DEOPA0606H1ZU")
+    client_name = st.text_input("Client Trade Name", "Mishra & Alliance")
+    client_legal = st.text_input("Client Legal Name", "Roshan Mishra")
+    client_address = st.text_input("Client Address", "Shivaji nagar satpur nashik 4220012")
+    client_gstin = st.text_input("Client GSTIN", "")
 
     st.subheader("2. Invoice Details")
-    inv_no = st.text_input("Invoice Number", "TAX/2026-27/001")
+    inv_no = st.text_input("Invoice Number", "TAX/2026-27/002")
     inv_date = st.text_input("Invoice Date", "August 21, 2026")
 
     st.subheader("3. Services & Amounts")
+    st.markdown("💡 *Format: Service Name | Period | Amount (Jaise: GST Filing | November | 700)*")
     services_text = st.text_area(
-        "Enter services (Format: Description | Period | Amount, one per line)",
-        "GST Filing Charges | November | 700\nUdyam Registration | One-time | 200\nGST Filing Charges | December | 700\nGST Filing Charges | January | 700\nGST Filing Charges | February | 700\nGST Filing Charges | March | 700\nGST Filing Charges | April | 700\nGST Filing Charges | May | 700\nGST Filing Charges | June | 700\nGST Filing Charges | July | 700"
+        "Enter services (Ek line mein ek service)",
+        "GST Filing Charges | November | 700\nITR Filing Charges | FY 2025-26 | 2500"
     )
 
-    total_paid = st.number_input("Total Amount Paid (₹)", min_value=0.0, value=2000.0)
+    total_paid = st.number_input("Total Amount Paid (₹)", min_value=0.0, value=0.0)
 
     submitted = st.form_submit_button("Generate Invoice Preview & Download")
 
@@ -32,16 +33,27 @@ if submitted:
     items = []
     total_amt = 0.0
     for line in lines:
-        if '|' in line:
-            parts = [p.strip() for p in line.split('|')]
-            if len(parts) == 3:
-                desc, period, amt_str = parts
+        if line.strip():
+            if '|' in line:
+                parts = [p.strip() for p in line.split('|')]
+                desc = parts[0]
+                period = parts[1] if len(parts) > 1 else "-"
                 try:
-                    amt = float(amt_str)
-                    items.append((desc, period, amt))
-                    total_amt += amt
+                    amt = float(parts[2]) if len(parts) > 2 else float(parts[1])
                 except:
-                    pass
+                    amt = 0.0
+            else:
+                # Agar pipe nahi lagaya toh space ya last word ko amount maan lega
+                parts = line.strip().rsplit(' ', 1)
+                desc = parts[0]
+                period = "General"
+                try:
+                    amt = float(parts[1])
+                except:
+                    amt = 0.0
+            
+            items.append((desc, period, amt))
+            total_amt += amt
 
     balance = total_amt - total_paid
 
