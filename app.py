@@ -136,23 +136,15 @@ if len(cleaned_history) != len(st.session_state.history):
     app_data["history"] = st.session_state.history
     save_data(app_data)
 
-# Edit Mode State Handlers
-if "edit_party" not in st.session_state:
-    st.session_state.edit_party = ""
-if "edit_services" not in st.session_state:
-    st.session_state.edit_services = "GST | July | 700"
-if "edit_paid" not in st.session_state:
-    st.session_state.edit_paid = 0.0
-
 # --- Sidebar Menu for Navigation & Party-wise History ---
 st.sidebar.title("📌 Navigation Menu")
-menu_option = st.sidebar.radio("Go to:", ["Create Invoice", "📊 Party-wise History (24 Days)"])
+menu_option = st.sidebar.radio("Go to:", ["Create Invoice", "📊 Party-wise History & Edit/Delete (24 Days)"])
 
-if menu_option == "📊 Party-wise History (24 Days)":
+if menu_option == "📊 Party-wise History & Edit/Delete (24 Days)":
     st.markdown("""
         <div class="main-title">
-            <h1>Party-wise Invoice History</h1>
-            <p>Select a party to view and manage bills created in the last 24 days</p>
+            <h1>Party-wise Invoice Management</h1>
+            <p>View, Edit, or Delete bills created in the last 24 days</p>
         </div>
     """, unsafe_allow_html=True)
     
@@ -165,14 +157,58 @@ if menu_option == "📊 Party-wise History (24 Days)":
         party_bills = [h for h in st.session_state.history if h['client'] == selected_history_party]
         
         st.markdown(f"### Bills for: {selected_history_party}")
+        
         for idx, bill in enumerate(party_bills):
-            with st.container():
-                st.info(f"🔹 **Invoice No:** {bill['invoice_no']} | **Date:** {bill['date']} | **Total:** Rs. {bill['total']} | **Paid:** Rs. {bill['paid']} | **Balance:** Rs. {bill['balance']}")
-                if st.button(f"✏️ Load & Edit Bill {bill['invoice_no']}", key=f"hist_edit_{idx}"):
-                    st.session_state.edit_party = bill['client']
-                    st.session_state.edit_services = bill.get('services', 'GST | July | 700')
-                    st.session_state.edit_paid = bill['paid']
-                    st.success(f"Invoice {bill['invoice_no']} loaded! Switch to 'Create Invoice' tab in sidebar.")
+            with st.expander(f"Invoice No: {bill['invoice_no']} | Date: {bill['date']} | Total: Rs. {bill['total']}"):
+                # Edit Form for this specific bill
+                edit_key_services = f"edit_serv_{bill['invoice_no']}"
+                edit_key_paid = f"edit_paid_{bill['invoice_no']}"
+                
+                new_serv = st.text_area("Edit Services Details", value=bill.get('services', ''), key=edit_key_services)
+                new_pd = st.number_input("Edit Total Amount Paid (Rs.)", value=float(bill.get('paid', 0.0)), key=edit_key_paid)
+                
+                col_save, col_del = st.columns(2)
+                with col_save:
+                    if st.button("💾 Save Changes", key=f"save_{bill['invoice_no']}"):
+                        # Recalculate totals
+                        lines = new_serv.split('\n')
+                        tot_amt = 0.0
+                        for line in lines:
+                            if line.strip():
+                                if '|' in line:
+                                    parts = [p.strip() for p in line.split('|')]
+                                    try:
+                                        amt = float(parts[2]) if len(parts) > 2 else float(parts[1])
+                                    except:
+                                        amt = 0.0
+                                else:
+                                    parts = line.strip().rsplit(' ', 1)
+                                    try:
+                                        amt = float(parts[1])
+                                    except:
+                                        amt = 0.0
+                                tot_amt += amt
+                        
+                        # Update record in history
+                        for item in st.session_state.history:
+                            if item['invoice_no'] == bill['invoice_no']:
+                                item['services'] = new_serv
+                                item['total'] = tot_amt
+                                item['paid'] = new_pd
+                                item['balance'] = tot_amt - new_pd
+                        
+                        app_data["history"] = st.session_state.history
+                        save_data(app_data)
+                        st.success(f"Invoice {bill['invoice_no']} updated successfully!")
+                        st.rerun()
+                        
+                with col_del:
+                    if st.button("❌ Delete Invoice", key=f"del_{bill['invoice_no']}"):
+                        st.session_state.history = [item for item in st.session_state.history if item['invoice_no'] != bill['invoice_no']]
+                        app_data["history"] = st.session_state.history
+                        save_data(app_data)
+                        st.warning(f"Invoice {bill['invoice_no']} deleted! Sequence adjusted.")
+                        st.rerun()
 
 else:
     st.markdown("""
@@ -182,19 +218,14 @@ else:
         </div>
     """, unsafe_allow_html=True)
 
-    # Automatically calculate correct next invoice number based on permanent history count
+    # Automatically calculate correct next invoice number based on permanent history count + 1
     next_inv_num = len(st.session_state.history) + 1
     current_inv_no = f"TAX/2026-27/{next_inv_num:03d}"
 
     with st.form("invoice_form"):
         st.markdown('<div class="section-box-1">👤 1. Client / Party Details</div>', unsafe_allow_html=True)
         party_names = list(st.session_state.saved_parties.keys())
-        
-        default_party_idx = 0
-        if st.session_state.edit_party in party_names:
-            default_party_idx = party_names.index(st.session_state.edit_party)
-
-        selected_party = st.selectbox("Select Existing Party", party_names, index=default_party_idx)
+        selected_party = st.selectbox("Select Existing Party", party_names)
 
         with st.expander("➕ Click Here to Add New Party"):
             new_trade_name = st.text_input("New Party Trade Name", "")
@@ -211,9 +242,10 @@ else:
         new_service_input = st.text_input("Add New Service (Agar upar list mein na ho)", "")
         
         st.markdown("💡 *Format: Service Name | Period | Amount (Jaise: GST Filing | July | 700)*")
-        services_text = st.text_area("Services Details", value=st.session_state.edit_services)
+        default_text = "\n".join([f"{s} | July | 700" for s in selected_services])
+        services_text = st.text_area("Services Details", value=default_text)
 
-        total_paid = st.number_input("Total Amount Paid (Rs.)", min_value=0.0, value=st.session_state.edit_paid)
+        total_paid = st.number_input("Total Amount Paid (Rs.)", min_value=0.0, value=0.0)
 
         submitted = st.form_submit_button("✨ Generate Exact A4 Invoice Preview")
 
@@ -278,15 +310,10 @@ else:
 
         st.session_state.history.append(new_invoice_record)
         
-        # Save to permanent storage file
         app_data["history"] = st.session_state.history
         app_data["parties"] = st.session_state.saved_parties
         app_data["services"] = st.session_state.saved_services
         save_data(app_data)
-
-        st.session_state.edit_party = ""
-        st.session_state.edit_services = "GST | July | 700"
-        st.session_state.edit_paid = 0.0
 
         # --- Perfect A4 Layout HTML & CSS with Built-in Print Button ---
         html_content = f"""
