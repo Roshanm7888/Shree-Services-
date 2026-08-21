@@ -193,7 +193,7 @@ if submitted:
     pdf.cell(150, 5, "", ln=False)
     pdf.cell(40, 5, "Authorised Signatory", ln=True, align="C")
 
-    pdf_bytes = pdf.output(dest='S').encode('latin1')
+    pdf_bytes = pdf.output()
 
     st.success("Invoice PDF generated successfully!")
     st.download_button(
