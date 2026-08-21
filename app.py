@@ -45,7 +45,7 @@ def get_initials(name):
     elif len(words) == 1 and len(words[0]) >= 2: return words[0][:2].upper()
     return "SS"
 
-# --- AUTHENTICATION ---
+# --- AUTHENTICATION & REGISTRATION ---
 if not st.session_state.logged_in_user:
     st.markdown("""
         <div class="main-title">
@@ -113,7 +113,7 @@ if not st.session_state.logged_in_user:
                     "subscription": "Trial", "bills_created": 0
                 }
                 save_saas_data(saas_db)
-                st.success("Account Created Successfully! Free Trial Activated (1 Bill Limit). Go to Login tab.")
+                st.success("Account Created Successfully! Free Trial Activated (1 Free Bill). Go to Login tab.")
 
 else:
     # --- LOGGED-IN USER PORTAL ---
@@ -139,6 +139,19 @@ else:
         st.session_state.history = cleaned_history
         user_data["history"] = st.session_state.history
         save_saas_data(saas_db)
+
+    # --- ADMIN DASHBOARD IN SIDEBAR ---
+    if current_user == "roshan@shreeservices.com":
+        st.sidebar.markdown("🛠️ **Admin Subscription Manager**")
+        for u_id, u_info in saas_db.items():
+            if u_id != "roshan@shreeservices.com":
+                current_sub = u_info.get("subscription", "Trial")
+                new_sub = st.sidebar.selectbox(f"Plan for `{u_id}`", ["Trial", "Paid"], index=["Trial", "Paid"].index(current_sub if current_sub in ["Trial", "Paid"] else 0), key=f"sub_{u_id}")
+                if new_sub != current_sub:
+                    u_info["subscription"] = new_sub
+                    save_saas_data(saas_db)
+                    st.sidebar.success(f"Updated {u_id} to {new_sub}!")
+        st.sidebar.markdown("---")
 
     # --- Sidebar Menu & Session Info ---
     st.sidebar.markdown(f"👤 **User:** `{current_user}`")
@@ -314,8 +327,27 @@ else:
         # --- CREATE INVOICE TAB ---
         st.markdown(f"<div class='main-title'><h1>{user_data['profile']['name']}</h1><p>Invoice Mode: <b>{current_nature}</b> | Plan: <b>{user_data['subscription']}</b></p></div>", unsafe_allow_html=True)
 
+        # --- SUBSCRIPTION TRIAL LIMIT POP-UP LOCK ---
         if user_data["subscription"] == "Trial" and user_data.get("bills_created", 0) >= 1:
-            st.error("🚨 **Free Trial Limit Reached!** You have already generated 1 free invoice on your trial account. Please upgrade to a Paid Subscription plan to create unlimited invoices.")
+            st.error("🚨 **Free Trial Limit Reached!** You have already generated 1 free invoice on your trial account.")
+            st.warning("💳 **Subscribe to Pro Plan (Rs. 5/- only)**")
+            st.markdown("Please scan / pay via UPI to: **`roshan@shreeservices.upi`**")
+            
+            with st.form("subscription_payment_form"):
+                tx_id_input = st.text_input("Enter UPI Transaction Reference ID (UTR / Txn ID)")
+                submit_tx = st.form_submit_button("Submit Payment for Activation")
+                if submit_tx:
+                    if tx_id_input.strip():
+                        user_data["subscription"] = "Pending Approval"
+                        save_saas_data(saas_db)
+                        st.success("Transaction submitted successfully! Admin will review and activate your account shortly.")
+                        st.rerun()
+                    else:
+                        st.warning("Please enter a valid Transaction ID.")
+            st.stop()
+        
+        elif user_data["subscription"] == "Pending Approval":
+            st.info("⏳ **Payment Verification Pending:** Your subscription payment is currently under review by the admin. Once verified, unlimited invoice creation will be unlocked.")
             st.stop()
 
         next_inv_num = len(st.session_state.history) + 1
@@ -420,6 +452,7 @@ else:
             total_amt = subtotal_amt + total_tax_amt
             balance = total_amt - total_paid
 
+            # Increment bill counter for trial limit
             user_data["bills_created"] = user_data.get("bills_created", 0) + 1
 
             st.session_state.history.append({
