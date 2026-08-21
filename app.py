@@ -155,18 +155,7 @@ if not st.session_state.logged_in_user:
                     "watermark_type": "Company Name",
                     "logo_choice": "Modern Shield (Auto)"
                 },
-                "history": [
-                    {
-                        "invoice_no": "TAX/2026-27/001",
-                        "client": "RKMK Enterprises",
-                        "total": 1400.0,
-                        "paid": 1000.0,
-                        "balance": 400.0,
-                        "date": "July 15, 2026",
-                        "services": "GST Filing | July | 700\nITR Filing | 2025-26 | 700",
-                        "timestamp": datetime.now().isoformat()
-                    }
-                ],
+                "history": [],
                 "parties": {
                     "RKMK Enterprises": {
                         "legal": "Rinky Acharya",
@@ -373,7 +362,6 @@ else:
             "Sleek Diamond (Auto)"
         ]
 
-        # Real-time interactive controls (Without form block for instant live preview updates)
         st.markdown("### 🏢 Business Information")
         up_name = st.text_input("Company / Trade Name", value=prof.get("name", ""))
         up_legal = st.text_input("Authorized Person / Owner Name", value=prof.get("legal", ""))
@@ -426,7 +414,7 @@ else:
             save_saas_data(saas_db)
             st.success("Settings saved successfully!")
 
-        # --- Instant Full A4 Size Live Preview Box (Updates instantly as you change dropdowns) ---
+        # --- Instant Full A4 Size Live Preview Box (Synchronized with Print layout) ---
         st.markdown("---")
         st.markdown("### 👁️ Instant Full A4 Size Live Preview (Real-Time)")
         
@@ -472,43 +460,42 @@ else:
         <head>
         <meta charset="utf-8">
         <style>
-            body {{ font-family: 'Helvetica', Arial, sans-serif; color: #1e293b; background: #e2e8f0; margin: 0; padding: 10px; }}
-            .a4-preview-page {{ 
-                width: 100%; 
-                max-width: 210mm; 
+            body {{ font-family: 'Helvetica', Arial, sans-serif; color: #1e293b; background: #e2e8f0; margin: 0; padding: 20px; }}
+            .a4-page {{ 
+                width: 210mm; 
                 min-height: 297mm; 
                 margin: auto; 
                 background: #fff; 
-                padding: 15mm; 
+                padding: 15mm 20mm; 
                 box-sizing: border-box; 
-                box-shadow: 0 0 15px rgba(0,0,0,0.1); 
+                box-shadow: 0 0 20px rgba(0,0,0,0.15); 
                 border: {border_css};
                 position: relative;
                 overflow: hidden;
             }}
             .header {{ display: flex; justify-content: space-between; border-bottom: 3px solid {p_color}; padding-bottom: 12px; margin-bottom: 20px; position: relative; z-index: 1; }}
             .company-title {{ font-size: 24px; font-weight: bold; color: {p_color}; }}
-            .invoice-title {{ font-size: 24px; font-weight: bold; text-transform: uppercase; color: #1e293b; text-align: right; }}
-            .billing-table {{ width: 100%; border-collapse: collapse; margin-bottom: 20px; border: 1px solid #cbd5e1; background: #f8fafc; position: relative; z-index: 1; }}
-            .billing-table td {{ padding: 10px; vertical-align: top; width: 50%; font-size: 12px; border: 1px solid #cbd5e1; line-height: 1.4; }}
+            .invoice-title {{ font-size: 26px; font-weight: bold; text-transform: uppercase; color: #1e293b; text-align: right; }}
+            .billing-table {{ width: 100%; border-collapse: collapse; margin-bottom: 25px; border: 1px solid #cbd5e1; background: #f8fafc; position: relative; z-index: 1; }}
+            .billing-table td {{ padding: 12px; vertical-align: top; width: 50%; font-size: 13px; border: 1px solid #cbd5e1; line-height: 1.5; }}
             .items-table {{ width: 100%; border-collapse: collapse; margin-bottom: 20px; position: relative; z-index: 1; }}
-            .items-table th {{ background-color: {p_color}; color: #fff; text-align: left; padding: 8px; font-size: 11px; }}
-            .items-table td {{ border: 1px solid #cbd5e1; padding: 8px; font-size: 11px; }}
+            .items-table th {{ background-color: {p_color}; color: #fff; text-align: left; padding: 10px; font-size: 12px; border: 1px solid {p_color}; }}
+            .items-table td {{ border: 1px solid #cbd5e1; padding: 10px; font-size: 12px; }}
             .right {{ text-align: right; }}
-            .totals {{ width: 280px; margin-left: auto; font-size: 12px; margin-bottom: 30px; border: 1px solid #cbd5e1; border-collapse: collapse; position: relative; z-index: 1; }}
-            .totals td {{ padding: 6px; border: 1px solid #cbd5e1; }}
-            .grand-total {{ font-weight: bold; background: #eff6ff; color: {p_color}; }}
+            .totals {{ width: 300px; margin-left: auto; font-size: 13px; margin-bottom: 40px; border: 1px solid #cbd5e1; border-collapse: collapse; position: relative; z-index: 1; }}
+            .totals td {{ padding: 8px; border: 1px solid #cbd5e1; }}
+            .grand-total {{ font-weight: bold; background: #eff6ff; font-size: 14px; color: {p_color}; }}
         </style>
         </head>
         <body>
-        <div class="a4-preview-page">
+        <div class="a4-page">
             {wm_html}
             <div class="header">
                 <div style="display: flex; align-items: flex-start; gap: 15px;">
                     {logo_html}
                     <div>
                         <div class="company-title">{up_name}</div>
-                        <div style="font-size: 11px; color: #475569; margin-top: 3px; line-height: 1.3;">
+                        <div style="font-size: 12px; color: #475569; margin-top: 5px; line-height: 1.4;">
                             {up_address}<br>
                             <strong>Contact:</strong> {up_contact}<br>
                             <strong>GSTIN:</strong> {up_gstin}
@@ -517,7 +504,7 @@ else:
                 </div>
                 <div>
                     <div class="invoice-title">Tax Invoice</div>
-                    <div style="font-size: 11px; color: #475569; text-align: right; margin-top: 3px; line-height: 1.3;">
+                    <div style="font-size: 12px; color: #475569; text-align: right; margin-top: 5px; line-height: 1.4;">
                         <strong>Invoice No:</strong> TAX/2026-27/001<br>
                         <strong>Date:</strong> July 15, 2026
                     </div>
@@ -535,9 +522,9 @@ else:
                 <thead>
                     <tr>
                         <th style="width: 10%;">S.No.</th>
-                        <th style="width: 60%;">Description of Services</th>
+                        <th style="width: 55%;">Description of Services</th>
                         <th style="width: 15%;">Period</th>
-                        <th class="right" style="width: 15%;">Amount</th>
+                        <th class="right" style="width: 20%;">Amount (Rs.)</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -545,7 +532,7 @@ else:
                         <td class="right">1</td>
                         <td>Sample GST Monthly Filing Service</td>
                         <td>July 2026</td>
-                        <td class="right">Rs. 700.00</td>
+                        <td class="right">700.00</td>
                     </tr>
                 </tbody>
             </table>
@@ -556,14 +543,14 @@ else:
                 <tr class="grand-total"><td>Total Amount:</td><td class="right">Rs. 826.00</td></tr>
             </table>
 
-            <div style="text-align: center; font-size: 10px; color: #64748b; margin-top: 40px; position: relative; z-index: 1;">
-                Thank you for your business! Theme: {up_format} | Border: {up_border}
+            <div style="text-align: center; font-size: 11px; color: #64748b; position: relative; z-index: 1;">
+                Thank you for your business! Theme: {up_format}
             </div>
         </div>
         </body>
         </html>
         """
-        st.components.v1.html(full_a4_preview_html, height=780, scrolling=True)
+        st.components.v1.html(full_a4_preview_html, height=800, scrolling=True)
 
     elif menu_option == "📦 Stock & Items Manager":
         st.markdown("""
