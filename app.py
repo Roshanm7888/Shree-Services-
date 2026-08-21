@@ -5,9 +5,16 @@ import os
 
 st.set_page_config(page_title="Professional Invoice Portal - SaaS", page_icon="📄", layout="wide")
 
-# --- CSS STYLING ---
+# --- CSS STYLING & MOBILE RESPONSIVENESS ---
 st.markdown("""
     <style>
+    @media (max-width: 600px) {
+        .main-title { padding: 15px !important; }
+        .main-title h1 { font-size: 18px !important; }
+        .a4-page { width: 100% !important; padding: 10px !important; }
+        div[data-testid="column"] { width: 100% !important; margin-bottom: 8px; }
+        .stButton button { width: 100% !important; }
+    }
     label, p, span, div { color: #1e293b !important; }
     input, textarea, select { background-color: #ffffff !important; color: #1e293b !important; border: 1px solid #cbd5e1 !important; border-radius: 8px !important; }
     .stApp { background-color: #f8fafc; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
