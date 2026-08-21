@@ -22,7 +22,7 @@ if "saved_parties" not in st.session_state:
         }
     }
 
-# 5 Compulsory Services + Custom Saved Services
+# Compulsory Services + Custom Saved Services
 if "saved_services" not in st.session_state:
     st.session_state.saved_services = [
         "ITR",
@@ -36,7 +36,7 @@ with st.form("invoice_form"):
     st.subheader("1. Client / Party Details")
     
     # Party Dropdown Selection
-    party_names = list(st.saved_parties.keys()) if "saved_parties" in st.session_state else ["RKMK Enterprises"]
+    party_names = list(st.session_state.saved_parties.keys())
     selected_party = st.selectbox("Select Existing Party", party_names)
 
     st.markdown("---")
@@ -64,13 +64,11 @@ with st.form("invoice_form"):
     submitted = st.form_submit_button("Generate Invoice & Save")
 
 if submitted:
-    # Determine final active party details
     if new_trade_name.strip():
         client_name = new_trade_name.strip()
         client_legal = new_legal_name.strip()
         client_address = new_address.strip()
         client_gstin = new_gstin.strip()
-        # Save new party permanently to master directory
         st.session_state.saved_parties[client_name] = {
             "legal": client_legal,
             "address": client_address,
@@ -83,7 +81,6 @@ if submitted:
         client_address = p_info["address"]
         client_gstin = p_info["gstin"]
 
-    # Save new service if entered
     if new_service_input and new_service_input.upper() not in [s.upper() for s in st.session_state.saved_services]:
         st.session_state.saved_services.append(new_service_input.upper())
 
