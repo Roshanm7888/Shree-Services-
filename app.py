@@ -140,18 +140,13 @@ else:
         user_data["history"] = st.session_state.history
         save_saas_data(saas_db)
 
-    # --- Sidebar Menu & GST Session Timer ---
+    # --- Sidebar Menu & Session Info ---
     st.sidebar.markdown(f"👤 **User:** `{current_user}`")
     st.sidebar.markdown(f"🏢 **Company:** `{user_data['profile']['name']}`")
     st.sidebar.markdown(f"🌟 **Plan:** `{user_data['subscription']}`")
     
     st.sidebar.markdown("---")
-    st.sidebar.markdown("⏱️ **Session Timer**")
-    st.sidebar.components.v1.html("""
-        <div style="background: #1e293b; color: #38bdf8; padding: 8px; border-radius: 6px; text-align: center; font-family: monospace; font-size: 16px; font-weight: bold;">
-            14:59 Remaining
-        </div>
-    """, height=40)
+    st.sidebar.info("⏱️ **Session Timer:** Active (15:00)")
 
     st.sidebar.markdown("---")
     menu_option = st.sidebar.radio("Navigation Menu", [
