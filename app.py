@@ -1,11 +1,64 @@
 import streamlit as st
+import base64
 from datetime import datetime
-from fpdf import FPDF
 
-st.set_page_config(page_title="Invoice Generator - Roshan Mishra", layout="centered")
+st.set_page_config(page_title="Shree Services - Invoice Portal", page_icon="📄", layout="centered")
 
-st.title("📄 Professional Invoice Generator & Portal")
-st.write("Tally-style Party Master & Perfect PDF format ke sath apna invoice generate karein.")
+# --- Modern UI CSS ---
+st.markdown("""
+    <style>
+    .stApp {
+        background-color: #f1f5f9;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    .main-title {
+        background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+        color: white;
+        padding: 25px;
+        border-radius: 12px;
+        text-align: center;
+        margin-bottom: 25px;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+    .main-title h1 { margin: 0; font-size: 26px; font-weight: 700; }
+    .main-title p { margin: 5px 0 0 0; font-size: 14px; opacity: 0.9; }
+
+    div[data-testid="stForm"] {
+        background: #ffffff;
+        padding: 25px;
+        border-radius: 12px;
+        border: 1px solid #e2e8f0;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    }
+    h3 {
+        color: #1e3a8a;
+        font-size: 17px !important;
+        border-bottom: 2px solid #eff6ff;
+        padding-bottom: 8px;
+        margin-top: 15px !important;
+    }
+    .stFormSubmitButton button {
+        background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+        color: white;
+        font-weight: bold;
+        border-radius: 8px;
+        padding: 10px 20px;
+        width: 100%;
+        border: none;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .stFormSubmitButton button:hover {
+        background: linear-gradient(135deg, #1d4ed8 0%, #2563eb 100%);
+    }
+    </style>
+""", unsafe_allow_html=True)
+
+st.markdown("""
+    <div class="main-title">
+        <h1>Shree Services & Tax Portal</h1>
+        <p>Professional Tally-Style Invoice & Billing System</p>
+    </div>
+""", unsafe_allow_html=True)
 
 if "invoice_count" not in st.session_state:
     st.session_state.invoice_count = 1
@@ -36,23 +89,23 @@ if "saved_services" not in st.session_state:
     ]
 
 with st.form("invoice_form"):
-    st.subheader("1. Client / Party Details")
+    st.markdown("### 1. Client / Party Details")
     party_names = list(st.session_state.saved_parties.keys())
     selected_party = st.selectbox("Select Existing Party", party_names)
 
     st.markdown("---")
-    st.markdown("### ➕ Nayi Party Add Karein (Agar list mein na ho)")
+    st.markdown("**➕ Nayi Party Add Karein (Agar list mein na ho):**")
     new_trade_name = st.text_input("New Party Trade Name", "")
     new_legal_name = st.text_input("New Client Legal Name", "")
     new_address = st.text_input("New Client Address", "")
     new_gstin = st.text_input("New Client GSTIN", "")
 
-    st.subheader("2. Invoice Details")
+    st.markdown("### 2. Invoice Details")
     current_inv_no = f"TAX/2026-27/{st.session_state.invoice_count:03d}"
     inv_no = st.text_input("Invoice Number (Auto-generated)", current_inv_no)
     inv_date = st.text_input("Invoice Date", datetime.now().strftime("%B %d, %Y"))
 
-    st.subheader("3. Select Services & Add Amount")
+    st.markdown("### 3. Select Services & Add Amount")
     selected_services = st.multiselect("Select Services from Library", st.session_state.saved_services, default=["GST"])
     new_service_input = st.text_input("Add New Service (Agar upar list mein na ho)", "")
     
@@ -62,7 +115,7 @@ with st.form("invoice_form"):
 
     total_paid = st.number_input("Total Amount Paid (Rs.)", min_value=0.0, value=0.0)
 
-    submitted = st.form_submit_button("Generate A4 Preview & PDF")
+    submitted = st.form_submit_button("✨ Generate Exact A4 Invoice Preview")
 
 if submitted:
     if new_trade_name.strip():
@@ -123,29 +176,42 @@ if submitted:
 
     st.session_state.invoice_count += 1
 
-    # --- 1. A4 Size Visual HTML Preview ---
+    # --- Perfect A4 Layout HTML & CSS (Same as Preview) ---
     html_content = f"""
     <!DOCTYPE html>
     <html>
     <head>
     <meta charset="utf-8">
     <style>
-        body {{ font-family: 'Helvetica', Arial, sans-serif; color: #2c3e50; background: #555; margin: 0; padding: 10px; }}
-        .a4-page {{ width: 210mm; min-height: 297mm; margin: auto; background: #fff; padding: 20mm; box-sizing: border-box; box-shadow: 0 0 15px rgba(0,0,0,0.2); }}
-        .header {{ display: flex; justify-content: space-between; border-bottom: 2px solid #1a365d; padding-bottom: 15px; margin-bottom: 20px; }}
-        .company-title {{ font-size: 22px; font-weight: bold; color: #1a365d; }}
-        .invoice-title {{ font-size: 24px; font-weight: bold; text-transform: uppercase; color: #2c3e50; text-align: right; }}
-        .billing-table {{ width: 100%; border-collapse: collapse; margin-bottom: 20px; background: #f8fafc; border: 1px solid #cbd5e1; }}
-        .billing-table td {{ padding: 10px; vertical-align: top; width: 50%; font-size: 13px; border: 1px solid #cbd5e1; }}
+        body {{ font-family: 'Helvetica', Arial, sans-serif; color: #1e293b; background: #e2e8f0; margin: 0; padding: 20px; }}
+        .a4-page {{ 
+            width: 210mm; 
+            min-height: 297mm; 
+            margin: auto; 
+            background: #fff; 
+            padding: 15mm 20mm; 
+            box-sizing: border-box; 
+            box-shadow: 0 0 20px rgba(0,0,0,0.15); 
+        }}
+        .header {{ display: flex; justify-content: space-between; border-bottom: 3px solid #1e3a8a; padding-bottom: 12px; margin-bottom: 20px; }}
+        .company-title {{ font-size: 24px; font-weight: bold; color: #1e3a8a; }}
+        .invoice-title {{ font-size: 26px; font-weight: bold; text-transform: uppercase; color: #1e293b; text-align: right; }}
+        .billing-table {{ width: 100%; border-collapse: collapse; margin-bottom: 25px; border: 1px solid #cbd5e1; background: #f8fafc; }}
+        .billing-table td {{ padding: 12px; vertical-align: top; width: 50%; font-size: 13px; border: 1px solid #cbd5e1; line-height: 1.5; }}
         .items-table {{ width: 100%; border-collapse: collapse; margin-bottom: 20px; }}
-        .items-table th {{ background-color: #1a365d; color: #fff; text-align: left; padding: 10px; font-size: 12px; }}
+        .items-table th {{ background-color: #1e3a8a; color: #fff; text-align: left; padding: 10px; font-size: 12px; border: 1px solid #1e3a8a; }}
         .items-table td {{ border: 1px solid #cbd5e1; padding: 10px; font-size: 12px; }}
         .right {{ text-align: right; }}
-        .totals {{ width: 280px; margin-left: auto; font-size: 13px; margin-bottom: 50px; border: 1px solid #cbd5e1; border-collapse: collapse; }}
-        .totals td {{ padding: 6px; border: 1px solid #cbd5e1; }}
-        .grand-total {{ font-weight: bold; background: #f1f5f9; font-size: 14px; border-top: 2px solid #1a365d; border-bottom: 2px solid #1a365d; }}
+        .totals {{ width: 300px; margin-left: auto; font-size: 13px; margin-bottom: 40px; border: 1px solid #cbd5e1; border-collapse: collapse; }}
+        .totals td {{ padding: 8px; border: 1px solid #cbd5e1; }}
+        .grand-total {{ font-weight: bold; background: #eff6ff; font-size: 14px; color: #1e3a8a; }}
         .sign-area {{ float: right; text-align: right; margin-top: 30px; font-size: 13px; }}
         .sign-line {{ border-top: 1px solid #000; width: 180px; margin-top: 50px; text-align: center; font-weight: bold; }}
+        @media print {{
+            body {{ background: none; padding: 0; }}
+            .a4-page {{ box-shadow: none; margin: 0; width: 100%; padding: 10mm; }}
+            .no-print {{ display: none; }}
+        }}
     </style>
     </head>
     <body>
@@ -153,7 +219,7 @@ if submitted:
         <div class="header">
             <div>
                 <div class="company-title">Roshan Mishra</div>
-                <div style="font-size: 12px; color: #555; margin-top: 5px; line-height: 1.4;">
+                <div style="font-size: 12px; color: #475569; margin-top: 5px; line-height: 1.4;">
                     Plot no 64 & 65, Block K-5<br>
                     Mohan Garden, New Delhi - 110059<br>
                     <strong>Contact:</strong> 7888273972
@@ -161,7 +227,7 @@ if submitted:
             </div>
             <div>
                 <div class="invoice-title">Tax Invoice</div>
-                <div style="font-size: 12px; color: #555; text-align: right; margin-top: 5px; line-height: 1.4;">
+                <div style="font-size: 12px; color: #475569; text-align: right; margin-top: 5px; line-height: 1.4;">
                     <strong>Invoice No:</strong> {inv_no}<br>
                     <strong>Date:</strong> {inv_date}<br>
                     <strong>Client GSTIN:</strong> {client_gstin}
@@ -188,17 +254,17 @@ if submitted:
         <table class="items-table">
             <thead>
                 <tr>
-                    <th>S.No.</th>
-                    <th>Description of Services</th>
-                    <th>Period</th>
-                    <th class="right">Amount (Rs.)</th>
+                    <th style="width: 10%;">S.No.</th>
+                    <th style="width: 55%;">Description of Services</th>
+                    <th style="width: 15%;">Period</th>
+                    <th class="right" style="width: 20%;">Amount (Rs.)</th>
                 </tr>
             </thead>
             <tbody>
     """
     
     for idx, (desc, period, amt) in enumerate(items, 1):
-        html_content += "<tr><td>{}</td><td>{}</td><td>{}</td><td class='right'>{:.2f}</td></tr>".format(idx, desc, period, amt)
+        html_content += "<tr><td class='right'>{}</td><td>{}</td><td>{}</td><td class='right'>{:.2f}</td></tr>".format(idx, desc, period, amt)
 
     html_content += """
             </tbody>
@@ -216,110 +282,29 @@ if submitted:
             <div class="sign-line">Authorised Signatory</div>
         </div>
         <div style="clear: both;"></div>
-        <hr style="border:none; border-top:1px solid #ddd; margin-top: 40px;">
-        <div style="text-align: center; font-size: 11px; color: #777;">Thank you for your business! This is a computer-generated invoice.</div>
+        <hr style="border:none; border-top:1px solid #cbd5e1; margin-top: 40px;">
+        <div style="text-align: center; font-size: 11px; color: #64748b;">Thank you for your business! This is a computer-generated invoice.</div>
     </div>
     </body>
     </html>
     """.format(total_amt, total_paid, balance)
 
-    st.success("Invoice generated successfully! A4 Preview below:")
-    st.components.v1.html(html_content, height=750, scrolling=True)
+    st.success("✨ Invoice Generated Successfully! Preview below:")
+    st.components.v1.html(html_content, height=800, scrolling=True)
 
-    # --- 2. Generate PDF with Classic Structured Lines Layout ---
-    pdf = FPDF()
-    pdf.add_page()
+    # Direct Download & Print Helper Buttons
+    b64 = base64.b64encode(html_content.encode('utf-8')).decode()
     
-    # Title & Header with lines
-    pdf.set_font("Helvetica", "B", 18)
-    pdf.cell(190, 10, "TAX INVOICE", ln=True, align="Right")
-    
-    pdf.set_font("Helvetica", "B", 11)
-    pdf.cell(100, 6, "Roshan Mishra", ln=False)
-    pdf.set_font("Helvetica", "", 10)
-    pdf.cell(90, 6, f"Invoice No: {inv_no}", ln=True, align="Right")
-    
-    pdf.cell(100, 5, "Plot no 64 & 65, Block K-5, Mohan Garden, New Delhi - 110059", ln=False)
-    pdf.cell(90, 5, f"Date: {inv_date}", ln=True, align="Right")
-    pdf.cell(100, 5, "Contact: 7888273972", ln=False)
-    pdf.cell(90, 5, f"Client GSTIN: {client_gstin}", ln=True, align="Right")
-    
-    # Horizontal Line
-    pdf.ln(5)
-    pdf.set_draw_color(26, 54, 93)
-    pdf.set_line_width(0.8)
-    pdf.line(10, pdf.get_y(), 200, pdf.get_y())
-    pdf.ln(8)
-    
-    # Classic Side-by-Side Billing Blocks with proper borders
-    pdf.set_font("Helvetica", "B", 10)
-    pdf.cell(95, 6, "Service Provider:", ln=False)
-    pdf.cell(95, 6, "Billed To:", ln=True)
-    
-    pdf.set_font("Helvetica", "", 9)
-    y_start = pdf.get_y()
-    pdf.multi_cell(90, 5, "Roshan Mishra (Accountant)\nPlot no 64 & 65, Block K-5,\nMohan Garden, New Delhi - 110059")
-    y_end = pdf.get_y()
-    
-    pdf.set_xy(105, y_start)
-    pdf.multi_cell(90, 5, f"Trade Name: {client_name}\nLegal Name: {client_legal}\nAddress: {client_address}")
-    
-    if pdf.get_y() < y_end:
-        pdf.set_y(y_end)
-        
-    pdf.ln(10)
-    
-    # Table Header with classic styling
-    pdf.set_fill_color(26, 54, 93)
-    pdf.set_text_color(255, 255, 255)
-    pdf.set_font("Helvetica", "B", 10)
-    pdf.cell(15, 8, "S.No.", 1, 0, "C", True)
-    pdf.cell(95, 8, "Description of Services", 1, 0, "L", True)
-    pdf.cell(40, 8, "Period", 1, 0, "C", True)
-    pdf.cell(40, 8, "Amount (Rs.)", 1, 1, "R", True)
-    
-    # Table Rows
-    pdf.set_text_color(0, 0, 0)
-    pdf.set_font("Helvetica", "", 10)
-    for idx, (desc, period, amt) in enumerate(items, 1):
-        pdf.cell(15, 7, str(idx), 1, 0, "C")
-        pdf.cell(95, 7, desc, 1, 0, "L")
-        pdf.cell(40, 7, period, 1, 0, "C")
-        pdf.cell(40, 7, f"{amt:.2f}", 1, 1, "R")
-        
-    pdf.ln(5)
-    pdf.cell(110, 6, "", ln=False)
-    pdf.cell(40, 6, "Total Amount:", ln=False)
-    pdf.cell(40, 6, f"Rs. {total_amt:.2f}", ln=True, align="R")
-    
-    pdf.cell(110, 6, "", ln=False)
-    pdf.cell(40, 6, "Total Paid:", ln=False)
-    pdf.cell(40, 6, f"Rs. {total_paid:.2f}", ln=True, align="R")
-    
-    pdf.set_font("Helvetica", "B", 11)
-    pdf.cell(110, 8, "", ln=False)
-    pdf.cell(40, 8, "Balance Due:", ln=False)
-    pdf.cell(40, 8, f"Rs. {balance:.2f}", ln=True, align="R")
-    
-    pdf.ln(25)
-    pdf.set_font("Helvetica", "B", 10)
-    pdf.cell(150, 5, "", ln=False)
-    pdf.cell(40, 5, "For Roshan Mishra", ln=True, align="C")
-    pdf.ln(12)
-    pdf.cell(150, 5, "", ln=False)
-    pdf.cell(40, 5, "Authorised Signatory", ln=True, align="C")
-
-    pdf_bytes = bytes(pdf.output())
-
-    st.download_button(
-        label="📥 Download Official PDF Invoice",
-        data=pdf_bytes,
-        file_name=f"Invoice_{client_name.replace(' ', '_')}_{inv_no.replace('/', '-')}.pdf",
-        mime="application/pdf"
-    )
+    col1, col2 = st.columns(2)
+    with col1:
+        href = f'<a href="data:text/html;charset=utf-8;base64,{b64}" download="Invoice_{client_name.replace(" ", "_")}_{inv_no.replace("/", "-")}.html" style="display:block; text-align:center; padding:12px; background-color:#1e3a8a; color:white; text-decoration:none; border-radius:8px; font-weight:bold; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">📥 Download Exact HTML/PDF File</a>'
+        st.markdown(href, unsafe_allow_html=True)
+    with col2:
+        print_btn = f'<a href="data:text/html;charset=utf-8;base64,{b64}" target="_blank" style="display:block; text-align:center; padding:12px; background-color:#059669; color:white; text-decoration:none; border-radius:8px; font-weight:bold; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">🖨️ Open & Print / Save as PDF</a>'
+        st.markdown(print_btn, unsafe_allow_html=True)
 
 if st.session_state.history:
     st.markdown("---")
-    st.subheader("📊 Recent Generated Invoices History")
+    st.markdown("### 📊 Recent Generated Invoices History")
     for i, h in enumerate(reversed(st.session_state.history)):
-        st.write(f"🔹 **{h['invoice_no']}** | Party: **{h['client']}** | Total: Rs. {h['total']} | Paid: Rs. {h['paid']} | Balance: Rs. {h['balance']}")
+        st.info(f"🔹 **{h['invoice_no']}** | Party: **{h['client']}** | Total: Rs. {h['total']} | Paid: Rs. {h['paid']} | Balance: Rs. {h['balance']}")
