@@ -133,8 +133,8 @@ if not st.session_state.logged_in_user:
     
     with auth_tab1:
         st.subheader("Existing User Login")
-        login_id = st.text_input("Email ID / Mobile Number", key="login_id")
-        login_pass = st.text_input("Password", type="password", key="login_pass")
+        login_id = st.text_input("Email ID / Mobile Number", key="login_id", placeholder="e.g. user@gmail.com")
+        login_pass = st.text_input("Password", type="password", key="login_pass", placeholder="Enter your password")
         
         if st.button("Login to Portal"):
             if login_id in saas_db and saas_db[login_id]["password"] == login_pass:
@@ -146,18 +146,18 @@ if not st.session_state.logged_in_user:
                 
     with auth_tab2:
         st.subheader("Create New Account & Company")
-        reg_id = st.text_input("Enter Email ID / Mobile Number (User ID)", key="reg_id")
-        reg_pass1 = st.text_input("Create Password", type="password", key="reg_pass1")
-        reg_pass2 = st.text_input("Confirm Password", type="password", key="reg_pass2")
+        reg_id = st.text_input("Enter Email ID / Mobile Number (User ID)", key="reg_id", placeholder="e.g. shreeservices@gmail.com")
+        reg_pass1 = st.text_input("Create Password", type="password", key="reg_pass1", placeholder="Create secure password")
+        reg_pass2 = st.text_input("Confirm Password", type="password", key="reg_pass2", placeholder="Re-enter password")
         
         st.markdown("---")
         st.markdown("#### 🏢 Company / Business Profile Setup")
-        comp_name = st.text_input("Company / Trade Name (e.g., Shree Services)", key="comp_name")
-        comp_legal = st.text_input("Authorized Person / Owner Name", key="comp_legal")
-        comp_address = st.text_input("Company Complete Address", key="comp_address")
-        comp_contact = st.text_input("Contact Number", key="comp_contact")
-        comp_gstin = st.text_input("Company GSTIN (Optional)", key="comp_gstin")
-        comp_nature = st.text_input("Nature of Business / Dealings (e.g., Tax Filing & Accounting)", key="comp_nature")
+        comp_name = st.text_input("Company / Trade Name", key="comp_name", placeholder="e.g. Shree Services")
+        comp_legal = st.text_input("Authorized Person / Owner Name", key="comp_legal", placeholder="e.g. Roshan Mishra")
+        comp_address = st.text_input("Company Complete Address", key="comp_address", placeholder="e.g. Plot No 64, Mohan Garden, New Delhi")
+        comp_contact = st.text_input("Contact Number", key="comp_contact", placeholder="e.g. +91 7888273972")
+        comp_gstin = st.text_input("Company GSTIN (Optional)", key="comp_gstin", placeholder="e.g. 07XXXXX0000X1Z5")
+        comp_nature = st.text_input("Nature of Business / Dealings", key="comp_nature", placeholder="e.g. Tax Consultancy & Document Services")
         
         if st.button("Register & Create Account"):
             if not reg_id or not reg_pass1:
@@ -236,12 +236,12 @@ else:
         
         prof = user_data["profile"]
         with st.form("profile_form"):
-            up_name = st.text_input("Company / Trade Name", value=prof.get("name", ""))
-            up_legal = st.text_input("Authorized Person / Owner Name", value=prof.get("legal", ""))
-            up_address = st.text_input("Company Complete Address", value=prof.get("address", ""))
-            up_contact = st.text_input("Contact Number", value=prof.get("contact", ""))
-            up_gstin = st.text_input("Company GSTIN", value=prof.get("gstin", ""))
-            up_nature = st.text_input("Nature of Business / Dealings", value=prof.get("nature", ""))
+            up_name = st.text_input("Company / Trade Name", value=prof.get("name", ""), placeholder="e.g. Shree Services")
+            up_legal = st.text_input("Authorized Person / Owner Name", value=prof.get("legal", ""), placeholder="e.g. Roshan Mishra")
+            up_address = st.text_input("Company Complete Address", value=prof.get("address", ""), placeholder="e.g. Plot No 64, Mohan Garden, New Delhi")
+            up_contact = st.text_input("Contact Number", value=prof.get("contact", ""), placeholder="e.g. +91 7888273972")
+            up_gstin = st.text_input("Company GSTIN", value=prof.get("gstin", ""), placeholder="e.g. 07XXXXX0000X1Z5")
+            up_nature = st.text_input("Nature of Business / Dealings", value=prof.get("nature", ""), placeholder="e.g. Tax Consultancy & Document Services")
             
             up_submit = st.form_submit_button("💾 Save Profile Changes")
             if up_submit:
@@ -279,7 +279,7 @@ else:
                     edit_key_services = f"edit_serv_{bill['invoice_no']}"
                     edit_key_paid = f"edit_paid_{bill['invoice_no']}"
                     
-                    new_serv = st.text_area("Edit Services Details", value=bill.get('services', ''), key=edit_key_services)
+                    new_serv = st.text_area("Edit Services Details", value=bill.get('services', ''), key=edit_key_services, placeholder="Service Name | Period | Amount")
                     new_pd = st.number_input("Edit Total Amount Paid (Rs.)", value=float(bill.get('paid', 0.0)), key=edit_key_paid)
                     
                     col_save, col_del = st.columns(2)
@@ -343,10 +343,10 @@ else:
             selected_party = st.selectbox("Select Existing Party", party_names)
 
             with st.expander("➕ Click Here to Add New Party"):
-                new_trade_name = st.text_input("New Party Trade Name", "")
-                new_legal_name = st.text_input("New Client Legal Name", "")
-                new_address = st.text_input("New Client Address", "")
-                new_gstin = st.text_input("New Client GSTIN", "")
+                new_trade_name = st.text_input("New Party Trade Name", placeholder="e.g. Chandra Enterprises")
+                new_legal_name = st.text_input("New Client Legal Name", placeholder="e.g. Manoj Kumar")
+                new_address = st.text_input("New Client Address", placeholder="e.g. 2nd Floor, N Block, Mohan Garden")
+                new_gstin = st.text_input("New Client GSTIN", placeholder="e.g. 07AAAAA0000A1Z5")
 
             st.markdown('<div class="section-box-2">📋 2. Invoice Details</div>', unsafe_allow_html=True)
             inv_no = st.text_input("Invoice Number (Auto-generated)", current_inv_no)
@@ -354,11 +354,11 @@ else:
 
             st.markdown('<div class="section-box-3">💼 3. Select Services & Add Amount</div>', unsafe_allow_html=True)
             selected_services = st.multiselect("Select Services from Library", st.session_state.saved_services, default=["GST"])
-            new_service_input = st.text_input("Add New Service (Agar upar list mein na ho)", "")
+            new_service_input = st.text_input("Add New Service (Agar upar list mein na ho)", placeholder="e.g. Income Tax Return")
             
             st.markdown("💡 *Format: Service Name | Period | Amount (Jaise: GST Filing | July | 700)*")
             default_text = "\n".join([f"{s} | July | 700" for s in selected_services])
-            services_text = st.text_area("Services Details", value=default_text)
+            services_text = st.text_area("Services Details", value=default_text, placeholder="GST Filing | July | 700")
 
             total_paid = st.number_input("Total Amount Paid (Rs.)", min_value=0.0, value=0.0)
 
@@ -563,4 +563,3 @@ else:
 
             st.success("✨ Invoice Generated Successfully! Preview below:")
             st.components.v1.html(html_content, height=800, scrolling=True)
-
