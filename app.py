@@ -3,13 +3,13 @@ from datetime import datetime, timedelta
 import json
 import os
 import time
-import google.generativeai as genai
+from google import genai
 
 st.set_page_config(page_title="Professional Invoice Portal - SaaS", page_icon="📄", layout="wide")
 
 # --- GEMINI API CONFIG (Replace with your actual API key) ---
-API_KEY = "AQ.Ab8RN6KzN_g7cBY6Okspd5wnJrLVu74CwEpgVyJCbSORfvn1Nw"
-genai.configure(api_key=API_KEY)
+API_KEY = "YOUR_GOOGLE_GEMINI_API_KEY"
+client = genai.Client(api_key=API_KEY) if API_KEY and API_KEY != "YOUR_GOOGLE_GEMINI_API_KEY" else None
 
 # --- FIXED CSS FOR COMPACT LOGIN, DESIGNER WAVE THEMES & ANDROID/DESKTOP ---
 st.markdown("""
@@ -85,21 +85,26 @@ def get_initials(name):
     elif len(words) == 1 and len(words[0]) >= 2: return words[0][:2].upper()
     return "SS"
 
-# --- AI BUSINESS ASSISTANT FUNCTION ---
+# --- UPDATED AI BUSINESS ASSISTANT FUNCTION (google-genai standard) ---
 def ask_gemini_assistant(query):
+    if not client:
+        return "API Key is missing or not configured properly."
     try:
-        model = genai.GenerativeModel('gemini-pro')
         instructions = """You are an expert, polite AI Business Assistant for 'Shree Services Invoice Portal'. 
         Knowledge base to guide users:
         1. Business Natures supported: Goods/Manufacturing/Trading, Services, Transport Company, Other Business.
-        2. Settings & Customization: Users can configure company details, choose from 6 Designer Wave Themes (Corporate Curve Wave, Emerald Green, Sunset Orange, etc.), toggle GST, and set watermarks in the 'Settings' tab.
+        2. Settings & Customization: Users can configure company details, choose from 6 Designer Wave Themes, toggle GST, and set watermarks in the 'Settings' tab.
         3. Subscription & Plans: Free trial allows 1 invoice generation. Paid subscription is Rs. 5 via UPI (roshan@shreeservices.upi). Users can submit UTR/Txn ID, and Admin reviews it.
         4. History & Management: Users can view and edit/delete past invoices up to 24 days.
         Provide step-by-step, accurate, and professional answers."""
-        response = model.generate_content(f"{instructions} User Query: {query}")
+        
+        response = client.models.generate_content(
+            model='gemini-2.5-flash',
+            contents=f"{instructions} User Query: {query}"
+        )
         return response.text
     except Exception as e:
-        return f"AI Assistant is currently unavailable. Please verify API key configuration."
+        return f"AI Assistant error: {str(e)}"
 
 SESSION_TIMEOUT_SECONDS = 900
 if st.session_state.logged_in_user and st.session_state.login_time:
@@ -280,7 +285,6 @@ else:
         st.session_state.login_time = None
         st.rerun()
 
-    # --- AI BUSINESS ASSISTANT TAB (Restricted to Paid Users or All Users as requested) ---
     elif menu_option == "🤖 AI Business Assistant":
         st.markdown("<div class='main-title'><h1>🤖 AI Business & Tax Assistant</h1><p>Ask anything about taxes, invoice settings, or how to use the portal!</p></div>", unsafe_allow_html=True)
         
