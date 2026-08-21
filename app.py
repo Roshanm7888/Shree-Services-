@@ -6,7 +6,7 @@ import time
 
 st.set_page_config(page_title="Professional Invoice Portal - SaaS", page_icon="📄", layout="wide")
 
-# --- FIXED CSS FOR COMPACT LOGIN & DESIGNER WAVE THEMES ---
+# --- FIXED CSS FOR COMPACT LOGIN, DESIGNER WAVE THEMES & ANDROID/DESKTOP ---
 st.markdown("""
     <style>
     @media (max-width: 600px) {
@@ -111,7 +111,7 @@ if not st.session_state.logged_in_user:
                     if login_id not in saas_db:
                         saas_db[login_id] = {
                             "password": "admin",
-                            "profile": {"name": "Shree Services", "legal": "Roshan Mishra", "address": "Mohan Garden, New Delhi", "contact": "7888273972", "gstin": "07SAMPLEGSTIN", "nature": "Goods / Manufacturing / Trading", "format": "Classic Blue (Professional)", "border_style": "Solid Line", "gst_enabled": True, "watermark_enabled": True, "watermark_type": "Company Name"},
+                            "profile": {"name": "Shree Services", "legal": "Roshan Mishra", "address": "Mohan Garden, New Delhi", "contact": "7888273972", "gstin": "07SAMPLEGSTIN", "nature": "Goods / Manufacturing / Trading", "format": "Corporate Curve Wave (New Professional)", "border_style": "Solid Line", "gst_enabled": True, "watermark_enabled": True, "watermark_type": "Company Name"},
                             "history": [], "parties": {"RKMK Enterprises": {"legal": "Rinky", "address": "Delhi", "gstin": "07DEOPA0606H1ZU"}},
                             "subscription": "Paid", "bills_created": 0
                         }
@@ -153,7 +153,7 @@ if not st.session_state.logged_in_user:
                         "profile": {
                             "name": comp_name, "legal": comp_legal, "address": comp_address,
                             "contact": comp_contact, "gstin": comp_gstin, "nature": comp_nature,
-                            "format": "Classic Blue (Professional)", "border_style": "Solid Line",
+                            "format": "Corporate Curve Wave (New Professional)", "border_style": "Solid Line",
                             "gst_enabled": True, "watermark_enabled": True, "watermark_type": "Company Name"
                         },
                         "history": [], "parties": {"Sample Party": {"legal": "Client Name", "address": "Delhi", "gstin": "07AAAAA0000A1Z5"}},
@@ -262,7 +262,7 @@ else:
                 if "Logo" in task:
                     st.success(f"💡 **AI Logo Prompt:** Create a circular vector emblem for '{req}'. Use elegant gold and royal blue typography.")
                 else:
-                    st.success(f"💡 **AI Layout Advice:** For '{req}', use 'Classic Blue' or 'Emerald Green' with designer wave layouts.")
+                    st.success(f"💡 **AI Layout Advice:** For '{req}', use Corporate Curve Wave layout.")
             else: st.warning("Please describe what you need first!")
 
     if menu_option == "🚪 Logout":
@@ -280,7 +280,7 @@ else:
         
         prof = user_data["profile"]
         format_options = [
-            "Corporate Navy Wave (Professional)", 
+            "Corporate Curve Wave (New Professional)", 
             "Emerald Green Wave (Modern)", 
             "Sunset Orange Wave (Vibrant)", 
             "Royal Purple Curve (Creative)", 
@@ -347,7 +347,7 @@ else:
         elif "Classic Blue" in up_format:
             p_col = "#1e3a8a"
             wave_gradient = "linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%)"
-        else: # Corporate Navy Wave
+        else: # Corporate Curve Wave (Default Professional)
             p_col = "#0f172a"
             wave_gradient = "linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%)"
 
@@ -368,7 +368,7 @@ else:
         <!DOCTYPE html><html><head><meta charset="utf-8"><style>
             body {{ font-family: 'Helvetica', Arial, sans-serif; color: #1e293b; background: #e2e8f0; margin: 0; padding: 20px; }}
             .a4-page {{ width: 210mm; min-height: 297mm; margin: auto; background: #fff; padding: 15mm 20mm; box-sizing: border-box; box-shadow: 0 0 20px rgba(0,0,0,0.15); border: {b_css}; position: relative; overflow: hidden; }}
-            .wave-header {{ background: {wave_gradient}; color: #fff; padding: 20px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; position: relative; z-index: 1; }}
+            .wave-header {{ background: {wave_gradient}; color: #fff; padding: 20px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; position: relative; z-index: 1; border-bottom-left-radius: 30px; border-bottom-right-radius: 30px; }}
             .company-title {{ font-size: 24px; font-weight: bold; color: #ffffff; }}
             .invoice-title {{ font-size: 26px; font-weight: bold; text-transform: uppercase; color: #ffffff; text-align: right; }}
             .billing-table {{ width: 100%; border-collapse: collapse; margin-bottom: 25px; border: 1px solid #cbd5e1; background: #f8fafc; position: relative; z-index: 1; }}
@@ -626,7 +626,7 @@ else:
             <!DOCTYPE html><html><head><meta charset="utf-8"><style>
                 body {{ font-family: Helvetica, Arial; color: #1e293b; background: #e2e8f0; padding: 20px; }}
                 .a4-page {{ width: 210mm; min-height: 297mm; margin: auto; background: #fff; padding: 15mm 20mm; box-sizing: border-box; border: {b_css}; position: relative; overflow: hidden; }}
-                .wave-header {{ background: {wave_gradient}; color: #fff; padding: 20px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; position: relative; z-index: 1; }}
+                .wave-header {{ background: {wave_gradient}; color: #fff; padding: 20px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; position: relative; z-index: 1; border-bottom-left-radius: 30px; border-bottom-right-radius: 30px; }}
                 .company-title {{ font-size: 24px; font-weight: bold; color: #ffffff; }}
                 .invoice-title {{ font-size: 26px; font-weight: bold; text-transform: uppercase; color: #ffffff; text-align: right; }}
                 .billing-table {{ width: 100%; border-collapse: collapse; margin-bottom: 25px; border: 1px solid #cbd5e1; background: #f8fafc; position: relative; z-index: 1; }}
