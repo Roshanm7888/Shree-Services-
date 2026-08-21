@@ -1,5 +1,7 @@
 import streamlit as st
 from datetime import datetime, timedelta
+import json
+import os
 
 st.set_page_config(page_title="Shree Services - Invoice Portal", page_icon="📄", layout="centered")
 
@@ -81,41 +83,58 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# --- Session States Initialization ---
-if "invoice_count" not in st.session_state:
-    st.session_state.invoice_count = 1
+# --- Permanent JSON Storage Functions ---
+DATA_FILE = "invoices_data.json"
+
+def load_data():
+    if os.path.exists(DATA_FILE):
+        try:
+            with open(DATA_FILE, "r") as f:
+                return json.load(f)
+        except:
+            pass
+    return {
+        "history": [],
+        "parties": {
+            "RKMK Enterprises": {
+                "legal": "Rinky Acharya",
+                "address": "Flat No. 34, Ground Floor, Block P Extn, Mohan Garden, New Delhi - 110059",
+                "gstin": "07DEOPA0606H1ZU"
+            },
+            "Chandra Enterprises": {
+                "legal": "Manoj Kumar",
+                "address": "2nd Floor Front Side, Left Side L Type, N Block Extn, Plot No.1 Mohan Garden, DK Road, New Delhi",
+                "gstin": "07AMSPK3043R1ZC"
+            }
+        },
+        "services": ["ITR", "GST", "GST REGISTRATION", "UDYAM", "SHOP ACT"]
+    }
+
+def save_data(data):
+    with open(DATA_FILE, "w") as f:
+        json.dump(data, f, indent=4)
+
+# Load data into session state
+app_data = load_data()
 if "history" not in st.session_state:
-    st.session_state.history = []
+    st.session_state.history = app_data["history"]
+if "saved_parties" not in st.session_state:
+    st.session_state.saved_parties = app_data["parties"]
+if "saved_services" not in st.session_state:
+    st.session_state.saved_services = app_data["services"]
 
 # --- Auto-clean History: Keep only last 24 days records ---
 current_time = datetime.now()
-st.session_state.history = [
-    h for h in st.session_state.history 
-    if current_time - datetime.fromisoformat(h.get('timestamp', current_time.isoformat())) <= timedelta(days=24)
-]
+cleaned_history = []
+for h in st.session_state.history:
+    t_str = h.get('timestamp', current_time.isoformat())
+    if current_time - datetime.fromisoformat(t_str) <= timedelta(days=24):
+        cleaned_history.append(h)
 
-if "saved_parties" not in st.session_state:
-    st.session_state.saved_parties = {
-        "RKMK Enterprises": {
-            "legal": "Rinky Acharya",
-            "address": "Flat No. 34, Ground Floor, Block P Extn, Mohan Garden, New Delhi - 110059",
-            "gstin": "07DEOPA0606H1ZU"
-        },
-        "Chandra Enterprises": {
-            "legal": "Manoj Kumar",
-            "address": "2nd Floor Front Side, Left Side L Type, N Block Extn, Plot No.1 Mohan Garden, DK Road, New Delhi",
-            "gstin": "07AMSPK3043R1ZC"
-        }
-    }
-
-if "saved_services" not in st.session_state:
-    st.session_state.saved_services = [
-        "ITR",
-        "GST",
-        "GST REGISTRATION",
-        "UDYAM",
-        "SHOP ACT"
-    ]
+if len(cleaned_history) != len(st.session_state.history):
+    st.session_state.history = cleaned_history
+    app_data["history"] = st.session_state.history
+    save_data(app_data)
 
 # Edit Mode State Handlers
 if "edit_party" not in st.session_state:
@@ -125,7 +144,7 @@ if "edit_services" not in st.session_state:
 if "edit_paid" not in st.session_state:
     st.session_state.edit_paid = 0.0
 
-# --- Sidebar Menu for Navigation & History ---
+# --- Sidebar Menu for Navigation & Party-wise History ---
 st.sidebar.title("📌 Navigation Menu")
 menu_option = st.sidebar.radio("Go to:", ["Create Invoice", "📊 Party-wise History (24 Days)"])
 
@@ -153,7 +172,7 @@ if menu_option == "📊 Party-wise History (24 Days)":
                     st.session_state.edit_party = bill['client']
                     st.session_state.edit_services = bill.get('services', 'GST | July | 700')
                     st.session_state.edit_paid = bill['paid']
-                    st.success(f"Invoice {bill['invoice_no']} loaded into form! Switch to 'Create Invoice' tab.")
+                    st.success(f"Invoice {bill['invoice_no']} loaded! Switch to 'Create Invoice' tab in sidebar.")
 
 else:
     st.markdown("""
@@ -163,7 +182,7 @@ else:
         </div>
     """, unsafe_allow_html=True)
 
-    # Automatically calculate next invoice number based on history count
+    # Automatically calculate correct next invoice number based on permanent history count
     next_inv_num = len(st.session_state.history) + 1
     current_inv_no = f"TAX/2026-27/{next_inv_num:03d}"
 
@@ -246,7 +265,7 @@ else:
 
         balance = total_amt - total_paid
 
-        st.session_state.history.append({
+        new_invoice_record = {
             "invoice_no": inv_no,
             "client": client_name,
             "total": total_amt,
@@ -255,9 +274,16 @@ else:
             "date": inv_date,
             "services": services_text,
             "timestamp": datetime.now().isoformat()
-        })
+        }
 
-        st.session_state.invoice_count += 1
+        st.session_state.history.append(new_invoice_record)
+        
+        # Save to permanent storage file
+        app_data["history"] = st.session_state.history
+        app_data["parties"] = st.session_state.saved_parties
+        app_data["services"] = st.session_state.saved_services
+        save_data(app_data)
+
         st.session_state.edit_party = ""
         st.session_state.edit_services = "GST | July | 700"
         st.session_state.edit_paid = 0.0
@@ -395,4 +421,3 @@ else:
 
         st.success("✨ Invoice Generated Successfully! Preview below:")
         st.components.v1.html(html_content, height=800, scrolling=True)
-
