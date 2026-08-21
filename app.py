@@ -148,7 +148,7 @@ else:
         user_data["history"] = st.session_state.history
         save_saas_data(saas_db)
 
-    # --- Sidebar Menu (Stock Manager Removed) ---
+    # --- Sidebar Menu ---
     st.sidebar.markdown(f"👤 **Logged in as:** `{current_user}`")
     st.sidebar.markdown(f"🏢 **Company:** `{user_data['profile']['name']}`")
     st.sidebar.markdown(f"📊 **Nature:** `{current_nature}`")
@@ -209,7 +209,7 @@ else:
         b_idx = border_options.index(b_val) if b_val in border_options else 0
         up_border = st.selectbox("Select Invoice Border Style", border_options, index=b_idx)
 
-        up_custom_logo = st.text_input("Upload / Image URL for Custom Logo (Optional)", value=prof.get("custom_logo", ""))
+        up_custom_logo = st.text_input("Logo Image URL (Optional - leave blank for automatic Initials badge)", value=prof.get("custom_logo", ""))
         up_watermark_enabled = st.checkbox("Enable Background Watermark on Invoice", value=prof.get("watermark_enabled", True))
         
         wm_type_val = prof.get("watermark_type", "Company Name")
@@ -247,7 +247,8 @@ else:
 
         init = get_initials(up_name)
         logo_html = f"<div style='width: 50px; height: 50px; background: {p_col}; color: #fff; display: flex; align-items: center; justify-content: center; font-weight: bold; border-radius: 8px; font-size: 18px;'>{init}</div>"
-        if up_custom_logo.strip(): logo_html = f"<img src='{up_custom_logo}' style='max-height: 50px; max-width: 50px; object-fit: contain;'>"
+        if up_custom_logo.strip():
+            logo_html = f"<img src='{up_custom_logo}' style='max-height: 50px; max-width: 50px; object-fit: contain;' onerror=\"this.onerror=null; this.parentNode.innerHTML='<div style=\\'width: 50px; height: 50px; background: {p_col}; color: #fff; display: flex; align-items: center; justify-content: center; font-weight: bold; border-radius: 8px; font-size: 18px;\\'>{init}</div>';\">"
 
         wm_text = up_name if up_watermark_type == "Company Name" else init
         wm_html = f'<div style="position: absolute; top: 40%; left: 20%; transform: rotate(-30deg); font-size: 90px; font-weight: bold; color: rgba(0, 0, 0, 0.04); z-index: 0; pointer-events: none; white-space: nowrap;">{wm_text}</div>' if up_watermark_enabled else ""
@@ -445,8 +446,10 @@ else:
             comp_name_val = user_data["profile"].get("name", "Company")
             custom_logo_val = user_data["profile"].get("custom_logo", "")
             init = get_initials(comp_name_val)
+            
             l_html = f"<div style='width:50px;height:50px;background:{p_col};color:#fff;display:flex;align-items:center;justify-content:center;font-weight:bold;border-radius:8px;'>{init}</div>"
-            if custom_logo_val.strip(): l_html = f"<img src='{custom_logo_val}' style='max-height:50px;max-width:50px; object-fit:contain;'>"
+            if custom_logo_val.strip():
+                l_html = f"<img src='{custom_logo_val}' style='max-height:50px;max-width:50px; object-fit:contain;' onerror=\"this.onerror=null; this.parentNode.innerHTML='<div style=\\'width: 50px; height: 50px; background: {p_col}; color: #fff; display: flex; align-items: center; justify-content: center; font-weight: bold; border-radius: 8px; font-size: 18px;\\'>{init}</div>';\">"
 
             wm_en = user_data["profile"].get("watermark_enabled", True)
             wm_tp = user_data["profile"].get("watermark_type", "Company Name")
