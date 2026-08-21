@@ -5,7 +5,7 @@ from datetime import datetime
 st.set_page_config(page_title="Invoice Generator - Roshan Mishra", layout="centered")
 
 st.title("📄 Professional Invoice Generator & Portal")
-st.write("Tally-style Party Master & Preview ke sath professional invoice generate karein.")
+st.write("A4 Size Invoice Preview aur Tally-style Party Master ke sath apna bill generate karein.")
 
 if "invoice_count" not in st.session_state:
     st.session_state.invoice_count = 1
@@ -62,7 +62,7 @@ with st.form("invoice_form"):
 
     total_paid = st.number_input("Total Amount Paid (Rs.)", min_value=0.0, value=0.0)
 
-    submitted = st.form_submit_button("Generate Invoice Preview & Download")
+    submitted = st.form_submit_button("Generate A4 Invoice Preview & Download")
 
 if submitted:
     if new_trade_name.strip():
@@ -123,37 +123,49 @@ if submitted:
 
     st.session_state.invoice_count += 1
 
-    # --- Clean HTML Preview Format ---
+    # --- A4 Size Styled HTML Preview ---
     html_content = f"""
     <!DOCTYPE html>
     <html>
     <head>
     <meta charset="utf-8">
     <style>
-        body {{ font-family: 'Helvetica', Arial, sans-serif; color: #2c3e50; padding: 20px; background: #fff; }}
-        .invoice-container {{ max-width: 700px; margin: auto; border: 1px solid #ddd; padding: 30px; box-shadow: 0 0 10px rgba(0,0,0,0.05); }}
+        body {{ font-family: 'Helvetica', Arial, sans-serif; color: #2c3e50; background: #555; margin: 0; padding: 20px; }}
+        .a4-page {{ 
+            width: 210mm; 
+            min-height: 297mm; 
+            margin: auto; 
+            background: #fff; 
+            padding: 20mm; 
+            box-sizing: border-box; 
+            box-shadow: 0 0 15px rgba(0,0,0,0.2); 
+        }}
         .header {{ display: flex; justify-content: space-between; border-bottom: 2px solid #1a365d; padding-bottom: 15px; margin-bottom: 20px; }}
-        .company-title {{ font-size: 20px; font-weight: bold; color: #1a365d; }}
-        .invoice-title {{ font-size: 22px; font-weight: bold; text-transform: uppercase; color: #2c3e50; text-align: right; }}
+        .company-title {{ font-size: 22px; font-weight: bold; color: #1a365d; }}
+        .invoice-title {{ font-size: 24px; font-weight: bold; text-transform: uppercase; color: #2c3e50; text-align: right; }}
         .billing-table {{ width: 100%; border-collapse: collapse; margin-bottom: 20px; background: #f8fafc; }}
         .billing-table td {{ padding: 10px; vertical-align: top; width: 50%; font-size: 13px; }}
         .items-table {{ width: 100%; border-collapse: collapse; margin-bottom: 20px; }}
-        .items-table th {{ background-color: #1a365d; color: #fff; text-align: left; padding: 8px; font-size: 12px; }}
-        .items-table td {{ border-bottom: 1px solid #e2e8f0; padding: 8px; font-size: 12px; }}
+        .items-table th {{ background-color: #1a365d; color: #fff; text-align: left; padding: 10px; font-size: 12px; }}
+        .items-table td {{ border-bottom: 1px solid #e2e8f0; padding: 10px; font-size: 12px; }}
         .right {{ text-align: right; }}
-        .totals {{ width: 260px; margin-left: auto; font-size: 13px; margin-bottom: 40px; }}
-        .totals td {{ padding: 5px; border-bottom: 1px solid #e2e8f0; }}
+        .totals {{ width: 280px; margin-left: auto; font-size: 13px; margin-bottom: 50px; }}
+        .totals td {{ padding: 6px; border-bottom: 1px solid #e2e8f0; }}
         .grand-total {{ font-weight: bold; background: #f1f5f9; font-size: 14px; border-top: 2px solid #1a365d; border-bottom: 2px solid #1a365d; }}
-        .sign-area {{ float: right; text-align: right; margin-top: 20px; font-size: 13px; }}
-        .sign-line {{ border-top: 1px solid #000; width: 180px; margin-top: 40px; text-align: center; font-weight: bold; }}
+        .sign-area {{ float: right; text-align: right; margin-top: 30px; font-size: 13px; }}
+        .sign-line {{ border-top: 1px solid #000; width: 180px; margin-top: 50px; text-align: center; font-weight: bold; }}
+        @media print {{
+            body {{ background: none; padding: 0; }}
+            .a4-page {{ box-shadow: none; margin: 0; width: 100%; }}
+        }}
     </style>
     </head>
     <body>
-    <div class="invoice-container">
+    <div class="a4-page">
         <div class="header">
             <div>
                 <div class="company-title">Roshan Mishra</div>
-                <div style="font-size: 12px; color: #555; margin-top: 5px;">
+                <div style="font-size: 12px; color: #555; margin-top: 5px; line-height: 1.4;">
                     Plot no 64 & 65, Block K-5<br>
                     Mohan Garden, New Delhi - 110059<br>
                     <strong>Contact:</strong> 7888273972
@@ -161,7 +173,7 @@ if submitted:
             </div>
             <div>
                 <div class="invoice-title">Tax Invoice</div>
-                <div style="font-size: 12px; color: #555; text-align: right; margin-top: 5px;">
+                <div style="font-size: 12px; color: #555; text-align: right; margin-top: 5px; line-height: 1.4;">
                     <strong>Invoice No:</strong> {inv_no}<br>
                     <strong>Date:</strong> {inv_date}<br>
                     <strong>Client GSTIN:</strong> {client_gstin}
@@ -216,23 +228,24 @@ if submitted:
             <div class="sign-line">Authorised Signatory</div>
         </div>
         <div style="clear: both;"></div>
-        <hr style="border:none; border-top:1px solid #ddd; margin-top: 30px;">
+        <hr style="border:none; border-top:1px solid #ddd; margin-top: 40px;">
         <div style="text-align: center; font-size: 11px; color: #777;">Thank you for your business! This is a computer-generated invoice.</div>
     </div>
     </body>
     </html>
     """.format(total_amt, total_paid, balance)
 
-    st.success("Invoice generated successfully! Preview below:")
-    st.components.v1.html(html_content, height=650, scrolling=True)
+    st.success("A4 Size Invoice generated successfully! Preview below:")
+    st.components.v1.html(html_content, height=850, scrolling=True)
 
     b64 = base64.b64encode(html_content.encode('utf-8')).decode()
-    href = f'<a href="data:text/html;charset=utf-8;base64,{b64}" download="Invoice_{client_name.replace(" ", "_")}_{inv_no.replace("/", "-")}.html" style="display:inline-block; padding:10px 20px; background-color:#1a365d; color:white; text-decoration:none; border-radius:5px; font-weight:bold; margin-top:20px;">📥 Download Invoice File</a>'
+    href = f'<a href="data:text/html;charset=utf-8;base64,{b64}" download="Invoice_{client_name.replace(" ", "_")}_{inv_no.replace("/", "-")}.html" style="display:inline-block; padding:12px 24px; background-color:#1a365d; color:white; text-decoration:none; border-radius:5px; font-weight:bold; margin-top:20px;">📥 Download A4 Invoice File</a>'
     st.markdown(href, unsafe_allow_html=True)
-    st.info("💡 Tip: Downloaded file ko open karke aap browser se seedha Print ya Save as PDF kar sakte hain!")
+    st.info("💡 Tip: Downloaded file ko open karke aap browser se seedha Print ya Save as PDF kar sakte hain (A4 page format mein print hoga)!")
 
 if st.session_state.history:
     st.markdown("---")
     st.subheader("📊 Recent Generated Invoices History")
     for i, h in enumerate(reversed(st.session_state.history)):
         st.write(f"🔹 **{h['invoice_no']}** | Party: **{h['client']}** | Total: Rs. {h['total']} | Paid: Rs. {h['paid']} | Balance: Rs. {h['balance']}")
+
