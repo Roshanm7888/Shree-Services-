@@ -176,7 +176,7 @@ if submitted:
 
     st.session_state.invoice_count += 1
 
-    # --- Perfect A4 Layout HTML & CSS (Same as Preview) ---
+    # --- Perfect A4 Layout HTML & CSS with Built-in Print Button ---
     html_content = f"""
     <!DOCTYPE html>
     <html>
@@ -207,14 +207,32 @@ if submitted:
         .grand-total {{ font-weight: bold; background: #eff6ff; font-size: 14px; color: #1e3a8a; }}
         .sign-area {{ float: right; text-align: right; margin-top: 30px; font-size: 13px; }}
         .sign-line {{ border-top: 1px solid #000; width: 180px; margin-top: 50px; text-align: center; font-weight: bold; }}
+        .print-btn-container {{ text-align: center; margin-bottom: 20px; }}
+        .print-btn {{
+            background-color: #059669;
+            color: white;
+            padding: 12px 25px;
+            font-size: 16px;
+            font-weight: bold;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }}
+        .print-btn:hover {{ background-color: #047857; }}
         @media print {{
             body {{ background: none; padding: 0; }}
             .a4-page {{ box-shadow: none; margin: 0; width: 100%; padding: 10mm; }}
-            .no-print {{ display: none; }}
+            .no-print {{ display: none !important; }}
         }}
     </style>
     </head>
     <body>
+    
+    <div class="print-btn-container no-print">
+        <button class="print-btn" onclick="window.print()">🖨️ Print / Save as PDF Directly</button>
+    </div>
+
     <div class="a4-page">
         <div class="header">
             <div>
@@ -290,18 +308,12 @@ if submitted:
     """.format(total_amt, total_paid, balance)
 
     st.success("✨ Invoice Generated Successfully! Preview below:")
-    st.components.v1.html(html_content, height=800, scrolling=True)
+    st.components.v1.html(html_content, height=850, scrolling=True)
 
-    # Direct Download & Print Helper Buttons
+    # Standard Download Backup Button
     b64 = base64.b64encode(html_content.encode('utf-8')).decode()
-    
-    col1, col2 = st.columns(2)
-    with col1:
-        href = f'<a href="data:text/html;charset=utf-8;base64,{b64}" download="Invoice_{client_name.replace(" ", "_")}_{inv_no.replace("/", "-")}.html" style="display:block; text-align:center; padding:12px; background-color:#1e3a8a; color:white; text-decoration:none; border-radius:8px; font-weight:bold; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">📥 Download Exact HTML/PDF File</a>'
-        st.markdown(href, unsafe_allow_html=True)
-    with col2:
-        print_btn = f'<a href="data:text/html;charset=utf-8;base64,{b64}" target="_blank" style="display:block; text-align:center; padding:12px; background-color:#059669; color:white; text-decoration:none; border-radius:8px; font-weight:bold; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">🖨️ Open & Print / Save as PDF</a>'
-        st.markdown(print_btn, unsafe_allow_html=True)
+    href = f'<a href="data:text/html;charset=utf-8;base64,{b64}" download="Invoice_{client_name.replace(" ", "_")}_{inv_no.replace("/", "-")}.html" style="display:block; text-align:center; padding:12px; background-color:#1e3a8a; color:white; text-decoration:none; border-radius:8px; font-weight:bold; margin-top:10px;">📥 Download HTML File Backup</a>'
+    st.markdown(href, unsafe_allow_html=True)
 
 if st.session_state.history:
     st.markdown("---")
