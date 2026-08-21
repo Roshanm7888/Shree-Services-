@@ -7,7 +7,6 @@ st.set_page_config(page_title="Invoice Generator - Roshan Mishra", layout="cente
 st.title("📄 Professional Invoice Generator & Portal")
 st.write("Party ki details bharein, auto-numbering aur history ke sath professional invoice generate karein.")
 
-# Session state for tracking invoice numbers and history
 if "invoice_count" not in st.session_state:
     st.session_state.invoice_count = 1
 if "history" not in st.session_state:
@@ -32,7 +31,7 @@ with st.form("invoice_form"):
         "GST Filing Charges | November | 700\nUdyam Registration | One-time | 200"
     )
 
-    total_paid = st.number_input("Total Amount Paid (₹)", min_value=0.0, value=0.0)
+    total_paid = st.number_input("Total Amount Paid (Rs.)", min_value=0.0, value=0.0)
 
     submitted = st.form_submit_button("Generate Invoice & Save to History")
 
@@ -64,7 +63,6 @@ if submitted:
 
     balance = total_amt - total_paid
 
-    # Save to history session
     st.session_state.history.append({
         "invoice_no": inv_no,
         "client": client_name,
@@ -74,13 +72,13 @@ if submitted:
         "date": inv_date
     })
 
-    # Increment invoice counter for next time
     st.session_state.invoice_count += 1
 
     html_content = f"""
     <!DOCTYPE html>
     <html>
     <head>
+    <meta charset="utf-8">
     <style>
         body {{ font-family: 'Helvetica', Arial, sans-serif; color: #2c3e50; padding: 20px; background: #fff; }}
         .invoice-container {{ max-width: 700px; margin: auto; border: 1px solid #ddd; padding: 30px; box-shadow: 0 0 10px rgba(0,0,0,0.05); }}
@@ -93,7 +91,7 @@ if submitted:
         .items-table th {{ background-color: #1a365d; color: #fff; text-align: left; padding: 8px; font-size: 12px; }}
         .items-table td {{ border-bottom: 1px solid #e2e8f0; padding: 8px; font-size: 12px; }}
         .right {{ text-align: right; }}
-        .totals {{ width: 250px; margin-left: auto; font-size: 13px; margin-bottom: 40px; }}
+        .totals {{ width: 260px; margin-left: auto; font-size: 13px; margin-bottom: 40px; }}
         .totals td {{ padding: 5px; border-bottom: 1px solid #e2e8f0; }}
         .grand-total {{ font-weight: bold; background: #f1f5f9; font-size: 14px; border-top: 2px solid #1a365d; border-bottom: 2px solid #1a365d; }}
         .sign-area {{ float: right; text-align: right; margin-top: 20px; font-size: 13px; }}
@@ -143,7 +141,7 @@ if submitted:
                     <th>S.No.</th>
                     <th>Description of Services</th>
                     <th>Period</th>
-                    <th class="right">Amount (₹)</th>
+                    <th class="right">Amount (Rs.)</th>
                 </tr>
             </thead>
             <tbody>
@@ -157,9 +155,9 @@ if submitted:
         </table>
 
         <table class="totals">
-            <tr><td>Total Amount:</td><td class="right">₹{:.2f}</td></tr>
-            <tr><td>Total Paid:</td><td class="right">₹{:.2f}</td></tr>
-            <tr class="grand-total"><td>Balance Due:</td><td class="right">₹{:.2f}</td></tr>
+            <tr><td>Total Amount:</td><td class="right">Rs. {:.2f}</td></tr>
+            <tr><td>Total Paid:</td><td class="right">Rs. {:.2f}</td></tr>
+            <tr class="grand-total"><td>Balance Due:</td><td class="right">Rs. {:.2f}</td></tr>
         </table>
 
         <div style="clear: both;"></div>
@@ -178,13 +176,12 @@ if submitted:
     st.success("Invoice generated & saved successfully!")
     st.components.v1.html(html_content, height=650, scrolling=True)
 
-    b64 = base64.b64encode(html_content.encode()).decode()
-    href = f'<a href="data:text/html;base64,{b64}" download="Invoice_{client_name.replace(" ", "_")}_{inv_no.replace("/", "-")}.html" style="display:inline-block; padding:10px 20px; background-color:#1a365d; color:white; text-decoration:none; border-radius:5px; font-weight:bold; margin-top:20px;">📥 Download Invoice File</a>'
+    b64 = base64.b64encode(html_content.encode('utf-8')).decode()
+    href = f'<a href="data:text/html;charset=utf-8;base64,{b64}" download="Invoice_{client_name.replace(" ", "_")}_{inv_no.replace("/", "-")}.html" style="display:inline-block; padding:10px 20px; background-color:#1a365d; color:white; text-decoration:none; border-radius:5px; font-weight:bold; margin-top:20px;">📥 Download Invoice File</a>'
     st.markdown(href, unsafe_allow_html=True)
 
-# Display Invoice History Section below
 if st.session_state.history:
     st.markdown("---")
     st.subheader("📊 Recent Generated Invoices History")
     for h in reversed(st.session_state.history):
-        st.write(f"🔹 **{h['invoice_no']}** | Party: **{h['client']}** | Total: ₹{h['total']} | Paid: ₹{h['paid']} | Balance: ₹{h['balance']} ({h['date']})")
+        st.write(f"🔹 **{h['invoice_no']}** | Party: **{h['client']}** | Total: Rs. {h['total']} | Paid: Rs. {h['paid']} | Balance: Rs. {h['balance']} ({h['date']})")
