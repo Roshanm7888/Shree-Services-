@@ -164,7 +164,7 @@ if not st.session_state.logged_in_user:
                     },
                     "Chandra Enterprises": {
                         "legal": "Manoj Kumar",
-                        "address": "2nd Floor Front Side, Side L Type, N Block Extn, Plot No.1 Mohan Garden, New Delhi",
+                        "address": "2nd Floor Front Side, N Block Extn, Plot No.1 Mohan Garden, New Delhi",
                         "gstin": "07AMSPK3043R1ZC"
                     }
                 },
@@ -505,7 +505,6 @@ else:
 
             st.markdown('<div class="section-box-3">💼 3. Select Services & Add Amount</div>', unsafe_allow_html=True)
             
-            # Quick select from Stock Items
             stock_names = [s['name'] for s in user_data.get("stock_items", [])]
             quick_selected = st.multiselect("Quick Add from Stock Items", stock_names)
             
@@ -560,7 +559,6 @@ else:
                     items.append((desc, period, amt))
                     subtotal_amt += amt
 
-            # Calculate GST / Tax if enabled in settings
             gst_enabled = comp_profile.get("gst_enabled", True)
             tax_rate = float(comp_profile.get("tax_rate", 18.0)) if gst_enabled else 0.0
             tax_amount = (subtotal_amt * tax_rate) / 100.0 if gst_enabled else 0.0
@@ -589,22 +587,16 @@ else:
             selected_theme_fmt = comp_profile.get("format", "Classic Blue (Professional)")
             if "Modern Dark" in selected_theme_fmt:
                 primary_color = "#0f172a"
-                accent_color = "#334155"
             elif "Emerald Green" in selected_theme_fmt:
                 primary_color = "#065f46"
-                accent_color = "#10b981"
             elif "Royal Purple" in selected_theme_fmt:
                 primary_color = "#581c87"
-                accent_color = "#8b5cf6"
             elif "Minimalist Clean" in selected_theme_fmt:
                 primary_color = "#334155"
-                accent_color = "#64748b"
             elif "Crimson Red" in selected_theme_fmt:
                 primary_color = "#991b1b"
-                accent_color = "#ef4444"
-            else:  # Classic Blue
+            else:
                 primary_color = "#1e3a8a"
-                accent_color = "#3b82f6"
 
             # --- Dynamic Company Branded A4 HTML Layout with Theme ---
             html_content = f"""
@@ -745,3 +737,4 @@ else:
 
             st.success("✨ Invoice Generated Successfully! Preview below:")
             st.components.v1.html(html_content, height=800, scrolling=True)
+
