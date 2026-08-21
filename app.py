@@ -283,6 +283,12 @@ else:
         "🚪 Logout"
     ])
 
+    # --- AI Gemini Assistant Widget in Sidebar ---
+    st.sidebar.markdown("---")
+    st.sidebar.markdown("### 🤖 AI Design & Logo Studio")
+    st.sidebar.markdown("Need help creating a professional logo prompt or custom invoice layout ideas?")
+    st.sidebar.markdown("[✨ Open Gemini AI Assistant](https://gemini.google.com)", unsafe_allow_html=True)
+
     if menu_option == "🚪 Logout":
         st.session_state.logged_in_user = None
         st.rerun()
@@ -911,4 +917,3 @@ else:
 
             st.success("✨ Invoice Generated Successfully! Preview below:")
             st.components.v1.html(html_content, height=800, scrolling=True)
-
