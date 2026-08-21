@@ -660,7 +660,7 @@ else:
 
             html_content = f"""
             <!DOCTYPE html><html><head><meta charset="utf-8"><style>
-                body {{ font-family: Helvetica, Arial; color: #1e293b; background: #e2e8f0; padding: 20px; }}
+                body {{ font-family: 'Helvetica', Arial, sans-serif; color: #1e293b; background: #e2e8f0; margin: 0; padding: 20px; }}
                 .a4-page {{ width: 210mm; min-height: 297mm; margin: auto; background: #fff; padding: 15mm 20mm; box-sizing: border-box; border: {b_css}; position: relative; overflow: hidden; }}
                 .wave-header {{ background: {wave_gradient}; color: #fff; padding: 20px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; position: relative; z-index: 1; border-bottom-left-radius: 30px; border-bottom-right-radius: 30px; }}
                 .company-title {{ font-size: 24px; font-weight: bold; color: #ffffff; }}
@@ -668,7 +668,7 @@ else:
                 .billing-table {{ width: 100%; border-collapse: collapse; margin-bottom: 25px; border: 1px solid #cbd5e1; background: #f8fafc; position: relative; z-index: 1; }}
                 .billing-table td {{ padding: 12px; vertical-align: top; width: 50%; font-size: 13px; border: 1px solid #cbd5e1; line-height: 1.5; }}
                 .items-table {{ width: 100%; border-collapse: collapse; margin-bottom: 20px; position: relative; z-index: 1; }}
-                .items-table th {{ background-color: {p_col}; color: #fff; padding: 10px; font-size: 12px; text-align: left; border: 1px solid {p_col}; }}
+                .items-table th {{ background-color: {p_col}; color: #fff; text-align: left; padding: 10px; font-size: 12px; border: 1px solid {p_col}; }}
                 .items-table td {{ border: 1px solid #cbd5e1; padding: 10px; font-size: 12px; }}
                 .right {{ text-align: right; }}
                 .totals {{ width: 340px; margin-left: auto; font-size: 13px; border-collapse: collapse; position: relative; z-index: 1; }}
@@ -680,10 +680,19 @@ else:
             <div class="a4-page">
                 {wm_html}
                 <div class="wave-header">
-                    <div style="display:flex;gap:15px; align-items:flex-start;">{l_html}<div><h2 style="margin:0;color:#ffffff;">{user_data['profile']['name']}</h2><p style="margin:3px 0;font-size:12px;color:#e2e8f0;">{user_data['profile']['address']}<br>Contact: {user_data['profile']['contact']}<br>GSTIN: {user_data['profile']['gstin']}</p></div></div>
-                    <div style="text-align:right;"><h2 style="margin:0;color:#ffffff;">Tax Invoice</h2><p style="margin:3px 0;font-size:12px;color:#e2e8f0;">Invoice No: {inv_no}<br>Date: {inv_date}<br>Mode: {current_nature}</p></div>
+                    <div style="display: flex; align-items: flex-start; gap: 15px;">
+                        {l_html}
+                        <div>
+                            <div class="company-title">{user_data['profile']['name']}</div>
+                            <div style="font-size: 12px; color: #e2e8f0; margin-top: 5px; line-height: 1.4;">{user_data['profile']['address']}<br><strong>Contact:</strong> {user_data['profile']['contact']}<br><strong>GSTIN:</strong> {user_data['profile']['gstin']}</div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="invoice-title">Tax Invoice</div>
+                        <div style="font-size: 12px; color: #e2e8f0; text-align: right; margin-top: 5px; line-height: 1.4;"><strong>Invoice No:</strong> {inv_no}<br><strong>Date:</strong> {inv_date}<br><strong>Mode:</strong> {current_nature}</div>
+                    </div>
                 </div>
-                <table style="width:100%;border-collapse:collapse;margin-bottom:20px;font-size:13px;position:relative;z-index:1;"><tr><td style="border:1px solid #cbd5e1;padding:10px;"><strong>Service Provider:</strong><br>{user_data['profile']['name']}</td><td style="border:1px solid #cbd5e1;padding:10px;"><strong>Billed To:</strong><br><strong>{target_party}</strong><br>Address: {p_info.get('address')}<br>GSTIN: {p_info.get('gstin')}</td></tr></table>
+                <table class="billing-table"><tr><td><strong>Service Provider:</strong><br>{user_data['profile']['name']}</td><td><strong>Billed To:</strong><br><strong>{target_party}</strong><br>Address: {p_info.get('address')}<br>GSTIN: {p_info.get('gstin')}</td></tr></table>
                 <table class="items-table"><thead><tr>{table_headers}</tr></thead><tbody>{table_rows}</tbody></table>
                 <table class="totals">
                     <tr><td>Subtotal:</td><td class="right">Rs. {subtotal_amt:.2f}</td></tr>
