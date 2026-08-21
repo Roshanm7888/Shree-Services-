@@ -1,18 +1,17 @@
 import streamlit as st
-import base64
 from datetime import datetime
+from fpdf import FPDF
 
 st.set_page_config(page_title="Invoice Generator - Roshan Mishra", layout="centered")
 
 st.title("📄 Professional Invoice Generator & Portal")
-st.write("Tally-style Party Master & Service Library ke sath invoice generate karein.")
+st.write("Tally-style Party Master & PDF Direct Download ke sath invoice generate karein.")
 
 if "invoice_count" not in st.session_state:
     st.session_state.invoice_count = 1
 if "history" not in st.session_state:
     st.session_state.history = []
 
-# Saved Parties Master (Tally Style)
 if "saved_parties" not in st.session_state:
     st.session_state.saved_parties = {
         "RKMK Enterprises": {
@@ -22,7 +21,6 @@ if "saved_parties" not in st.session_state:
         }
     }
 
-# Compulsory Services + Custom Saved Services
 if "saved_services" not in st.session_state:
     st.session_state.saved_services = [
         "ITR",
@@ -34,8 +32,6 @@ if "saved_services" not in st.session_state:
 
 with st.form("invoice_form"):
     st.subheader("1. Client / Party Details")
-    
-    # Party Dropdown Selection
     party_names = list(st.session_state.saved_parties.keys())
     selected_party = st.selectbox("Select Existing Party", party_names)
 
@@ -61,7 +57,7 @@ with st.form("invoice_form"):
 
     total_paid = st.number_input("Total Amount Paid (Rs.)", min_value=0.0, value=0.0)
 
-    submitted = st.form_submit_button("Generate Invoice & Save")
+    submitted = st.form_submit_button("Generate Invoice PDF")
 
 if submitted:
     if new_trade_name.strip():
@@ -114,10 +110,6 @@ if submitted:
     st.session_state.history.append({
         "invoice_no": inv_no,
         "client": client_name,
-        "legal": client_legal,
-        "address": client_address,
-        "gstin": client_gstin,
-        "services": services_text,
         "total": total_amt,
         "paid": total_paid,
         "balance": balance,
@@ -126,114 +118,90 @@ if submitted:
 
     st.session_state.invoice_count += 1
 
-    html_content = f"""
-    <!DOCTYPE html>
-    <html>
-    <head>
-    <meta charset="utf-8">
-    <style>
-        body {{ font-family: 'Helvetica', Arial, sans-serif; color: #2c3e50; padding: 20px; background: #fff; }}
-        .invoice-container {{ max-width: 700px; margin: auto; border: 1px solid #ddd; padding: 30px; box-shadow: 0 0 10px rgba(0,0,0,0.05); }}
-        .header {{ display: flex; justify-content: space-between; border-bottom: 2px solid #1a365d; padding-bottom: 15px; margin-bottom: 20px; }}
-        .company-title {{ font-size: 20px; font-weight: bold; color: #1a365d; }}
-        .invoice-title {{ font-size: 22px; font-weight: bold; text-transform: uppercase; color: #2c3e50; text-align: right; }}
-        .billing-table {{ width: 100%; border-collapse: collapse; margin-bottom: 20px; background: #f8fafc; }}
-        .billing-table td {{ padding: 10px; vertical-align: top; width: 50%; font-size: 13px; }}
-        .items-table {{ width: 100%; border-collapse: collapse; margin-bottom: 20px; }}
-        .items-table th {{ background-color: #1a365d; color: #fff; text-align: left; padding: 8px; font-size: 12px; }}
-        .items-table td {{ border-bottom: 1px solid #e2e8f0; padding: 8px; font-size: 12px; }}
-        .right {{ text-align: right; }}
-        .totals {{ width: 260px; margin-left: auto; font-size: 13px; margin-bottom: 40px; }}
-        .totals td {{ padding: 5px; border-bottom: 1px solid #e2e8f0; }}
-        .grand-total {{ font-weight: bold; background: #f1f5f9; font-size: 14px; border-top: 2px solid #1a365d; border-bottom: 2px solid #1a365d; }}
-        .sign-area {{ float: right; text-align: right; margin-top: 20px; font-size: 13px; }}
-        .sign-line {{ border-top: 1px solid #000; width: 180px; margin-top: 40px; text-align: center; font-weight: bold; }}
-    </style>
-    </head>
-    <body>
-    <div class="invoice-container">
-        <div class="header">
-            <div>
-                <div class="company-title">Roshan Mishra</div>
-                <div style="font-size: 12px; color: #555; margin-top: 5px;">
-                    Plot no 64 & 65, Block K-5<br>
-                    Mohan Garden, New Delhi - 110059<br>
-                    <strong>Contact:</strong> 7888273972
-                </div>
-            </div>
-            <div>
-                <div class="invoice-title">Tax Invoice</div>
-                <div style="font-size: 12px; color: #555; text-align: right; margin-top: 5px;">
-                    <strong>Invoice No:</strong> {inv_no}<br>
-                    <strong>Date:</strong> {inv_date}<br>
-                    <strong>Client GSTIN:</strong> {client_gstin}
-                </div>
-            </div>
-        </div>
-
-        <table class="billing-table">
-            <tr>
-                <td>
-                    <strong>Service Provider:</strong><br>
-                    Roshan Mishra (Accountant)<br>
-                    Plot no 64 & 65, Block K-5, Mohan Garden, New Delhi - 110059
-                </td>
-                <td>
-                    <strong>Billed To:</strong><br>
-                    <strong>{client_name}</strong><br>
-                    Legal Name: {client_legal}<br>
-                    Address: {client_address}
-                </td>
-            </tr>
-        </table>
-
-        <table class="items-table">
-            <thead>
-                <tr>
-                    <th>S.No.</th>
-                    <th>Description of Services</th>
-                    <th>Period</th>
-                    <th class="right">Amount (Rs.)</th>
-                </tr>
-            </thead>
-            <tbody>
-    """
+    # --- Generate Real PDF using FPDF ---
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Helvetica", "B", 16)
+    pdf.cell(190, 10, "TAX INVOICE", ln=True, align="Right")
     
+    pdf.set_font("Helvetica", "B", 12)
+    pdf.cell(100, 6, "Roshan Mishra", ln=False)
+    pdf.set_font("Helvetica", "", 10)
+    pdf.cell(90, 6, f"Invoice No: {inv_no}", ln=True, align="Right")
+    
+    pdf.cell(100, 5, "Plot no 64 & 65, Block K-5, Mohan Garden, New Delhi - 110059", ln=False)
+    pdf.cell(90, 5, f"Date: {inv_date}", ln=True, align="Right")
+    pdf.cell(100, 5, "Contact: 7888273972", ln=False)
+    pdf.cell(90, 5, f"GSTIN: {client_gstin}", ln=True, align="Right")
+    
+    pdf.ln(10)
+    pdf.set_font("Helvetica", "B", 11)
+    pdf.cell(95, 6, "Billed To:", ln=False)
+    pdf.cell(95, 6, "Service Provider:", ln=True)
+    
+    pdf.set_font("Helvetica", "", 10)
+    pdf.cell(95, 5, f"Trade Name: {client_name}", ln=False)
+    pdf.cell(95, 5, "Roshan Mishra (Accountant)", ln=True)
+    pdf.cell(95, 5, f"Legal Name: {client_legal}", ln=False)
+    pdf.cell(95, 5, "Plot no 64 & 65, Block K-5,", ln=True)
+    pdf.cell(95, 5, f"Address: {client_address}", ln=False)
+    pdf.cell(95, 5, "Mohan Garden, New Delhi - 110059", ln=True)
+    
+    pdf.ln(10)
+    # Table Header
+    pdf.set_fill_origin()
+    pdf.set_fill_color(26, 54, 93)
+    pdf.set_text_color(255, 255, 255)
+    pdf.set_font("Helvetica", "B", 10)
+    pdf.cell(15, 8, "S.No.", 1, 0, "C", True)
+    pdf.cell(95, 8, "Description of Services", 1, 0, "L", True)
+    pdf.cell(40, 8, "Period", 1, 0, "C", True)
+    pdf.cell(40, 8, "Amount (Rs.)", 1, 1, "R", True)
+    
+    # Table Rows
+    pdf.set_text_color(0, 0, 0)
+    pdf.set_font("Helvetica", "", 10)
     for idx, (desc, period, amt) in enumerate(items, 1):
-        html_content += "<tr><td>{}</td><td>{}</td><td>{}</td><td class='right'>{:.2f}</td></tr>".format(idx, desc, period, amt)
+        pdf.cell(15, 7, str(idx), 1, 0, "C")
+        pdf.cell(95, 7, desc, 1, 0, "L")
+        pdf.cell(40, 7, period, 1, 0, "C")
+        pdf.cell(40, 7, f"{amt:.2f}", 1, 1, "R")
+        
+    pdf.ln(5)
+    pdf.cell(110, 6, "", ln=False)
+    pdf.cell(40, 6, "Total Amount:", ln=False)
+    pdf.cell(40, 6, f"Rs. {total_amt:.2f}", ln=True, align="R")
+    
+    pdf.cell(110, 6, "", ln=False)
+    pdf.cell(40, 6, "Total Paid:", ln=False)
+    pdf.cell(40, 6, f"Rs. {total_paid:.2f}", ln=True, align="R")
+    
+    pdf.set_font("Helvetica", "B", 11)
+    pdf.cell(110, 8, "", ln=False)
+    pdf.cell(40, 8, "Balance Due:", ln=False)
+    pdf.cell(40, 8, f"Rs. {balance:.2f}", ln=True, align="R")
+    
+    pdf.ln(20)
+    pdf.set_font("Helvetica", "B", 10)
+    pdf.cell(150, 5, "", ln=False)
+    pdf.cell(40, 5, "For Roshan Mishra", ln=True, align="C")
+    pdf.ln(10)
+    pdf.cell(150, 5, "", ln=False)
+    pdf.cell(40, 5, "Authorised Signatory", ln=True, align="C")
 
-    html_content += """
-            </tbody>
-        </table>
+    pdf_bytes = pdf.output(dest='S').encode('latin1')
 
-        <table class="totals">
-            <tr><td>Total Amount:</td><td class="right">Rs. {:.2f}</td></tr>
-            <tr><td>Total Paid:</td><td class="right">Rs. {:.2f}</td></tr>
-            <tr class="grand-total"><td>Balance Due:</td><td class="right">Rs. {:.2f}</td></tr>
-        </table>
-
-        <div style="clear: both;"></div>
-        <div class="sign-area">
-            For <strong>Roshan Mishra</strong>
-            <div class="sign-line">Authorised Signatory</div>
-        </div>
-        <div style="clear: both;"></div>
-        <hr style="border:none; border-top:1px solid #ddd; margin-top: 30px;">
-        <div style="text-align: center; font-size: 11px; color: #777;">Thank you for your business! This is a computer-generated invoice.</div>
-    </div>
-    </body>
-    </html>
-    """.format(total_amt, total_paid, balance)
-
-    st.success("Invoice generated successfully!")
-    st.components.v1.html(html_content, height=650, scrolling=True)
-
-    b64 = base64.b64encode(html_content.encode('utf-8')).decode()
-    href = f'<a href="data:text/html;charset=utf-8;base64,{b64}" download="Invoice_{client_name.replace(" ", "_")}_{inv_no.replace("/", "-")}.html" style="display:inline-block; padding:10px 20px; background-color:#1a365d; color:white; text-decoration:none; border-radius:5px; font-weight:bold; margin-top:20px;">📥 Download Invoice File</a>'
-    st.markdown(href, unsafe_allow_html=True)
+    st.success("Invoice PDF generated successfully!")
+    st.download_button(
+        label="📥 Download Official PDF Invoice",
+        data=pdf_bytes,
+        file_name=f"Invoice_{client_name.replace(' ', '_')}_{inv_no.replace('/', '-')}.pdf",
+        mime="application/pdf"
+    )
 
 if st.session_state.history:
     st.markdown("---")
     st.subheader("📊 Recent Generated Invoices History")
     for i, h in enumerate(reversed(st.session_state.history)):
         st.write(f"🔹 **{h['invoice_no']}** | Party: **{h['client']}** | Total: Rs. {h['total']} | Paid: Rs. {h['paid']} | Balance: Rs. {h['balance']}")
+
