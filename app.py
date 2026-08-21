@@ -5,10 +5,14 @@ import os
 
 st.set_page_config(page_title="Professional Invoice Portal - SaaS", page_icon="📄", layout="centered")
 
-# --- Colorful & Responsive Modern UI CSS (Fixed Black Input Lines on Mobile) ---
+# --- Colorful & Responsive Modern UI CSS (Fixed Mobile Label Visibility) ---
 st.markdown("""
     <style>
-    /* Force inputs and textareas to be bright and readable on all devices */
+    /* Force all text labels and inputs to be clearly visible on mobile & desktop */
+    label, p, span, div {
+        color: #1e293b !important;
+    }
+    
     input, textarea, select {
         background-color: #ffffff !important;
         color: #1e293b !important;
@@ -37,8 +41,8 @@ st.markdown("""
         margin-bottom: 25px;
         box-shadow: 0 4px 10px rgba(0,0,0,0.1);
     }
-    .main-title h1 { margin: 0; font-size: 26px; font-weight: 700; }
-    .main-title p { margin: 5px 0 0 0; font-size: 14px; opacity: 0.9; }
+    .main-title h1 { margin: 0; font-size: 26px; font-weight: 700; color: #ffffff !important; }
+    .main-title p { margin: 5px 0 0 0; font-size: 14px; opacity: 0.9; color: #ffffff !important; }
 
     div[data-testid="stForm"] {
         background: #ffffff;
@@ -81,9 +85,9 @@ st.markdown("""
         margin-bottom: 15px;
     }
 
-    .stFormSubmitButton button {
+    .stFormSubmitButton button, .stButton button {
         background: linear-gradient(135deg, #059669 0%, #10b981 100%);
-        color: white;
+        color: white !important;
         font-weight: bold;
         border-radius: 10px;
         padding: 12px 20px;
@@ -91,15 +95,11 @@ st.markdown("""
         border: none;
         box-shadow: 0 4px 10px rgba(16, 185, 129, 0.3);
         font-size: 16px;
-        margin-top: 20px;
-    }
-    .stFormSubmitButton button:hover {
-        background: linear-gradient(135deg, #047857 0%, #059669 100%);
+        margin-top: 10px;
     }
     </style>
 """, unsafe_allow_html=True)
 
-# --- Multi-User & SaaS Database Storage Functions ---
 USERS_FILE = "saas_users_data.json"
 
 def load_saas_data():
@@ -129,6 +129,39 @@ if not st.session_state.logged_in_user:
         </div>
     """, unsafe_allow_html=True)
     
+    # Quick Admin Bypass for Testing
+    if st.sidebar.button("⚡ Quick Admin Test Login"):
+        master_id = "roshan@shreeservices.com"
+        if master_id not in saas_db:
+            saas_db[master_id] = {
+                "password": "admin",
+                "profile": {
+                    "name": "Shree Services",
+                    "legal": "Roshan Mishra",
+                    "address": "Plot no 64 & 65, Block K-5, Mohan Garden, New Delhi - 110059",
+                    "contact": "7888273972",
+                    "gstin": "07SAMPLEGSTIN",
+                    "nature": "Tax Consultancy & Accounting Services"
+                },
+                "history": [],
+                "parties": {
+                    "RKMK Enterprises": {
+                        "legal": "Rinky Acharya",
+                        "address": "Flat No. 34, Ground Floor, Block P Extn, Mohan Garden, New Delhi - 110059",
+                        "gstin": "07DEOPA0606H1ZU"
+                    },
+                    "Chandra Enterprises": {
+                        "legal": "Manoj Kumar",
+                        "address": "2nd Floor Front Side, Left Side L Type, N Block Extn, Plot No.1 Mohan Garden, DK Road, New Delhi",
+                        "gstin": "07AMSPK3043R1ZC"
+                    }
+                },
+                "services": ["ITR", "GST", "GST REGISTRATION", "UDYAM", "SHOP ACT"]
+            }
+            save_saas_data(saas_db)
+        st.session_state.logged_in_user = master_id
+        st.rerun()
+
     auth_tab1, auth_tab2 = st.tabs(["🔐 Login", "📝 New User Registration"])
     
     with auth_tab1:
@@ -146,18 +179,18 @@ if not st.session_state.logged_in_user:
                 
     with auth_tab2:
         st.subheader("Create New Account & Company")
-        reg_id = st.text_input("Enter Email ID / Mobile Number (User ID)", key="reg_id", placeholder="e.g. shreeservices@gmail.com")
+        reg_id = st.text_input("Enter Email ID / Mobile Number (User ID)", key="reg_id", placeholder="e.g. client@gmail.com")
         reg_pass1 = st.text_input("Create Password", type="password", key="reg_pass1", placeholder="Create secure password")
         reg_pass2 = st.text_input("Confirm Password", type="password", key="reg_pass2", placeholder="Re-enter password")
         
         st.markdown("---")
         st.markdown("#### 🏢 Company / Business Profile Setup")
-        comp_name = st.text_input("Company / Trade Name", key="comp_name", placeholder="e.g. Shree Services")
-        comp_legal = st.text_input("Authorized Person / Owner Name", key="comp_legal", placeholder="e.g. Roshan Mishra")
-        comp_address = st.text_input("Company Complete Address", key="comp_address", placeholder="e.g. Plot No 64, Mohan Garden, New Delhi")
-        comp_contact = st.text_input("Contact Number", key="comp_contact", placeholder="e.g. +91 7888273972")
+        comp_name = st.text_input("Company / Trade Name", key="comp_name", placeholder="e.g. Acme Services")
+        comp_legal = st.text_input("Authorized Person / Owner Name", key="comp_legal", placeholder="e.g. Amit Sharma")
+        comp_address = st.text_input("Company Complete Address", key="comp_address", placeholder="e.g. Connaught Place, New Delhi")
+        comp_contact = st.text_input("Contact Number", key="comp_contact", placeholder="e.g. +91 9876543210")
         comp_gstin = st.text_input("Company GSTIN (Optional)", key="comp_gstin", placeholder="e.g. 07XXXXX0000X1Z5")
-        comp_nature = st.text_input("Nature of Business / Dealings", key="comp_nature", placeholder="e.g. Tax Consultancy & Document Services")
+        comp_nature = st.text_input("Nature of Business / Dealings", key="comp_nature", placeholder="e.g. Accounting & Billing")
         
         if st.button("Register & Create Account"):
             if not reg_id or not reg_pass1:
@@ -181,13 +214,13 @@ if not st.session_state.logged_in_user:
                     },
                     "history": [],
                     "parties": {
-                        "RKMK Enterprises": {
-                            "legal": "Rinky Acharya",
-                            "address": "Flat No. 34, Ground Floor, Block P Extn, Mohan Garden, New Delhi - 110059",
-                            "gstin": "07DEOPA0606H1ZU"
+                        "Sample Party": {
+                            "legal": "Client Name",
+                            "address": "Sample Address, Delhi",
+                            "gstin": "07AAAAA0000A1Z5"
                         }
                     },
-                    "services": ["ITR", "GST", "GST REGISTRATION", "UDYAM", "SHOP ACT"]
+                    "services": ["ITR", "GST", "GST REGISTRATION", "UDYAM"]
                 }
                 save_saas_data(saas_db)
                 st.success("Registration Successful! Now you can go to the Login tab and sign in.")
