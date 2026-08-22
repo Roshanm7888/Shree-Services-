@@ -4,7 +4,7 @@ import json
 import os
 import time
 import pandas as pd
-from pymongo import MongoClient
+import random
 
 st.set_page_config(page_title="Professional Invoice Portal - SaaS", page_icon="📄", layout="wide")
 
@@ -18,71 +18,17 @@ FORMAT_OPTIONS = [
     "Classic Blue (Standard)"
 ]
 
-# --- MONGODB CLOUD DATABASE CONNECTION (Data Never Deletes on Update) ---
-# Using a secure connection with local fallback JSON backup
-MONGO_URI = os.getenv("MONGO_URI", "mongodb+srv://shreeservices:securecluster@cluster0.mongodb.net/?retryWrites=true&w=majority")
-LOCAL_FALLBACK_FILE = "saas_users_data.json"
-
-@st.cache_resource
-def init_db():
-    try:
-        client = MongoClient(MONGO_URI, serverSelectionTimeoutMS=3000)
-        db = client["shree_services_saas"]
-        db.command("ping")
-        return db["users"]
-    except:
-        return None
-
-users_collection = init_db()
+USERS_FILE = "saas_users_data.json"
 
 def load_saas_data():
-    if users_collection is not None:
+    if os.path.exists(USERS_FILE):
         try:
-            data = {}
-            for doc in users_collection.find():
-                u_id = doc.get("user_id")
-                if u_id:
-                    data[u_id] = {
-                        "password": doc.get("password"),
-                        "profile": doc.get("profile", {}),
-                        "history": doc.get("history", []),
-                        "parties": doc.get("parties", {}),
-                        "subscription": doc.get("subscription", "Trial"),
-                        "bills_created": doc.get("bills_created", 0)
-                    }
-            if data:
-                return data
-        except:
-            pass
-    # Fallback to local JSON if cloud is unreachable
-    if os.path.exists(LOCAL_FALLBACK_FILE):
-        try:
-            with open(LOCAL_FALLBACK_FILE, "r") as f: return json.load(f)
+            with open(USERS_FILE, "r") as f: return json.load(f)
         except: pass
     return {}
 
 def save_saas_data(data):
-    # Save to local fallback first
-    with open(LOCAL_FALLBACK_FILE, "w") as f: 
-        json.dump(data, f, indent=4)
-    # Sync with MongoDB Cloud Database
-    if users_collection is not None:
-        try:
-            for u_id, u_info in data.items():
-                users_collection.update_one(
-                    {"user_id": u_id},
-                    {"$set": {
-                        "password": u_info.get("password"),
-                        "profile": u_info.get("profile"),
-                        "history": u_info.get("history"),
-                        "parties": u_info.get("parties"),
-                        "subscription": u_info.get("subscription"),
-                        "bills_created": u_info.get("bills_created")
-                    }},
-                    upsert=True
-                )
-        except:
-            pass
+    with open(USERS_FILE, "w") as f: json.dump(data, f, indent=4)
 
 # --- FIXED CSS FOR COMPACT LOGIN, DESIGNER WAVE THEMES & ANDROID/DESKTOP ---
 st.markdown("""
@@ -137,10 +83,8 @@ st.markdown("""
 if "logged_in_user" not in st.session_state: st.session_state.logged_in_user = None
 if "login_time" not in st.session_state: st.session_state.login_time = None
 if "inv_rows" not in st.session_state: st.session_state.inv_rows = [{"desc": "", "hsn": "", "unit": "NOS", "qty": 1.0, "rate": 0.0, "tax_type": "Taxable", "tax_pct": 18.0, "amt": 0.0}]
-if "captcha_num1" not in st.session_state: 
-    import random
-    st.session_state.captcha_num1 = random.randint(1, 9)
-    st.session_state.captcha_num2 = random.randint(1, 9)
+if "c1" not in st.session_state: st.session_state.c1 = random.randint(1, 9)
+if "c2" not in st.session_state: st.session_state.c2 = random.randint(1, 9)
 
 saas_db = load_saas_data()
 
@@ -161,28 +105,24 @@ def ask_gemini_assistant(query):
 4. **Section 3 (Items & Grid Entry):** Apne business nature ke mutabik items ki description, HSN code, quantity, rate aur tax % enter karein. (Aap '➕ Add Row' karke aur items bhi jod sakte hain).
 5. Niche diye gaye **'✨ Finalize & Generate Exact A4 Invoice'** button par click karein. Aapka professional A4 invoice tayar ho jayega jise aap print ya PDF save kar sakte hain!"""
     elif "history" in q_lower or "client" in q_lower or "excel" in q_lower or "purana" in q_lower:
-        return """📊 **Client History & Ledger Dekhne ka Tarika:**
-Aap kisi bhi client ki purani history dekhne ke liye sidebar se **'📊 Party-wise History & Edit/Delete (24 Days)'** tab par click karein. Wahan dropdown mein apne client ka naam select karte hi uski saari invoices, total amount, paid amount aur balance samne aa jayegi. Wahin se aap Excel mein bhi download kar sakte hain!"""
+        return """📊 **Client History & Excel Export:**
+Aap kisi bhi client ki purani history dekhne ke liye sidebar se **'📊 Party-wise History & Edit/Delete (24 Days)'** tab par click karein. Wahan se aap sara data CSV/Excel format mein bhi download kar sakte hain!"""
     elif "benefit" in q_lower or "faida" in q_lower or "future" in q_lower or "website" in q_lower:
-        return """🌟 **Shree Services Invoice Portal ke Main Benefits & Future:**
-1. **Multi-Nature Billing:** Goods (Manufacturing/Trading), Services, Transport Company, aur General sabhi ke liye bills.
+        return """🌟 **Shree Services Invoice Portal ke Main Benefits:**
+1. **Multi-Nature Billing:** Goods, Services, Transport Company, aur General businesses ke liye bills.
 2. **Tally-Grade Grid Entry:** Smooth items management, HSN codes, unit selectors, aur automatic tax calculations.
 3. **Designer Wave Themes & Watermarks:** 6 professional corporate curved wave themes aur custom watermarks.
 4. **Party Management & 24-Day History:** Pichle 24 dinon ki history ko view, edit ya delete karne ki suvidha."""
     elif "setting" in q_lower or "theme" in q_lower or "change" in q_lower:
         return """⚙️ **Invoice Setting & Theme Badalne ka Tarika:**
 1. Sidebar menu se **'⚙️ Company Profile & Format Settings'** par click karein.
-2. Apni company details update karein.
-3. **'Select Invoice Designer Theme'** se apna manpasand Corporate Wave theme choose karein.
-4. Niche **'💾 Save All Settings Permanently'** button dabayein."""
+2. Apni company details update karein aur manpasand Corporate Wave theme choose karein.
+3. Niche **'💾 Save All Settings Permanently'** button dabayein."""
     elif "gst" in q_lower or "tax" in q_lower:
         return """💰 **GST & Tax Rules:**
-Portal automatically client ke GSTIN state code ko detect karta hai (jaise Delhi ke liye '07'). Uske hisab se CGST/SGST ya IGST calculate hota hai. Aap Settings se GST toggle on/off kar sakte hain."""
-    elif "subscription" in q_lower or "paid" in q_lower or "price" in q_lower:
-        return """💳 **Subscription & Pro Plan:**
-Free trial mein 1 free invoice banta hai. Pro plan ke liye sirf **Rs. 5/-** UPI (`roshan@shreeservices.upi`) par pay karke UTR/Txn ID submit karein, jise Admin verify karke turant unlock kar dega."""
+Portal automatically client ke GSTIN state code ko detect karta hai (jaise Delhi ke liye '07'). Uske hisab se CGST/SGST ya IGST calculate hota hai."""
     else:
-        return f"💡 **AI Assistant Guide:** Aapne pucha: '{query}'. Invoice banane ke liye 'Create Invoice' tab par jayein, party select karein, items add karein aur 'Finalize & Generate' dabayein. Client history ke liye 'Party-wise History' tab check karein!"
+        return f"💡 **AI Assistant Guide:** Aapne pucha: '{query}'. Invoice banane ke liye 'Create Invoice' tab par jayein, party select karein, items add karein aur 'Finalize & Generate' dabayein."
 
 SESSION_TIMEOUT_SECONDS = 900
 if st.session_state.logged_in_user and st.session_state.login_time:
@@ -212,9 +152,9 @@ if not st.session_state.logged_in_user:
             login_pass = st.text_input("Password", type="password", key="login_pass", value="", placeholder="Enter password")
             
             # Captcha Verification
-            c_num1 = st.session_state.captcha_num1
-            c_num2 = st.session_state.captcha_num2
-            captcha_ans = st.text_input(f"Security Verification: Solve {c_num1} + {c_num2} = ?", key="login_captcha", placeholder="Enter sum")
+            ans1 = st.session_state.c1
+            ans2 = st.session_state.c2
+            captcha_input = st.text_input(f"Security Captcha: Solve {ans1} + {ans2} = ?", key="login_captcha", placeholder="Enter sum")
             
             if st.button("Login to Portal"):
                 # Always ensure default admin exists
@@ -227,14 +167,13 @@ if not st.session_state.logged_in_user:
                     }
                     save_saas_data(saas_db)
 
-                # Validate Captcha
                 try:
-                    user_captcha_val = int(captcha_ans.strip())
+                    user_ans = int(captcha_input.strip())
                 except:
-                    user_captcha_val = -999
+                    user_ans = -999
 
-                if user_captcha_val != (c_num1 + c_num2):
-                    st.error("❌ Invalid Security Captcha! Please solve correctly.")
+                if user_ans != (ans1 + ans2):
+                    st.error("❌ Invalid Security Captcha Answer! Please try again.")
                 elif login_id == "roshan@shreeservices.com" and login_pass == "admin":
                     st.session_state.logged_in_user = login_id
                     st.session_state.login_time = datetime.now()
@@ -246,7 +185,7 @@ if not st.session_state.logged_in_user:
                     st.success("Login Successful!")
                     st.rerun()
                 else: 
-                    st.error("❌ Invalid User ID, Password, or Unauthorized access!")
+                    st.error("❌ Invalid User ID or Password! Please check your credentials.")
                     
         with auth_tab2:
             st.subheader("Create Company Account")
