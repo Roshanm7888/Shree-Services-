@@ -90,7 +90,7 @@ def get_initials(name):
     elif len(words) == 1 and len(words[0]) >= 2: return words[0][:2].upper()
     return "SS"
 
-# --- SMART INTERACTIVE AI ASSISTANT FUNCTION ---
+# --- ADVANCED SMART AI BUSINESS ASSISTANT (No Key Needed) ---
 def ask_gemini_assistant(query):
     q_lower = query.lower()
     if "invoice" in q_lower or "bill" in q_lower or "bana" in q_lower or "create" in q_lower:
@@ -100,8 +100,11 @@ def ask_gemini_assistant(query):
 3. **Section 2 (Invoice Meta Details):** Invoice Number aur Date check karein.
 4. **Section 3 (Items & Grid Entry):** Apne business nature ke mutabik items ki description, HSN code, quantity, rate aur tax % enter karein. (Aap '➕ Add Row' karke aur items bhi jod sakte hain).
 5. Niche diye gaye **'✨ Finalize & Generate Exact A4 Invoice'** button par click karein. Aapka professional A4 invoice tayar ho jayega jise aap print ya PDF save kar sakte hain!"""
-    elif "benefit" in q_lower or "faida" in q_lower or "use" in q_lower:
-        return """🌟 **Shree Services Invoice Portal ke Main Benefits:**
+    elif "history" in q_lower or "client" in q_lower or "excel" in q_lower or "purana" in q_lower:
+        return """📊 **Client History & Ledger Dekhne ka Tarika:**
+Aap kisi bhi client ki purani history dekhne ke liye sidebar se **'📊 Party-wise History & Edit/Delete (24 Days)'** tab par click karein. Wahan dropdown mein apne client ka naam select karte hi uski saari invoices, total amount, paid amount aur balance samne aa jayegi. Wahin se aap unhe edit ya delete bhi kar sakte hain!"""
+    elif "benefit" in q_lower or "faida" in q_lower or "future" in q_lower or "website" in q_lower:
+        return """🌟 **Shree Services Invoice Portal ke Main Benefits & Future:**
 1. **Multi-Nature Billing:** Goods (Manufacturing/Trading), Services, Transport Company, aur General sabhi ke liye bills.
 2. **Tally-Grade Grid Entry:** Smooth items management, HSN codes, unit selectors, aur automatic tax calculations.
 3. **Designer Wave Themes & Watermarks:** 6 professional corporate curved wave themes aur custom watermarks.
@@ -119,7 +122,7 @@ Portal automatically client ke GSTIN state code ko detect karta hai (jaise Delhi
         return """💳 **Subscription & Pro Plan:**
 Free trial mein 1 free invoice banta hai. Pro plan ke liye sirf **Rs. 5/-** UPI (`roshan@shreeservices.upi`) par pay karke UTR/Txn ID submit karein, jise Admin verify karke turant unlock kar dega."""
     else:
-        return f"💡 **AI Assistant Guide:** Aapne pucha: '{query}'. Invoice banane ke liye 'Create Invoice' tab par jayein, party select karein, items add karein aur 'Finalize & Generate' dabayein. Kisi aur sahayata ke liye yahan dobara puchein!"
+        return f"💡 **AI Assistant Guide:** Aapne pucha: '{query}'. Invoice banane ke liye 'Create Invoice' tab par jayein, party select karein, items add karein aur 'Finalize & Generate' dabayein. Client history ke liye 'Party-wise History' tab check karein!"
 
 SESSION_TIMEOUT_SECONDS = 900
 if st.session_state.logged_in_user and st.session_state.login_time:
@@ -301,13 +304,13 @@ else:
         st.rerun()
 
     elif menu_option == "🤖 AI Business Assistant":
-        st.markdown("<div class='main-title'><h1>🤖 AI Business & Tax Assistant</h1><p>Ask anything about taxes, invoice settings, or how to use the portal!</p></div>", unsafe_allow_html=True)
+        st.markdown("<div class='main-title'><h1>🤖 AI Business & Tax Assistant</h1><p>Ask anything about taxes, invoice settings, or client history!</p></div>", unsafe_allow_html=True)
         
-        user_query = st.text_area("Type your question here (e.g., 'How do I create an invoice?' or 'What is the benefit of this website?'):")
+        user_query = st.text_area("Type your question here (e.g., 'How do I create an invoice?' or 'Can you check client history?'):")
         if st.button("Ask AI Expert"):
             if user_query.strip():
                 with st.spinner("Thinking..."):
-                    time.sleep(0.4)
+                    time.sleep(0.3)
                     ai_answer = ask_gemini_assistant(user_query)
                     st.markdown("### 💡 AI Expert Response:")
                     st.info(ai_answer)
