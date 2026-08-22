@@ -415,7 +415,7 @@ else:
         init = get_initials(up_name)
         logo_html = f"<div style='width: 50px; height: 50px; background: {p_col}; color: #fff; display: flex; align-items: center; justify-content: center; font-weight: bold; border-radius: 8px;'>{init}</div>"
         if up_custom_logo.strip(): logo_html = f"<img src='{up_custom_logo}' style='max-height: 50px; max-width: 50px; object-fit: contain;'>"
-        wm_text = up_name if up_watermark_type == "Company Name" else init
+        wm_text = up_name if wm_watermark_type == "Company Name" else init
         wm_html = f'<div style="position: absolute; top: 40%; left: 20%; transform: rotate(-30deg); font-size: 90px; font-weight: bold; color: rgba(0, 0, 0, 0.04); z-index: 0; pointer-events: none; white-space: nowrap;">{wm_text}</div>' if up_watermark_enabled else ""
 
         full_a4_preview_html = f"""
@@ -570,23 +570,27 @@ else:
 
             html_content = f"""
             <!DOCTYPE html><html><head><meta charset="utf-8"><style>
+                * {{ -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; color-adjust: exact !important; }}
                 body {{ font-family: Helvetica, Arial; color: #1e293b; background: #e2e8f0; padding: 20px; }}
                 .a4-page {{ width: 210mm; min-height: 297mm; margin: auto; background: #fff; padding: 15mm 20mm; box-sizing: border-box; border: {b_css}; position: relative; }}
-                .wave-header {{ background: {wave_gradient}; color: #fff; padding: 20px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom-left-radius: 30px; border-bottom-right-radius: 30px; }}
-                .company-title {{ font-size: 24px; font-weight: bold; color: #ffffff; }}
-                .invoice-title {{ font-size: 26px; font-weight: bold; text-transform: uppercase; color: #ffffff; text-align: right; }}
+                .wave-header {{ background: {wave_gradient} !important; color: #fff !important; padding: 20px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom-left-radius: 30px; border-bottom-right-radius: 30px; }}
+                .company-title {{ font-size: 24px; font-weight: bold; color: #ffffff !important; }}
+                .invoice-title {{ font-size: 26px; font-weight: bold; text-transform: uppercase; color: #ffffff !important; text-align: right; }}
                 .billing-table {{ width: 100%; border-collapse: collapse; margin-bottom: 25px; border: 1px solid #cbd5e1; background: #f8fafc; }}
                 .billing-table td {{ padding: 12px; vertical-align: top; width: 50%; font-size: 13px; border: 1px solid #cbd5e1; }}
                 .items-table {{ width: 100%; border-collapse: collapse; margin-bottom: 20px; }}
-                .items-table th {{ background-color: {p_col}; color: #fff; padding: 10px; font-size: 12px; text-align: left; border: 1px solid {p_col}; }}
+                .items-table th {{ background-color: {p_col} !important; color: #fff !important; padding: 10px; font-size: 12px; text-align: left; border: 1px solid {p_col}; }}
                 .items-table td {{ border: 1px solid #cbd5e1; padding: 10px; font-size: 12px; }}
                 .right {{ text-align: right; }}
                 .totals {{ width: 340px; margin-left: auto; font-size: 13px; border-collapse: collapse; }}
                 .totals td {{ padding: 8px; border: 1px solid #cbd5e1; }}
-                .grand-total {{ font-weight: bold; background: #eff6ff; color: {p_col}; }}
+                .grand-total {{ font-weight: bold; background: #eff6ff !important; color: {p_col}; }}
                 @media print {{ body {{ background: none; padding: 0; }} .no-print {{ display: none !important; }} }}
             </style></head><body>
-            <div class="no-print" style="text-align: center; margin-bottom: 20px;"><button onclick="window.print()" style="background:#059669;color:white;padding:12px 25px;font-weight:bold;border:none;border-radius:8px;cursor:pointer;">🖨️ Print / Save PDF Directly</button></div>
+            <div class="no-print" style="text-align: center; margin-bottom: 20px; display: flex; gap: 10px; justify-content: center;">
+                <button onclick="window.print()" style="background:#059669;color:white;padding:12px 25px;font-weight:bold;border:none;border-radius:8px;cursor:pointer;">🖨️ Print / Save Exact Color PDF</button>
+                <a href="https://api.whatsapp.com/send?text=Hello%2C%20here%20is%20your%20Tax%20Invoice%20No%3A%20{inv_no}%20Total%3A%20Rs.%20{total_amt:.2f}.%20Thank%20you!" target="_blank" style="background:#25d366;color:white;padding:12px 25px;font-weight:bold;text-decoration:none;border-radius:8px;display:inline-block;">📱 Send via WhatsApp</a>
+            </div>
             <div class="a4-page">
                 <div class="wave-header">
                     <div style="display: flex; gap: 15px; align-items:center;">{l_html}<div><div class="company-title">{user_data['profile']['name']}</div><div style="font-size: 12px; color: #e2e8f0;">{user_data['profile']['address']}<br>Contact: {user_data['profile']['contact']}<br>GSTIN: {user_data['profile']['gstin']}</div></div></div>
