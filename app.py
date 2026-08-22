@@ -3,6 +3,8 @@ from datetime import datetime, timedelta
 import json
 import os
 import time
+import pandas as pd
+from pymongo import MongoClient
 
 st.set_page_config(page_title="Professional Invoice Portal - SaaS", page_icon="📄", layout="wide")
 
@@ -15,6 +17,72 @@ FORMAT_OPTIONS = [
     "Minimalist Clean (Simple)", 
     "Classic Blue (Standard)"
 ]
+
+# --- MONGODB CLOUD DATABASE CONNECTION (Data Never Deletes on Update) ---
+# Using a secure connection with local fallback JSON backup
+MONGO_URI = os.getenv("MONGO_URI", "mongodb+srv://shreeservices:securecluster@cluster0.mongodb.net/?retryWrites=true&w=majority")
+LOCAL_FALLBACK_FILE = "saas_users_data.json"
+
+@st.cache_resource
+def init_db():
+    try:
+        client = MongoClient(MONGO_URI, serverSelectionTimeoutMS=3000)
+        db = client["shree_services_saas"]
+        db.command("ping")
+        return db["users"]
+    except:
+        return None
+
+users_collection = init_db()
+
+def load_saas_data():
+    if users_collection is not None:
+        try:
+            data = {}
+            for doc in users_collection.find():
+                u_id = doc.get("user_id")
+                if u_id:
+                    data[u_id] = {
+                        "password": doc.get("password"),
+                        "profile": doc.get("profile", {}),
+                        "history": doc.get("history", []),
+                        "parties": doc.get("parties", {}),
+                        "subscription": doc.get("subscription", "Trial"),
+                        "bills_created": doc.get("bills_created", 0)
+                    }
+            if data:
+                return data
+        except:
+            pass
+    # Fallback to local JSON if cloud is unreachable
+    if os.path.exists(LOCAL_FALLBACK_FILE):
+        try:
+            with open(LOCAL_FALLBACK_FILE, "r") as f: return json.load(f)
+        except: pass
+    return {}
+
+def save_saas_data(data):
+    # Save to local fallback first
+    with open(LOCAL_FALLBACK_FILE, "w") as f: 
+        json.dump(data, f, indent=4)
+    # Sync with MongoDB Cloud Database
+    if users_collection is not None:
+        try:
+            for u_id, u_info in data.items():
+                users_collection.update_one(
+                    {"user_id": u_id},
+                    {"$set": {
+                        "password": u_info.get("password"),
+                        "profile": u_info.get("profile"),
+                        "history": u_info.get("history"),
+                        "parties": u_info.get("parties"),
+                        "subscription": u_info.get("subscription"),
+                        "bills_created": u_info.get("bills_created")
+                    }},
+                    upsert=True
+                )
+        except:
+            pass
 
 # --- FIXED CSS FOR COMPACT LOGIN, DESIGNER WAVE THEMES & ANDROID/DESKTOP ---
 st.markdown("""
@@ -66,21 +134,13 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-USERS_FILE = "saas_users_data.json"
-
-def load_saas_data():
-    if os.path.exists(USERS_FILE):
-        try:
-            with open(USERS_FILE, "r") as f: return json.load(f)
-        except: pass
-    return {}
-
-def save_saas_data(data):
-    with open(USERS_FILE, "w") as f: json.dump(data, f, indent=4)
-
 if "logged_in_user" not in st.session_state: st.session_state.logged_in_user = None
 if "login_time" not in st.session_state: st.session_state.login_time = None
 if "inv_rows" not in st.session_state: st.session_state.inv_rows = [{"desc": "", "hsn": "", "unit": "NOS", "qty": 1.0, "rate": 0.0, "tax_type": "Taxable", "tax_pct": 18.0, "amt": 0.0}]
+if "captcha_num1" not in st.session_state: 
+    import random
+    st.session_state.captcha_num1 = random.randint(1, 9)
+    st.session_state.captcha_num2 = random.randint(1, 9)
 
 saas_db = load_saas_data()
 
@@ -90,7 +150,7 @@ def get_initials(name):
     elif len(words) == 1 and len(words[0]) >= 2: return words[0][:2].upper()
     return "SS"
 
-# --- ADVANCED SMART AI BUSINESS ASSISTANT (No Key Needed) ---
+# --- SMART INTERACTIVE AI ASSISTANT FUNCTION ---
 def ask_gemini_assistant(query):
     q_lower = query.lower()
     if "invoice" in q_lower or "bill" in q_lower or "bana" in q_lower or "create" in q_lower:
@@ -102,7 +162,7 @@ def ask_gemini_assistant(query):
 5. Niche diye gaye **'✨ Finalize & Generate Exact A4 Invoice'** button par click karein. Aapka professional A4 invoice tayar ho jayega jise aap print ya PDF save kar sakte hain!"""
     elif "history" in q_lower or "client" in q_lower or "excel" in q_lower or "purana" in q_lower:
         return """📊 **Client History & Ledger Dekhne ka Tarika:**
-Aap kisi bhi client ki purani history dekhne ke liye sidebar se **'📊 Party-wise History & Edit/Delete (24 Days)'** tab par click karein. Wahan dropdown mein apne client ka naam select karte hi uski saari invoices, total amount, paid amount aur balance samne aa jayegi. Wahin se aap unhe edit ya delete bhi kar sakte hain!"""
+Aap kisi bhi client ki purani history dekhne ke liye sidebar se **'📊 Party-wise History & Edit/Delete (24 Days)'** tab par click karein. Wahan dropdown mein apne client ka naam select karte hi uski saari invoices, total amount, paid amount aur balance samne aa jayegi. Wahin se aap Excel mein bhi download kar sakte hain!"""
     elif "benefit" in q_lower or "faida" in q_lower or "future" in q_lower or "website" in q_lower:
         return """🌟 **Shree Services Invoice Portal ke Main Benefits & Future:**
 1. **Multi-Nature Billing:** Goods (Manufacturing/Trading), Services, Transport Company, aur General sabhi ke liye bills.
@@ -150,16 +210,32 @@ if not st.session_state.logged_in_user:
             st.subheader("Existing User Login")
             login_id = st.text_input("Email ID / Mobile Number", key="login_id", value="", placeholder="Enter email or mobile")
             login_pass = st.text_input("Password", type="password", key="login_pass", value="", placeholder="Enter password")
+            
+            # Captcha Verification
+            c_num1 = st.session_state.captcha_num1
+            c_num2 = st.session_state.captcha_num2
+            captcha_ans = st.text_input(f"Security Verification: Solve {c_num1} + {c_num2} = ?", key="login_captcha", placeholder="Enter sum")
+            
             if st.button("Login to Portal"):
-                if login_id == "roshan@shreeservices.com" and login_pass == "admin":
-                    if login_id not in saas_db:
-                        saas_db[login_id] = {
-                            "password": "admin",
-                            "profile": {"name": "Shree Services", "legal": "Roshan Mishra", "address": "Mohan Garden, New Delhi", "contact": "7888273972", "gstin": "07SAMPLEGSTIN", "nature": "Goods / Manufacturing / Trading", "format": "Corporate Curve Wave (New Professional)", "border_style": "Solid Line", "gst_enabled": True, "watermark_enabled": True, "watermark_type": "Company Name"},
-                            "history": [], "parties": {"RKMK Enterprises": {"legal": "Rinky", "address": "Delhi", "gstin": "07DEOPA0606H1ZU"}},
-                            "subscription": "Paid", "bills_created": 0
-                        }
-                        save_saas_data(saas_db)
+                # Always ensure default admin exists
+                if "roshan@shreeservices.com" not in saas_db:
+                    saas_db["roshan@shreeservices.com"] = {
+                        "password": "admin",
+                        "profile": {"name": "Shree Services", "legal": "Roshan Mishra", "address": "Mohan Garden, New Delhi", "contact": "7888273972", "gstin": "07SAMPLEGSTIN", "nature": "Goods / Manufacturing / Trading", "format": "Corporate Curve Wave (New Professional)", "border_style": "Solid Line", "gst_enabled": True, "watermark_enabled": True, "watermark_type": "Company Name"},
+                        "history": [], "parties": {"RKMK Enterprises": {"legal": "Rinky", "address": "Delhi", "gstin": "07DEOPA0606H1ZU"}},
+                        "subscription": "Paid", "bills_created": 0
+                    }
+                    save_saas_data(saas_db)
+
+                # Validate Captcha
+                try:
+                    user_captcha_val = int(captcha_ans.strip())
+                except:
+                    user_captcha_val = -999
+
+                if user_captcha_val != (c_num1 + c_num2):
+                    st.error("❌ Invalid Security Captcha! Please solve correctly.")
+                elif login_id == "roshan@shreeservices.com" and login_pass == "admin":
                     st.session_state.logged_in_user = login_id
                     st.session_state.login_time = datetime.now()
                     st.success("Admin Login Successful!")
@@ -169,7 +245,8 @@ if not st.session_state.logged_in_user:
                     st.session_state.login_time = datetime.now()
                     st.success("Login Successful!")
                     st.rerun()
-                else: st.error("Invalid User ID or Password!")
+                else: 
+                    st.error("❌ Invalid User ID, Password, or Unauthorized access!")
                     
         with auth_tab2:
             st.subheader("Create Company Account")
@@ -317,6 +394,46 @@ else:
             else:
                 st.warning("Please enter a valid question.")
 
+    elif menu_option == "📊 Party-wise History & Edit/Delete (24 Days)":
+        st.markdown("<div class='main-title'><h1>Party-wise Invoice Management & Excel Export</h1></div>", unsafe_allow_html=True)
+        
+        # --- EXCEL DOWNLOAD BUTTON ---
+        if st.session_state.history:
+            df_export = pd.DataFrame(st.session_state.history)
+            csv_data = df_export.to_csv(index=False).encode('utf-8')
+            st.download_button(
+                label="📥 Download Complete Client History as CSV / Excel",
+                data=csv_data,
+                file_name=f"{user_data['profile']['name']}_client_history.csv",
+                mime="text/csv"
+            )
+            st.markdown("---")
+
+        if not st.session_state.history: 
+            st.info("No invoice history available for the last 24 days.")
+        else:
+            all_parties = list(set([h['client'] for h in st.session_state.history]))
+            sel_party = st.selectbox("Select Party to Manage History", all_parties)
+            for bill in [h for h in st.session_state.history if h['client'] == sel_party]:
+                with st.expander(f"Invoice No: {bill['invoice_no']} | Client: {bill['client']} | Total: Rs. {bill['total']}"):
+                    edit_paid = st.number_input("Edit Paid Amount (Rs.)", value=float(bill.get('paid', 0.0)), key=f"ep_{bill['invoice_no']}")
+                    col_s, col_d = st.columns(2)
+                    with col_s:
+                        if st.button("💾 Save Changes", key=f"sv_{bill['invoice_no']}"):
+                            bill['paid'] = edit_paid
+                            bill['balance'] = bill['total'] - edit_paid
+                            user_data["history"] = st.session_state.history
+                            save_saas_data(saas_db)
+                            st.success("Invoice Updated Successfully!")
+                            st.rerun()
+                    with col_d:
+                        if st.button("❌ Delete Invoice", key=f"dl_{bill['invoice_no']}"):
+                            st.session_state.history = [h for h in st.session_state.history if h['invoice_no'] != bill['invoice_no']]
+                            user_data["history"] = st.session_state.history
+                            save_saas_data(saas_db)
+                            st.warning("Invoice Deleted!")
+                            st.rerun()
+
     elif menu_option == "⚙️ Company Profile & Format Settings":
         st.markdown("""
             <div class="main-title">
@@ -438,32 +555,6 @@ else:
         </div></body></html>
         """
         st.components.v1.html(full_a4_preview_html, height=800, scrolling=True)
-
-    elif menu_option == "📊 Party-wise History & Edit/Delete (24 Days)":
-        st.markdown("<div class='main-title'><h1>Party-wise Invoice Management & Editing</h1></div>", unsafe_allow_html=True)
-        if not st.session_state.history: st.info("No invoice history available for the last 24 days.")
-        else:
-            all_parties = list(set([h['client'] for h in st.session_state.history]))
-            sel_party = st.selectbox("Select Party to Manage History", all_parties)
-            for bill in [h for h in st.session_state.history if h['client'] == sel_party]:
-                with st.expander(f"Invoice No: {bill['invoice_no']} | Client: {bill['client']} | Total: Rs. {bill['total']}"):
-                    edit_paid = st.number_input("Edit Paid Amount (Rs.)", value=float(bill.get('paid', 0.0)), key=f"ep_{bill['invoice_no']}")
-                    col_s, col_d = st.columns(2)
-                    with col_s:
-                        if st.button("💾 Save Changes", key=f"sv_{bill['invoice_no']}"):
-                            bill['paid'] = edit_paid
-                            bill['balance'] = bill['total'] - edit_paid
-                            user_data["history"] = st.session_state.history
-                            save_saas_data(saas_db)
-                            st.success("Invoice Updated Successfully!")
-                            st.rerun()
-                    with col_d:
-                        if st.button("❌ Delete Invoice", key=f"dl_{bill['invoice_no']}"):
-                            st.session_state.history = [h for h in st.session_state.history if h['invoice_no'] != bill['invoice_no']]
-                            user_data["history"] = st.session_state.history
-                            save_saas_data(saas_db)
-                            st.warning("Invoice Deleted!")
-                            st.rerun()
 
     else:
         # --- CREATE INVOICE TAB ---
