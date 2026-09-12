@@ -117,7 +117,7 @@ def ask_gemini_assistant(query):
 5. Niche diye gaye **'✨ Finalize & Generate Exact A4 Invoice'** button par click karein."""
     elif "history" in q_lower or "client" in q_lower or "excel" in q_lower or "ledger" in q_lower:
         return """📊 **Client Ledger & Professional Excel/PDF Export:**
-Aap kisi bhi client ki history ya ledger dekhne ke liye sidebar se **'📊 Party-wise History & Edit/Delete'** tab par click karein. Wahan se aap professional formatted Excel sheet ya Ledger PDF download kar sakte hain!"""
+Aap kisi bhi client ki history ya ledger dekhne ke liye sidebar se **'📊 Party-wise History, Edit & Ledger'** tab par click karein. Wahan se aap professional formatted Excel sheet ya Ledger PDF download kar sakte hain!"""
     else:
         return f"💡 **AI Assistant Guide:** Aapne pucha: '{query}'. Invoice banane ke liye 'Create Invoice' tab par jayein aur Ledger ke liye 'Party-wise History' tab check karein."
 
@@ -305,10 +305,10 @@ else:
                 st.warning("Please enter a valid question.")
 
     elif menu_option == "📊 Party-wise History, Edit & Ledger":
-        st.markdown("<div class='main-title'><h1>Party Ledger, Profile & Bill Editor</h1></div>", unsafe_allow_html=True)
+        st.markdown("<div class='main-title'><h1>Tally-Grade Party Ledger, Profile & Bill Editor</h1></div>", unsafe_allow_html=True)
         
-        if not st.session_state.history: 
-            st.info("No invoice history available for the last 24 days.")
+        if not user_data["parties"]: 
+            st.info("No parties added yet.")
         else:
             all_parties = list(user_data["parties"].keys())
             sel_party = st.selectbox("Select Party (Tally Ledger Search)", all_parties)
@@ -316,6 +316,17 @@ else:
             if sel_party in user_data["parties"]:
                 p_dat = user_data["parties"][sel_party]
                 st.info(f"🏢 **Party Profile:** `{sel_party}` | **Address:** {p_dat.get('address')} | **GSTIN:** {p_dat.get('gstin')}")
+
+                # --- TALLY STYLE CTRL+ENTER PARTY PROFILE EDITOR ---
+                with st.expander(f"✏️ Edit Party Master Profile ({sel_party}) - Tally Style"):
+                    edit_p_addr = st.text_input("Edit Party Address", value=p_dat.get('address', ''), key=f"epa_{sel_party}")
+                    edit_p_gst = st.text_input("Edit Party GSTIN", value=p_dat.get('gstin', ''), key=f"epg_{sel_party}")
+                    if st.button("💾 Save Party Profile Changes", key=f"svp_{sel_party}"):
+                        user_data["parties"][sel_party]["address"] = edit_p_addr
+                        user_data["parties"][sel_party]["gstin"] = edit_p_gst
+                        save_saas_data(saas_db)
+                        st.success("Party Profile Updated Successfully!")
+                        st.rerun()
 
             party_bills = [h for h in st.session_state.history if h['client'] == sel_party]
             
