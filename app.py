@@ -89,7 +89,7 @@ if "logged_in_user" not in st.session_state:
 if "login_time" not in st.session_state: 
     st.session_state.login_time = None
 if "inv_rows" not in st.session_state: 
-    st.session_state.inv_rows = [{"desc": "", "hsn": "", "unit": "NOS", "qty": 1.0, "rate": 0.0, "tax_type": "Taxable", "tax_pct": 18.0, "amt": 0.0}]
+    st.session_state.inv_rows = [{"desc": "", "hsn": "-", "unit": "NOS", "qty": 1.0, "rate": 0.0, "tax_type": "Taxable", "tax_pct": 18.0, "amt": 0.0}]
 if "cap_n1" not in st.session_state: 
     st.session_state.cap_n1 = random.randint(1, 5)
 if "cap_n2" not in st.session_state: 
@@ -117,7 +117,7 @@ def ask_gemini_assistant(query):
 5. Niche diye gaye **'✨ Finalize & Generate Exact A4 Invoice'** button par click karein."""
     elif "history" in q_lower or "client" in q_lower or "excel" in q_lower or "ledger" in q_lower:
         return """📊 **Client Ledger & Professional Excel/PDF Export:**
-Aap kisi bhi client ki history ya ledger dekhne ke liye sidebar se **'📊 Party-wise History, Edit & Ledger'** tab par click karein. Wahan se aap professional formatted Excel sheet ya Ledger PDF download kar sakte hain!"""
+Aap kisi bhi client ki history ya ledger dekhne ke liye sidebar se **'📊 Party-wise History, Item Editor & Ledger'** tab par click karein. Wahan se aap professional formatted Excel sheet ya Ledger PDF download kar sakte hain!"""
     else:
         return f"💡 **AI Assistant Guide:** Aapne pucha: '{query}'. Invoice banane ke liye 'Create Invoice' tab par jayein aur Ledger ke liye 'Party-wise History' tab check karein."
 
@@ -280,7 +280,7 @@ else:
     menu_options_list = [
         "Create Invoice", 
         "🤖 AI Business Assistant", 
-        "📊 Party-wise History, Edit & Ledger", 
+        "📊 Party-wise History, Item Editor & Ledger", 
         "⚙️ Company Profile & Format Settings", 
         "🚪 Logout"
     ]
@@ -304,8 +304,8 @@ else:
             else: 
                 st.warning("Please enter a valid question.")
 
-    elif menu_option == "📊 Party-wise History, Edit & Ledger":
-        st.markdown("<div class='main-title'><h1>Tally-Grade Party Ledger, Profile & Bill Editor</h1></div>", unsafe_allow_html=True)
+    elif menu_option == "📊 Party-wise History, Item Editor & Ledger":
+        st.markdown("<div class='main-title'><h1>Tally-Grade Party Ledger & Item-Level Bill Editor</h1></div>", unsafe_allow_html=True)
         
         if not user_data["parties"]: 
             st.info("No parties added yet.")
@@ -388,47 +388,81 @@ else:
                     st.components.v1.html(ledger_html_doc, height=700, scrolling=True)
 
             st.markdown("---")
-            st.subheader("📝 Edit Generated Bills / Reprint Invoice")
+            st.subheader("📝 Edit Bill Items (Remove C, Add/Modify Items) & Reprint")
             for bill in party_bills:
                 with st.expander(f"Invoice No: {bill['invoice_no']} | Date: {bill['date']} | Total: Rs. {bill['total']}"):
                     new_inv_no = st.text_input("Edit Invoice No", value=bill['invoice_no'], key=f"ein_{bill['invoice_no']}")
-                    new_total = st.number_input("Edit Total Amount (Rs.)", value=float(bill['total']), key=f"eto_{bill['invoice_no']}")
                     new_paid = st.number_input("Edit Paid Amount (Rs.)", value=float(bill.get('paid', 0.0)), key=f"epa_{bill['invoice_no']}")
                     
+                    st.markdown("#### 🛒 Bill Items Editor")
+                    if "parsed_items" not in bill: 
+                        bill["parsed_items"] = [{"desc": "Item", "hsn": "-", "unit": "NOS", "qty": 1.0, "rate": float(bill['total']), "tax_type": "Taxable", "tax_pct": 18.0, "amt": float(bill['total'])}]
+                    
+                    updated_items = []
+                    new_subtotal = 0.0
+                    new_tax_amt = 0.0
+                    
+                    for idx, itm in enumerate(bill["parsed_items"]):
+                        col_it1, col_it2, col_it3, col_it4, col_del = st.columns([3, 1.5, 1.5, 1.5, 1])
+                        i_desc = col_it1.text_input("Description", value=itm.get('desc',''), key=f"id_{bill['invoice_no']}_{idx}")
+                        i_qty = col_it2.number_input("Qty", value=float(itm.get('qty', 1.0)), key=f"iq_{bill['invoice_no']}_{idx}")
+                        i_rate = col_it3.number_input("Rate", value=float(itm.get('rate', 0.0)), key=f"ir_{bill['invoice_no']}_{idx}")
+                        i_amt = i_qty * i_rate
+                        col_it4.markdown(f"**Amt:** {i_amt:.2f}")
+                        
+                        keep_item = col_del.checkbox("Keep", value=True, key=f"k_{bill['invoice_no']}_{idx}")
+                        if keep_item:
+                            updated_items.append({"desc": i_desc, "hsn": itm.get('hsn', '-'), "unit": itm.get('unit', 'NOS'), "qty": i_qty, "rate": i_rate, "tax_type": "Taxable", "tax_pct": 18.0, "amt": i_amt})
+                            new_subtotal += i_amt
+                            new_tax_amt += i_amt * 0.18
+
+                    new_total_amt = new_subtotal + new_tax_amt
+                    new_balance = new_total_amt - new_paid
+                    st.info(f"📊 **Recalculated Total:** Rs. {new_total_amt:.2f} (Subtotal: {new_subtotal:.2f} + Tax: {new_tax_amt:.2f})")
+
                     col_s, col_d, col_p = st.columns(3)
                     with col_s:
-                        if st.button("💾 Save Bill Changes", key=f"sb_{bill['invoice_no']}"):
+                        if st.button("💾 Save Bill Items & Total", key=f"sb_{bill['invoice_no']}"):
                             bill['invoice_no'] = new_inv_no
-                            bill['total'] = new_total
+                            bill['parsed_items'] = updated_items
+                            bill['total'] = new_total_amt
                             bill['paid'] = new_paid
-                            bill['balance'] = new_total - new_paid
+                            bill['balance'] = new_balance
                             user_data["history"] = st.session_state.history
                             save_saas_data(saas_db)
-                            st.success("Bill Updated Successfully!")
+                            st.success("Bill Updated with Item Changes Successfully!")
                             st.rerun()
                     with col_d:
-                        if st.button("❌ Delete Bill", key=f"db_{bill['invoice_no']}"):
+                        if st.button("❌ Delete Entire Bill", key=f"db_{bill['invoice_no']}"):
                             st.session_state.history = [h for h in st.session_state.history if h['invoice_no'] != bill['invoice_no']]
                             user_data["history"] = st.session_state.history
                             save_saas_data(saas_db)
                             st.warning("Bill Deleted!")
                             st.rerun()
                     with col_p:
-                        if st.button("🖨️ Reprint Edited Bill", key=f"rp_{bill['invoice_no']}"):
+                        if st.button("🖨️ Reprint Updated Bill", key=f"rp_{bill['invoice_no']}"):
                             sel_theme = user_data["profile"].get("format", FORMAT_OPTIONS[0])
                             p_col, wave_gradient = ("#065f46", "linear-gradient(135deg, #059669 0%, #10b981 100%)") if "Emerald Green" in sel_theme else ("#1e3a8a", "linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%)")
+                            
+                            print_rows = "".join([f"<tr><td>{r['desc']}</td><td>{r['qty']}</td><td>{r['rate']:.2f}</td><td style='text-align:right;'>{r['amt']:.2f}</td></tr>" for r in bill["parsed_items"]])
+                            
                             reprint_html = f"""
                             <!DOCTYPE html><html><head><meta charset="utf-8"><style>
                                 * {{ -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }}
                                 body {{ font-family: Helvetica; background: #e2e8f0; padding: 20px; }}
                                 .a4-page {{ width: 210mm; min-height: 297mm; margin: auto; background: #fff; padding: 20mm; border: 1px solid #cbd5e1; }}
                                 .wave-header {{ background: {wave_gradient} !important; color: #fff !important; padding: 20px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }}
+                                table {{ width: 100%; border-collapse: collapse; margin-top: 15px; }}
+                                th, td {{ border: 1px solid #cbd5e1; padding: 8px; font-size: 13px; }}
+                                th {{ background: {p_col}; color: white; text-align: left; }}
                                 @media print {{ body {{ background: none; padding: 0; }} .no-print {{ display: none !important; }} }}
                             </style></head><body>
                             <div class="no-print" style="text-align: center; margin-bottom: 20px;"><button onclick="window.print()" style="background:#059669;color:white;padding:12px 25px;font-weight:bold;border:none;border-radius:8px;cursor:pointer;">🖨️ Print / Save PDF</button></div>
                             <div class="a4-page">
                                 <div class="wave-header"><div><h2>{user_data['profile']['name']}</h2><p>{user_data['profile']['address']}</p></div><div style="text-align:right;"><h2>TAX INVOICE</h2><p>{bill['invoice_no']}</p></div></div>
                                 <h3>Billed To: {bill['client']}</h3><hr>
+                                <table><thead><tr><th>Description</th><th>Qty</th><th>Rate</th><th style='text-align:right;'>Amount</th></tr></thead><tbody>{print_rows}</tbody></table>
+                                <br>
                                 <h3>Total Amount: Rs. {bill['total']:.2f} | Paid: Rs. {bill.get('paid',0):.2f} | Balance: Rs. {bill['balance']:.2f}</h3>
                             </div></body></html>
                             """
@@ -643,7 +677,7 @@ else:
             st.session_state.history.append({
                 "invoice_no": inv_no, "client": target_party, "total": final_total_amt,
                 "paid": total_paid, "balance": balance, "date": inv_date,
-                "parsed_items": st.session_state.inv_rows, "timestamp": datetime.now().isoformat()
+                "parsed_items": list(st.session_state.inv_rows), "timestamp": datetime.now().isoformat()
             })
             user_data["history"] = st.session_state.history
             save_saas_data(saas_db)
