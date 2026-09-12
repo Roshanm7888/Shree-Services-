@@ -31,7 +31,6 @@ FORMAT_OPTIONS = [
 USERS_FILE = "saas_users_data.json"
 
 def load_saas_data():
-    """Load enterprise tenant database from persistent JSON storage."""
     if os.path.exists(USERS_FILE):
         try:
             with open(USERS_FILE, "r") as database_file: 
@@ -41,7 +40,6 @@ def load_saas_data():
     return {}
 
 def save_saas_data(database_payload):
-    """Save enterprise tenant database to persistent JSON storage."""
     try:
         with open(USERS_FILE, "w") as database_file: 
             json.dump(database_payload, database_file, indent=4)
@@ -81,221 +79,86 @@ st.markdown("""
         text-align: center;
     }
     
-    .benefit-card h3 { 
-        color: #1e3a8a !important; 
-        font-size: 16px; 
-        margin-bottom: 8px; 
-        font-weight: 700; 
-    }
-    
-    .benefit-card p { 
-        color: #475569 !important; 
-        font-size: 13px; 
-        margin: 0; 
-    }
+    .benefit-card h3 { color: #1e3a8a !important; font-size: 16px; margin-bottom: 8px; font-weight: 700; }
+    .benefit-card p { color: #475569 !important; font-size: 13px; margin: 0; }
 
     label, p, span, div { color: #1e293b !important; }
-    
-    input, textarea { 
-        background-color: #ffffff !important; 
-        color: #1e293b !important; 
-        border: 1px solid #cbd5e1 !important; 
-        border-radius: 8px !important; 
-    }
+    input, textarea { background-color: #ffffff !important; color: #1e293b !important; border: 1px solid #cbd5e1 !important; border-radius: 8px !important; }
     
     section[data-testid="stSidebar"] label, 
     section[data-testid="stSidebar"] p, 
     section[data-testid="stSidebar"] span, 
     section[data-testid="stSidebar"] div, 
-    section[data-testid="stSidebar"] .stRadio label { 
-        color: #f8fafc !important; 
-    }
+    section[data-testid="stSidebar"] .stRadio label { color: #f8fafc !important; }
     
-    section[data-testid="stSidebar"] { 
-        background-color: #0f172a !important; 
-    }
+    section[data-testid="stSidebar"] { background-color: #0f172a !important; }
+    select, option, div[data-baseweb="select"] * { background-color: #ffffff !important; color: #1e293b !important; }
     
-    select, option, div[data-baseweb="select"] * { 
-        background-color: #ffffff !important; 
-        color: #1e293b !important; 
-    }
+    .stApp { background-color: #f8fafc; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    .main-title { background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%); color: white; padding: 25px; border-radius: 12px; text-align: center; margin-bottom: 25px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+    .main-title h1 { margin: 0; font-size: 26px; font-weight: 700; color: #ffffff !important; }
+    .main-title p { margin: 5px 0 0 0; font-size: 14px; opacity: 0.9; color: #ffffff !important; }
     
-    .stApp { 
-        background-color: #f8fafc; 
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
-    }
+    div[data-testid="stForm"] { background: #ffffff; padding: 30px; border-radius: 16px; border: 1px solid #e2e8f0; box-shadow: 0 10px 25px rgba(0,0,0,0.05); }
+    .section-box-1 { background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%); border-left: 5px solid #3b82f6; padding: 12px 15px; border-radius: 8px; color: #1e3a8a; font-weight: 700; font-size: 16px; margin-bottom: 15px; }
+    .section-box-2 { background: linear-gradient(135deg, #fdf4ff 0%, #fae8ff 100%); border-left: 5px solid #d946ef; padding: 12px 15px; border-radius: 8px; color: #86198f; font-weight: 700; font-size: 16px; margin-top: 20px; margin-bottom: 15px; }
+    .section-box-3 { background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%); border-left: 5px solid #22c55e; padding: 12px 15px; border-radius: 8px; color: #166534; font-weight: 700; font-size: 16px; margin-top: 20px; margin-bottom: 15px; }
     
-    .main-title { 
-        background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%); 
-        color: white; 
-        padding: 25px; 
-        border-radius: 12px; 
-        text-align: center; 
-        margin-bottom: 25px; 
-        box-shadow: 0 4px 10px rgba(0,0,0,0.1); 
-    }
-    
-    .main-title h1 { 
-        margin: 0; 
-        font-size: 26px; 
-        font-weight: 700; 
-        color: #ffffff !important; 
-    }
-    
-    .main-title p { 
-        margin: 5px 0 0 0; 
-        font-size: 14px; 
-        opacity: 0.9; 
-        color: #ffffff !important; 
-    }
-    
-    div[data-testid="stForm"] { 
-        background: #ffffff; 
-        padding: 30px; 
-        border-radius: 16px; 
-        border: 1px solid #e2e8f0; 
-        box-shadow: 0 10px 25px rgba(0,0,0,0.05); 
-    }
-    
-    .section-box-1 { 
-        background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%); 
-        border-left: 5px solid #3b82f6; 
-        padding: 12px 15px; 
-        border-radius: 8px; 
-        color: #1e3a8a; 
-        font-weight: 700; 
-        font-size: 16px; 
-        margin-bottom: 15px; 
-    }
-    
-    .section-box-2 { 
-        background: linear-gradient(135deg, #fdf4ff 0%, #fae8ff 100%); 
-        border-left: 5px solid #d946ef; 
-        padding: 12px 15px; 
-        border-radius: 8px; 
-        color: #86198f; 
-        font-weight: 700; 
-        font-size: 16px; 
-        margin-top: 20px; 
-        margin-bottom: 15px; 
-    }
-    
-    .section-box-3 { 
-        background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%); 
-        border-left: 5px solid #22c55e; 
-        padding: 12px 15px; 
-        border-radius: 8px; 
-        color: #166534; 
-        font-weight: 700; 
-        font-size: 16px; 
-        margin-top: 20px; 
-        margin-bottom: 15px; 
-    }
-    
-    .stFormSubmitButton button, .stButton button { 
-        background: linear-gradient(135deg, #059669 0%, #10b981 100%); 
-        color: white !important; 
-        font-weight: bold; 
-        border-radius: 10px; 
-        padding: 12px 20px; 
-        width: 100%; 
-        border: none; 
-        box-shadow: 0 4px 10px rgba(16, 185, 129, 0.3); 
-        font-size: 16px; 
-        margin-top: 10px; 
-    }
+    .stFormSubmitButton button, .stButton button { background: linear-gradient(135deg, #059669 0%, #10b981 100%); color: white !important; font-weight: bold; border-radius: 10px; padding: 12px 20px; width: 100%; border: none; box-shadow: 0 4px 10px rgba(16, 185, 129, 0.3); font-size: 16px; margin-top: 10px; }
     </style>
 """, unsafe_allow_html=True)
 
 # ==========================================
 # 4. SESSION STATE INITIALIZATION
 # ==========================================
-if "logged_in_user" not in st.session_state: 
-    st.session_state.logged_in_user = None
-
-if "login_time" not in st.session_state: 
-    st.session_state.login_time = None
-
+if "logged_in_user" not in st.session_state: st.session_state.logged_in_user = None
+if "login_time" not in st.session_state: st.session_state.login_time = None
 if "inv_rows" not in st.session_state: 
     st.session_state.inv_rows = [{"desc": "", "hsn": "-", "unit": "NOS", "qty": 1.0, "rate": 0.0, "tax_type": "Taxable", "tax_pct": 18.0, "amt": 0.0}]
 
-if "cap_n1" not in st.session_state: 
-    st.session_state.cap_n1 = random.randint(1, 5)
+if "cap_n1" not in st.session_state: st.session_state.cap_n1 = random.randint(1, 5)
+if "cap_n2" not in st.session_state: st.session_state.cap_n2 = random.randint(1, 4)
 
-if "cap_n2" not in st.session_state: 
-    st.session_state.cap_n2 = random.randint(1, 4)
-
-# Load database payload
 saas_db = load_saas_data()
 
-# Ensure default admin exists instantly in the system
 if "roshan@shreeservices.com" not in saas_db:
     saas_db["roshan@shreeservices.com"] = {
         "password": "admin",
         "profile": {
-            "name": "Shree Services", 
-            "legal": "Roshan Mishra", 
-            "address": "Mohan Garden, New Delhi", 
-            "contact": "7888273972", 
-            "gstin": "07SAMPLEGSTIN", 
-            "nature": "Goods / Manufacturing / Trading", 
-            "format": "Corporate Curve Wave (New Professional)", 
-            "border_style": "Solid Line", 
-            "gst_enabled": True, 
-            "watermark_enabled": True, 
-            "watermark_type": "Company Name",
-            "terms": "1. Goods once sold will not be taken back.\n2. Interest @ 18% p.a. will be charged if payment not made within due date.\n3. Subject to Delhi Jurisdiction."
+            "name": "Shree Services", "legal": "Roshan Mishra", "address": "Mohan Garden, New Delhi", 
+            "contact": "7888273972", "gstin": "07SAMPLEGSTIN", "nature": "Goods / Manufacturing / Trading", 
+            "format": "Corporate Curve Wave (New Professional)", "border_style": "Solid Line", 
+            "custom_logo": "", "watermark_enabled": True, "watermark_type": "Company Name",
+            "bank_name": "State Bank of India", "acc_no": "1234567890", "ifsc": "SBIN0016324", "branch": "Nashik Ashok Nagar",
+            "terms": "1. Payment shall be made on a quarterly basis (e.g., April, May, June constitutes Q1).\n2. All quarterly invoices are due and payable strictly on or before the 20th of the month following the quarter-end.\n3. Late payments will attract an interest charge of 18% per annum."
         },
-        "history": [], 
-        "parties": {
-            "RKMK Enterprises": {"address": "Delhi", "gstin": "07DEOPA0606H1ZU"}
-        },
-        "subscription": "Paid", 
-        "bills_created": 0
+        "history": [], "parties": {"RKMK Enterprises": {"address": "Delhi", "gstin": "07DEOPA0606H1ZU"}},
+        "subscription": "Paid", "bills_created": 0
     }
     save_saas_data(saas_db)
 
-# Helper function to extract user initials for avatars/logos
 def get_initials(company_name):
     words = company_name.split()
-    if len(words) >= 2: 
-        return (words[0][0] + words[1][0]).upper()
-    elif len(words) == 1 and len(words[0]) >= 2: 
-        return words[0][:2].upper()
+    if len(words) >= 2: return (words[0][0] + words[1][0]).upper()
+    elif len(words) == 1 and len(words[0]) >= 2: return words[0][:2].upper()
     return "SS"
 
-# ==========================================
-# 5. BUILT-IN EXPERT AI ASSISTANT MODULE
-# ==========================================
 def ask_gemini_assistant(user_query):
     query_lower = user_query.lower()
-    if "invoice" in query_lower or "bill" in query_lower or "bana" in query_lower or "create" in query_lower:
-        return """📝 **Invoice Create Karne ka Step-by-Step Process:**
-1. Sidebar navigation menu se **'Create Invoice'** tab par click karein.
-2. **Section 1 (Client / Party Details):** Apne client ko select karein ya '+ Add New Party' par click karke naye client ki details (Trade Name, Address, GSTIN) save karein.
-3. **Section 2 (Invoice Meta Details):** Invoice Number aur Date check karein.
-4. **Section 3 (Items & Grid Entry):** Apne business nature ke mutabik items ki description, HSN code, quantity, rate aur tax % enter karein.
-5. Niche diye gaye **'✨ Finalize & Generate Exact A4 Invoice'** button par click karein."""
-    elif "history" in query_lower or "client" in query_lower or "excel" in query_lower or "ledger" in query_lower:
-        return """📊 **Client Ledger & Professional Excel/PDF Export:**
-Aap kisi bhi client ki history ya ledger dekhne ke liye sidebar se **'📊 Party-wise History, Item Editor & Ledger'** tab par click karein. Wahan se aap professional formatted Excel sheet ya Ledger PDF download kar sakte hain!"""
-    else:
-        return f"💡 **AI Assistant Guide:** Aapne pucha: '{query_lower}'. Invoice banane ke liye 'Create Invoice' tab par jayein aur Ledger ke liye 'Party-wise History' tab check karein."
+    if "invoice" in query_lower or "bill" in query_lower:
+        return "📝 **Invoice Guide:** Use the 'Create Invoice' tab. Toggle 'Enable GST Tax Invoice Mode' ON for Tax Invoices or OFF for Bills of Supply."
+    return f"💡 **AI Assistant:** Regarding '{query_lower}', navigate using the sidebar menu."
 
-# ==========================================
-# 6. SESSION TIMEOUT CHECKER (15 MINUTES)
-# ==========================================
 SESSION_TIMEOUT_SECONDS = 900
 if st.session_state.logged_in_user and st.session_state.login_time:
-    elapsed_seconds = (datetime.now() - st.session_state.login_time).total_seconds()
-    if elapsed_seconds > SESSION_TIMEOUT_SECONDS:
+    if (datetime.now() - st.session_state.login_time).total_seconds() > SESSION_TIMEOUT_SECONDS:
         st.session_state.logged_in_user = None
         st.session_state.login_time = None
-        st.warning("⏱️ Session expired due to inactivity. Please login again.")
+        st.warning("⏱️ Session expired. Please login again.")
         st.rerun()
 
 # ==========================================
-# 7. AUTHENTICATION & LANDING ROUTING
+# 5. AUTHENTICATION & LANDING ROUTING
 # ==========================================
 if not st.session_state.logged_in_user:
     st.markdown("""
@@ -319,13 +182,11 @@ if not st.session_state.logged_in_user:
             captcha_ans = st.text_input(f"Security Verification: Solve {n1} + {n2} = ?", key="captcha_inp")
             
             if st.button("Login to Portal"):
-                try: 
-                    user_numeric_answer = int(captcha_ans.strip())
-                except: 
-                    user_numeric_answer = -999
+                try: user_ans = int(captcha_ans.strip())
+                except: user_ans = -999
 
-                if user_numeric_answer != (n1 + n2):
-                    st.error("❌ Incorrect Captcha Answer! Please check your calculation.")
+                if user_ans != (n1 + n2):
+                    st.error("❌ Incorrect Captcha Answer!")
                 elif login_id == "roshan@shreeservices.com" and login_pass == "admin":
                     st.session_state.logged_in_user = login_id
                     st.session_state.login_time = datetime.now()
@@ -337,81 +198,53 @@ if not st.session_state.logged_in_user:
                     st.success("Login Successful!")
                     st.rerun()
                 else:
-                    st.error("❌ Invalid User ID or Password! Please check your credentials.")
+                    st.error("❌ Invalid User ID or Password!")
                     
         with auth_tab2:
             st.subheader("Create Enterprise Account")
             reg_id = st.text_input("Enter User ID (Email/Mobile)", key="reg_id_inp")
             reg_pass1 = st.text_input("Create Password", type="password", key="reg_pass1_inp")
             reg_pass2 = st.text_input("Confirm Password", type="password", key="reg_pass2_inp")
-            
             comp_name = st.text_input("Company / Trade Name", key="comp_name_inp")
-            comp_address = st.text_input("Complete Business Address", key="comp_addr_inp")
+            comp_address = st.text_input("Complete Address", key="comp_addr_inp")
             comp_contact = st.text_input("Contact Number", key="comp_cont_inp")
             comp_gstin = st.text_input("Company GSTIN (Optional)", key="comp_gst_inp")
-            
             nature_options = ["Goods / Manufacturing / Trading", "Services", "Transport Company", "Other Business"]
             comp_nature = st.selectbox("Fixed Business Nature", nature_options, key="comp_nat_inp")
             
             if st.button("Register & Create Enterprise Account"):
-                if not reg_id or not reg_pass1: 
-                    st.warning("Please fill User ID and Password fields.")
-                elif reg_pass1 != reg_pass2: 
-                    st.error("Passwords do not match!")
-                elif reg_id in saas_db: 
-                    st.error("User ID already registered in the system!")
-                elif not comp_name: 
-                    st.warning("Please enter Company Name.")
+                if not reg_id or not reg_pass1: st.warning("Fill User ID and Password.")
+                elif reg_pass1 != reg_pass2: st.error("Passwords do not match!")
+                elif reg_id in saas_db: st.error("User ID already registered!")
+                elif not comp_name: st.warning("Enter Company Name.")
                 else:
                     saas_db[reg_id] = {
                         "password": reg_pass1,
                         "profile": {
-                            "name": comp_name, 
-                            "address": comp_address, 
-                            "contact": comp_contact, 
-                            "gstin": comp_gstin, 
-                            "nature": comp_nature, 
-                            "format": "Corporate Curve Wave (New Professional)", 
-                            "border_style": "Solid Line", 
-                            "gst_enabled": True, 
-                            "watermark_enabled": True, 
-                            "watermark_type": "Company Name",
-                            "terms": "1. Goods once sold will not be taken back.\n2. Interest @ 18% p.a. will be charged if payment not made within due date."
+                            "name": comp_name, "address": comp_address, "contact": comp_contact, 
+                            "gstin": comp_gstin, "nature": comp_nature, "format": "Corporate Curve Wave (New Professional)", 
+                            "border_style": "Solid Line", "custom_logo": "", "watermark_enabled": True, "watermark_type": "Company Name",
+                            "bank_name": "State Bank of India", "acc_no": "1234567890", "ifsc": "SBIN0016324", "branch": "Nashik Ashok Nagar",
+                            "terms": "1. Payment on quarterly basis by 20th of quarter-end month."
                         },
-                        "history": [], 
-                        "parties": {
-                            "Sample Party": {"address": "New Delhi", "gstin": "07AAAAA0000A1Z5"}
-                        },
-                        "subscription": "Trial", 
-                        "bills_created": 0
+                        "history": [], "parties": {"Sample Party": {"address": "New Delhi", "gstin": "07AAAAA0000A1Z5"}},
+                        "subscription": "Trial", "bills_created": 0
                     }
                     save_saas_data(saas_db)
-                    st.success("Account Created Successfully! Free Trial Activated. Go to Login tab.")
-
-    st.markdown("<br><hr><h2 style='text-align: center; color: #1e3a8a;'>🌟 Why Businesses Choose Our Enterprise Portal</h2><br>", unsafe_allow_html=True)
+                    st.success("Account Created Successfully! Go to Login tab.")
 
 else:
-    # ==========================================
-    # 8. LOGGED-IN TENANT PORTAL ROUTING
-    # ==========================================
     current_user = st.session_state.logged_in_user
     user_data = saas_db[current_user]
     nature_options = ["Goods / Manufacturing / Trading", "Services", "Transport Company", "Other Business"]
-    
     current_nature = user_data["profile"].get("nature", "Goods / Manufacturing / Trading")
-    if current_nature not in nature_options: 
-        current_nature = nature_options[0]
+    if current_nature not in nature_options: current_nature = nature_options[0]
     
-    if "history" not in st.session_state: 
-        st.session_state.history = user_data["history"]
-    if "saved_parties" not in st.session_state: 
-        st.session_state.saved_parties = user_data["parties"]
-    if "subscription" not in user_data: 
-        user_data["subscription"] = "Trial"
-    if "bills_created" not in user_data: 
-        user_data["bills_created"] = len(user_data["history"])
+    if "history" not in st.session_state: st.session_state.history = user_data["history"]
+    if "saved_parties" not in st.session_state: st.session_state.saved_parties = user_data["parties"]
+    if "subscription" not in user_data: user_data["subscription"] = "Trial"
+    if "bills_created" not in user_data: user_data["bills_created"] = len(user_data["history"])
 
-    # Sidebar Information Panel
     st.sidebar.markdown(f"👤 **User:** `{current_user}`")
     st.sidebar.markdown(f"🏢 **Company:** `{user_data['profile']['name']}`")
     st.sidebar.markdown(f"🌟 **Plan:** `{user_data['subscription']}`")
@@ -436,25 +269,14 @@ else:
         st.session_state.login_time = None
         st.rerun()
 
-    # ==========================================
-    # 9. AI BUSINESS ASSISTANT TAB
-    # ==========================================
     elif menu_option == "🤖 AI Business Assistant":
-        st.markdown("<div class='main-title'><h1>🤖 AI Business & Tax Assistant</h1><p>Ask anything about invoices, tax compliance, or client history!</p></div>", unsafe_allow_html=True)
-        user_query = st.text_area("Type your business or tax question here:")
+        st.markdown("<div class='main-title'><h1>🤖 AI Business & Tax Assistant</h1></div>", unsafe_allow_html=True)
+        user_query = st.text_area("Type your question here:")
         if st.button("Ask AI Expert"):
             if user_query.strip():
-                with st.spinner("Analyzing query..."):
-                    time.sleep(0.3)
-                    ai_answer = ask_gemini_assistant(user_query)
-                    st.markdown("### 💡 AI Expert Response:")
-                    st.info(ai_answer)
-            else: 
-                st.warning("Please enter a valid question.")
+                st.info(ask_gemini_assistant(user_query))
+            else: st.warning("Please enter a question.")
 
-    # ==========================================
-    # 10. PARTY-WISE HISTORY, ITEM EDITOR & LEDGER
-    # ==========================================
     elif menu_option == "📊 Party-wise History, Item Editor & Ledger":
         st.markdown("<div class='main-title'><h1>Tally-Grade Party Ledger & Item-Level Bill Editor</h1></div>", unsafe_allow_html=True)
         
@@ -468,7 +290,6 @@ else:
                 p_dat = user_data["parties"][sel_party]
                 st.info(f"🏢 **Party Master Profile:** `{sel_party}` | **Address:** {p_dat.get('address')} | **GSTIN:** {p_dat.get('gstin')}")
 
-                # Tally-style Party Master Profile Editor (CTRL+Enter Style on screen)
                 with st.expander(f"✏️ Edit Party Master Profile ({sel_party}) - Tally Style"):
                     edit_p_addr = st.text_input("Edit Party Address", value=p_dat.get('address', ''), key=f"epa_{sel_party}")
                     edit_p_gst = st.text_input("Edit Party GSTIN", value=p_dat.get('gstin', ''), key=f"epg_{sel_party}")
@@ -476,7 +297,7 @@ else:
                         user_data["parties"][sel_party]["address"] = edit_p_addr
                         user_data["parties"][sel_party]["gstin"] = edit_p_gst
                         save_saas_data(saas_db)
-                        st.success("Party Master Profile Updated Successfully!")
+                        st.success("Party Profile Updated Successfully!")
                         st.rerun()
 
             party_bills = [h for h in user_data["history"] if h['client'] == sel_party]
@@ -484,62 +305,19 @@ else:
             col_ex1, col_ex2 = st.columns(2)
             with col_ex1:
                 if party_bills:
-                    excel_html = f"""
-                    <h3>Statement of Accounts / Ledger: {sel_party}</h3>
-                    <table border="1">
-                        <tr style="background:#1e3a8a; color:#ffffff;">
-                            <th>Invoice No</th><th>Date</th><th>Client Name</th><th>Total (Rs.)</th><th>Paid (Rs.)</th><th>Balance (Rs.)</th>
-                        </tr>
-                    """
-                    tot_t, tot_p, tot_b = 0, 0, 0
-                    for b in party_bills:
-                        tot_t += b['total']
-                        tot_p += b['paid']
-                        tot_b += b['balance']
-                        excel_html += f"<tr><td>{b['invoice_no']}</td><td>{b['date']}</td><td>{b['client']}</td><td>{b['total']:.2f}</td><td>{b['paid']:.2f}</td><td>{b['balance']:.2f}</td></tr>"
-                    excel_html += f"<tr style='font-weight:bold; background:#f1f5f9;'><td colspan='3'>Total</td><td>{tot_t:.2f}</td><td>{tot_p:.2f}</td><td>{tot_b:.2f}</td></tr></table>"
-                    
-                    st.download_button(
-                        label=f"📥 Download Formatted Excel Ledger ({sel_party})",
-                        data=excel_html,
-                        file_name=f"{sel_party}_Ledger_Statement.xls",
-                        mime="application/vnd.ms-excel"
-                    )
-
+                    excel_html = f"<h3>Statement: {sel_party}</h3><table border='1'><tr style='background:#1e3a8a;color:#fff;'><th>Invoice No</th><th>Date</th><th>Total</th><th>Paid</th><th>Balance</th></tr>"
+                    for b in party_bills: excel_html += f"<tr><td>{b['invoice_no']}</td><td>{b['date']}</td><td>{b['total']:.2f}</td><td>{b['paid']:.2f}</td><td>{b['balance']:.2f}</td></tr>"
+                    excel_html += "</table>"
+                    st.download_button(label=f"📥 Download Excel Ledger", data=excel_html, file_name=f"{sel_party}_Ledger.xls", mime="application/vnd.ms-excel")
             with col_ex2:
-                if st.button(f"🖨️ Print Ledger PDF Statement ({sel_party})"):
-                    ledger_rows_html = ""
-                    for b in party_bills:
-                        ledger_rows_html += f"<tr><td>{b['invoice_no']}</td><td>{b['date']}</td><td>Rs. {b['total']:.2f}</td><td>Rs. {b['paid']:.2f}</td><td>Rs. {b['balance']:.2f}</td></tr>"
-                    
-                    ledger_html_doc = f"""
-                    <!DOCTYPE html><html><head><meta charset="utf-8"><style>
-                        body {{ font-family: Helvetica, Arial; color: #1e293b; padding: 20px; }}
-                        .ledger-box {{ width: 210mm; margin: auto; background: #fff; padding: 20mm; border: 1px solid #cbd5e1; }}
-                        h2 {{ color: #1e3a8a; margin-bottom: 5px; }}
-                        table {{ width: 100%; border-collapse: collapse; margin-top: 20px; }}
-                        th {{ background: #1e3a8a; color: white; padding: 10px; font-size: 13px; text-align: left; border: 1px solid #1e3a8a; }}
-                        td {{ border: 1px solid #cbd5e1; padding: 10px; font-size: 13px; }}
-                        .right {{ text-align: right; }}
-                        @media print {{ body {{ background: none; padding: 0; }} .no-print {{ display: none !important; }} }}
-                    </style></head><body>
-                    <div class="no-print" style="text-align: center; margin-bottom: 20px;"><button onclick="window.print()" style="background:#059669;color:white;padding:12px 25px;font-weight:bold;border:none;border-radius:8px;cursor:pointer;">🖨️ Print / Save Ledger PDF</button></div>
-                    <div class="ledger-box">
-                        <h2>{user_data['profile']['name']}</h2>
-                        <p style="font-size:12px; color:#64748b;">Statement of Account / Ledger for: <strong>{sel_party}</strong><br>Generated on: {datetime.now().strftime('%B %d, %Y')}</p>
-                        <hr style="border: 1px solid #cbd5e1; margin: 15px 0;">
-                        <table>
-                            <thead><tr><th>Invoice No</th><th>Date</th><th>Total Amount</th><th>Paid Amount</th><th>Balance Due</th></tr></thead>
-                            <tbody>{ledger_rows_html}</tbody>
-                        </table>
-                        <br>
-                        <div style="text-align: right; font-size: 14px; font-weight: bold;">Total Outstanding Balance: Rs. {sum([b['balance'] for b in party_bills]):.2f}</div>
-                    </div></body></html>
-                    """
-                    st.components.v1.html(ledger_html_doc, height=700, scrolling=True)
+                if st.button(f"🖨️ Print Ledger PDF Statement"):
+                    ledger_html_doc = f"<!DOCTYPE html><html><body><h2>{user_data['profile']['name']}</h2><p>Ledger for: <b>{sel_party}</b></p><table border='1' style='width:100%;border-collapse:collapse;'><tr><th>Invoice</th><th>Date</th><th>Total</th><th>Paid</th><th>Balance</th></tr>"
+                    for b in party_bills: ledger_html_doc += f"<tr><td>{b['invoice_no']}</td><td>{b['date']}</td><td>{b['total']:.2f}</td><td>{b['paid']:.2f}</td><td>{b['balance']:.2f}</td></tr>"
+                    ledger_html_doc += "</table></body></html>"
+                    st.components.v1.html(ledger_html_doc, height=600, scrolling=True)
 
             st.markdown("---")
-            st.subheader("📝 Edit Bill Items (Remove items, Modify quantities/rates) & Reprint")
+            st.subheader("📝 Edit Bill Items & Reprint")
             for bill in party_bills:
                 with st.expander(f"Invoice No: {bill['invoice_no']} | Date: {bill['date']} | Total: Rs. {bill['total']}"):
                     new_inv_no = st.text_input("Edit Invoice No", value=bill['invoice_no'], key=f"ein_{bill['invoice_no']}")
@@ -562,11 +340,14 @@ else:
                         
                         keep_item = col_del.checkbox("Keep", value=True, key=f"k_{bill['invoice_no']}_{idx}")
                         if keep_item:
-                            updated_items.append({"desc": i_desc, "hsn": itm.get('hsn', '-'), "unit": itm.get('unit', 'NOS'), "qty": i_qty, "rate": i_rate, "tax_type": "Taxable", "tax_pct": 18.0, "amt": i_amt})
+                            updated_items.append({"desc": i_desc, "hsn": itm.get('hsn', '-'), "unit": itm.get('unit', 'NOS'), "qty": i_qty, "rate": i_rate, "tax_type": itm.get('tax_type', 'Taxable'), "tax_pct": float(itm.get('tax_pct', 18.0)), "amt": i_amt})
                             new_subtotal += i_amt
-                            new_tax_amt += i_amt * 0.18
+                            if itm.get('tax_type', 'Taxable') == "Taxable":
+                                new_tax_amt += i_amt * (float(itm.get('tax_pct', 18.0)) / 100.0)
 
-                    new_total_amt = new_subtotal + new_tax_amt
+                    is_tax_inv = bill.get("is_tax_invoice", True)
+                    actual_tax_amt = new_tax_amt if is_tax_inv else 0.0
+                    new_total_amt = new_subtotal + actual_tax_amt
                     new_balance = new_total_amt - new_paid
                     
                     col_s, col_d, col_p = st.columns(3)
@@ -590,9 +371,16 @@ else:
                     with col_p:
                         if st.button("🖨️ Reprint Bill", key=f"rp_{bill['invoice_no']}"):
                             sel_theme = user_data["profile"].get("format", FORMAT_OPTIONS[0])
-                            p_col, wave_gradient = ("#065f46", "linear-gradient(135deg, #059669 0%, #10b981 100%)") if "Emerald Green" in sel_theme else ("#1e3a8a", "linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%)")
-                            print_rows = "".join([f"<tr><td>{r['desc']}</td><td>{r['qty']}</td><td>{r['rate']:.2f}</td><td style='text-align:right;'>{r['amt']:.2f}</td></tr>" for r in bill["parsed_items"]])
-                            comp_terms = user_data["profile"].get("terms", "1. Standard terms apply.")
+                            if "Emerald Green" in sel_theme: p_col, wave_gradient = "#065f46", "linear-gradient(135deg, #059669 0%, #10b981 100%)"
+                            elif "Sunset Orange" in sel_theme: p_col, wave_gradient = "#c2410c", "linear-gradient(135deg, #ea580c 0%, #fb923c 100%)"
+                            elif "Royal Purple" in sel_theme: p_col, wave_gradient = "#581c87", "linear-gradient(135deg, #7e22ce 0%, #a855f7 100%)"
+                            elif "Minimalist Clean" in sel_theme: p_col, wave_gradient = "#334155", "linear-gradient(135deg, #475569 0%, #64748b 100%)"
+                            elif "Classic Blue" in sel_theme: p_col, wave_gradient = "#1e3a8a", "linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%)"
+                            else: p_col, wave_gradient = "#0f172a", "linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%)"
+                            
+                            print_rows = "".join([f"<tr><td>{r['desc']}</td><td>{r['qty']}</td><td>{r['rate']:.2f}</td><td>{r['tax_type']} ({r['tax_pct']}%)</td><td style='text-align:right;'>{r['amt']:.2f}</td></tr>" for r in bill["parsed_items"]])
+                            comp_terms = user_data["profile"].get("terms", "Standard terms apply.")
+                            inv_title_text = "TAX INVOICE" if is_tax_inv else "BILL OF SUPPLY"
                             
                             reprint_html = f"""
                             <!DOCTYPE html><html><head><meta charset="utf-8"><style>
@@ -609,13 +397,13 @@ else:
                             <div class="a4-page">
                                 <div class="wave-header">
                                     <div><h2>{user_data['profile']['name']}</h2><p>{user_data['profile']['address']}<br>Contact: {user_data['profile']['contact']}<br>GSTIN: {user_data['profile']['gstin']}</p></div>
-                                    <div style="text-align:right;"><h2>TAX INVOICE</h2><p>{bill['invoice_no']}</p></div>
+                                    <div style="text-align:right;"><h2>{inv_title_text}</h2><p>{bill['invoice_no']}</p></div>
                                 </div>
                                 <table style="width:100%; border-collapse:collapse; margin-bottom:20px;"><tr>
                                 <td style="padding:10px; border:1px solid #cbd5e1;"><strong>Service Provider:</strong><br>{user_data['profile']['name']}<br>Address: {user_data['profile']['address']}<br>Contact: {user_data['profile']['contact']}<br>GSTIN: {user_data['profile']['gstin']}</td>
                                 <td style="padding:10px; border:1px solid #cbd5e1;"><strong>Billed To:</strong><br>{bill['client']}</td>
                                 </tr></table>
-                                <table><thead><tr><th>Description</th><th>Qty</th><th>Rate</th><th style='text-align:right;'>Amount</th></tr></thead><tbody>{print_rows}</tbody></table>
+                                <table><thead><tr><th>Description</th><th>Qty</th><th>Rate</th><th>Tax Type</th><th style='text-align:right;'>Amount</th></tr></thead><tbody>{print_rows}</tbody></table>
                                 <br>
                                 <h3>Total Amount: Rs. {bill['total']:.2f} | Paid: Rs. {bill.get('paid',0):.2f} | Balance: Rs. {bill['balance']:.2f}</h3>
                                 <br><hr><p style="font-size:11px; white-space: pre-line;"><strong>Terms & Conditions:</strong><br>{comp_terms}</p>
@@ -624,10 +412,10 @@ else:
                             st.components.v1.html(reprint_html, height=750, scrolling=True)
 
     # ==========================================
-    # 11. COMPANY PROFILE & FORMAT SETTINGS
+    # 11. COMPANY PROFILE & FORMAT SETTINGS (RESTORED FULL UI)
     # ==========================================
     elif menu_option == "⚙️ Company Profile & Format Settings":
-        st.markdown("<div class='main-title'><h1>Settings, Bank Details & Terms Customizer</h1></div>", unsafe_allow_html=True)
+        st.markdown("<div class='main-title'><h1>Settings, Theme & Format Customizer</h1></div>", unsafe_allow_html=True)
         prof = user_data["profile"]
         
         st.subheader("🏢 Company Information")
@@ -636,6 +424,16 @@ else:
         up_contact = st.text_input("Contact", value=prof.get("contact", ""))
         up_gstin = st.text_input("GSTIN", value=prof.get("gstin", ""))
         
+        st.subheader("🎨 Invoice Theme & Visual Branding")
+        fmt_val = prof.get("format", FORMAT_OPTIONS[0])
+        fmt_idx = FORMAT_OPTIONS.index(fmt_val) if fmt_val in FORMAT_OPTIONS else 0
+        up_format = st.selectbox("Select Invoice Designer Theme", FORMAT_OPTIONS, index=fmt_idx)
+        
+        up_custom_logo = st.text_input("Logo Image URL (Optional)", value=prof.get("custom_logo", ""))
+        up_watermark_enabled = st.checkbox("Enable Background Watermark on Invoice", value=prof.get("watermark_enabled", True))
+        wm_type_val = prof.get("watermark_type", "Company Name")
+        up_watermark_type = st.radio("Watermark Content Type", ["Company Name", "Logo Initials"], index=0 if wm_type_val == "Company Name" else 1)
+
         st.subheader("🏦 Bank Details for Invoice Footer")
         col_b1, col_b2 = st.columns(2)
         up_bank_name = col_b1.text_input("Bank Name", value=prof.get("bank_name", ""))
@@ -645,33 +443,78 @@ else:
         up_branch = col_b4.text_input("Branch Name", value=prof.get("branch", ""))
         
         st.subheader("📜 Terms & Conditions")
-        up_terms = st.text_area("Invoice Terms & Conditions", value=prof.get("terms", "1. Standard terms apply."), height=120)
-        
-        up_format = st.selectbox("Select Theme", FORMAT_OPTIONS, index=0)
+        up_terms = st.text_area("Invoice Terms & Conditions", value=prof.get("terms", "Standard terms apply."), height=120)
         
         if st.button("💾 Save All Enterprise Settings"):
             user_data["profile"]["name"] = up_name
             user_data["profile"]["address"] = up_address
             user_data["profile"]["contact"] = up_contact
             user_data["profile"]["gstin"] = up_gstin
+            user_data["profile"]["format"] = up_format
+            user_data["profile"]["custom_logo"] = up_custom_logo
+            user_data["profile"]["watermark_enabled"] = up_watermark_enabled
+            user_data["profile"]["watermark_type"] = up_watermark_type
             user_data["profile"]["bank_name"] = up_bank_name
             user_data["profile"]["acc_no"] = up_acc_no
             user_data["profile"]["ifsc"] = up_ifsc
             user_data["profile"]["branch"] = up_branch
             user_data["profile"]["terms"] = up_terms
-            user_data["profile"]["format"] = up_format
             save_saas_data(saas_db)
-            st.success("All Settings, Bank Details & Terms saved successfully!")
+            st.success("All Settings, Themes & Terms saved successfully!")
             st.rerun()
 
+        st.markdown("---")
+        st.markdown("### 👁️ Instant Full A4 Size Live Preview")
+        if "Emerald Green" in up_format: p_col, wave_gradient = "#065f46", "linear-gradient(135deg, #059669 0%, #10b981 100%)"
+        elif "Sunset Orange" in up_format: p_col, wave_gradient = "#c2410c", "linear-gradient(135deg, #ea580c 0%, #fb923c 100%)"
+        elif "Royal Purple" in up_format: p_col, wave_gradient = "#581c87", "linear-gradient(135deg, #7e22ce 0%, #a855f7 100%)"
+        elif "Minimalist Clean" in up_format: p_col, wave_gradient = "#334155", "linear-gradient(135deg, #475569 0%, #64748b 100%)"
+        elif "Classic Blue" in up_format: p_col, wave_gradient = "#1e3a8a", "linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%)"
+        else: p_col, wave_gradient = "#0f172a", "linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%)"
+
+        init = get_initials(up_name)
+        logo_html = f"<div style='width: 50px; height: 50px; background: {p_col}; color: #fff; display: flex; align-items: center; justify-content: center; font-weight: bold; border-radius: 8px;'>{init}</div>"
+        if up_custom_logo.strip(): logo_html = f"<img src='{up_custom_logo}' style='max-height: 50px; max-width: 50px; object-fit: contain;'>"
+        wm_text = up_name if up_watermark_type == "Company Name" else init
+        wm_html = f'<div style="position: absolute; top: 40%; left: 20%; transform: rotate(-30deg); font-size: 90px; font-weight: bold; color: rgba(0, 0, 0, 0.04); z-index: 0; pointer-events: none; white-space: nowrap;">{wm_text}</div>' if up_watermark_enabled else ""
+
+        full_a4_preview_html = f"""
+        <!DOCTYPE html><html><head><meta charset="utf-8"><style>
+            body {{ font-family: Helvetica, Arial; color: #1e293b; background: #e2e8f0; margin: 0; padding: 20px; }}
+            .a4-page {{ width: 210mm; min-height: 297mm; margin: auto; background: #fff; padding: 15mm 20mm; box-sizing: border-box; border: 1px solid #cbd5e1; position: relative; overflow: hidden; }}
+            .wave-header {{ background: {wave_gradient}; color: #fff; padding: 20px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom-left-radius: 30px; border-bottom-right-radius: 30px; }}
+            .company-title {{ font-size: 24px; font-weight: bold; color: #ffffff; }}
+            .invoice-title {{ font-size: 26px; font-weight: bold; text-transform: uppercase; color: #ffffff; text-align: right; }}
+            .billing-table {{ width: 100%; border-collapse: collapse; margin-bottom: 25px; border: 1px solid #cbd5e1; background: #f8fafc; }}
+            .billing-table td {{ padding: 12px; vertical-align: top; width: 50%; font-size: 13px; border: 1px solid #cbd5e1; }}
+            .items-table {{ width: 100%; border-collapse: collapse; margin-bottom: 20px; }}
+            .items-table th {{ background-color: {p_col}; color: #fff; text-align: left; padding: 10px; font-size: 12px; border: 1px solid {p_col}; }}
+            .items-table td {{ border: 1px solid #cbd5e1; padding: 10px; font-size: 12px; }}
+            .right {{ text-align: right; }}
+            .totals {{ width: 300px; margin-left: auto; font-size: 13px; border: 1px solid #cbd5e1; border-collapse: collapse; }}
+            .totals td {{ padding: 8px; border: 1px solid #cbd5e1; }}
+            .grand-total {{ font-weight: bold; background: #eff6ff; font-size: 14px; color: {p_col}; }}
+        </style></head><body><div class="a4-page">
+            {wm_html}
+            <div class="wave-header">
+                <div style="display: flex; gap: 15px; align-items:center;">{logo_html}<div><div class="company-title">{up_name}</div><div style="font-size: 12px; color: #e2e8f0;">{up_address}<br>Contact: {up_contact}</div></div></div>
+                <div><div class="invoice-title">Tax Invoice</div><div style="font-size: 12px; color: #e2e8f0; text-align: right;">Invoice No: TAX/2026-27/001</div></div>
+            </div>
+            <table class="billing-table"><tr><td><strong>Service Provider:</strong><br>{up_name}</td><td><strong>Billed To:</strong><br>Sample Client</td></tr></table>
+            <table class="items-table"><thead><tr><th>S.No.</th><th>Description</th><th>Mode</th><th class='right'>Amount (Rs.)</th></tr></thead><tbody><tr><td>1</td><td>Sample Item</td><td>{up_nature}</td><td class='right'>700.00</td></tr></tbody></table>
+            <table class="totals"><tr><td>Subtotal:</td><td class="right">Rs. 700.00</td></tr><tr><td>GST (18%):</td><td class="right">Rs. 126.00</td></tr><tr class="grand-total"><td>Total Amount:</td><td class="right">Rs. 826.00</td></tr></table>
+        </div></body></html>
+        """
+        st.components.v1.html(full_a4_preview_html, height=800, scrolling=True)
+
     # ==========================================
-    # 12. CREATE INVOICE WORKFLOW TAB
+    # 12. CREATE INVOICE WORKFLOW TAB (WITH GST TOGGLE)
     # ==========================================
     else:
         st.markdown(f"<div class='main-title'><h1>{user_data['profile']['name']}</h1><p>Invoice Mode: <b>{current_nature}</b></p></div>", unsafe_allow_html=True)
 
         if user_data["subscription"] == "Trial" and user_data.get("bills_created", 0) >= 1:
-            st.error("🚨 **Free Trial Limit Reached!** Subscribe to Pro Plan via UPI: **`roshan@shreeservices.upi`**")
+            st.error("🚨 **Free Trial Limit Reached!** Subscribe via UPI: **`roshan@shreeservices.upi`**")
             with st.form("subscription_payment_form"):
                 tx_id_input = st.text_input("Enter UPI Transaction Reference ID (UTR / Txn ID)")
                 if st.form_submit_button("Submit Payment for Activation") and tx_id_input.strip():
@@ -686,6 +529,10 @@ else:
 
         next_inv_num = len(user_data["history"]) + 1
         current_inv_no = f"TAX/2026-27/{next_inv_num:03d}"
+
+        # --- TAX INVOICE vs BILL OF SUPPLY TOGGLE ---
+        st.markdown('<div class="section-box-1">🎛️ Invoice Type Control (GST Toggle)</div>', unsafe_allow_html=True)
+        is_tax_invoice = st.toggle("Enable GST Tax Invoice Mode (ON = Tax Invoice | OFF = Bill of Supply / Non-GST)", value=True)
 
         st.markdown('<div class="section-box-1">👤 1. Client / Party Details</div>', unsafe_allow_html=True)
         party_list = list(user_data["parties"].keys()) + ["+ Add New Party"]
@@ -714,20 +561,41 @@ else:
 
         subtotal_amt, total_tax_amt = 0.0, 0.0
         for i, row in enumerate(st.session_state.inv_rows):
-            c1, c2, c3, c4 = st.columns([4, 2, 2, 2])
-            row['desc'] = c1.text_input("Item Description", value=row['desc'], key=f"d_{i}")
-            row['qty'] = c2.number_input("Qty", value=row['qty'], key=f"q_{i}")
-            row['rate'] = c3.number_input("Rate", value=row['rate'], key=f"r_{i}")
-            row['amt'] = row['qty'] * row['rate']
-            c4.markdown(f"**Amt:** Rs. {row['amt']:.2f}")
-            subtotal_amt += row['amt']
-            total_tax_amt += row['amt'] * 0.18
+            st.markdown(f"**Item Row {i+1}**")
+            if is_tax_invoice:
+                c1, c2, c3, c4, c5, c6 = st.columns([3, 1.5, 1.5, 1.5, 1.5, 1.5])
+                row['desc'] = c1.text_input("Description", value=row['desc'], key=f"d_{i}")
+                row['qty'] = c2.number_input("Qty", value=row['qty'], key=f"q_{i}")
+                row['rate'] = c3.number_input("Rate", value=row['rate'], key=f"r_{i}")
+                row['tax_type'] = c4.selectbox("Tax Type", ["Taxable", "Nil Rated / Exempt"], key=f"tt_{i}")
+                row['tax_pct'] = c5.selectbox("Tax %", [0.0, 5.0, 12.0, 18.0, 28.0], index=3, key=f"tp_{i}")
+                
+                base_amt = row['qty'] * row['rate']
+                row['amt'] = base_amt
+                c6.markdown(f"**Amt:** Rs. {base_amt:.2f}")
+                
+                subtotal_amt += base_amt
+                if row['tax_type'] == "Taxable":
+                    total_tax_amt += base_amt * (row['tax_pct'] / 100.0)
+            else:
+                c1, c2, c3, c4 = st.columns([4, 2, 2, 2])
+                row['desc'] = c1.text_input("Description", value=row['desc'], key=f"d_ng_{i}")
+                row['qty'] = c2.number_input("Qty", value=row['qty'], key=f"q_ng_{i}")
+                row['rate'] = c3.number_input("Rate", value=row['rate'], key=f"r_ng_{i}")
+                
+                base_amt = row['qty'] * row['rate']
+                row['amt'] = base_amt
+                row['tax_type'] = "Non-GST"
+                row['tax_pct'] = 0.0
+                c4.markdown(f"**Amt:** Rs. {base_amt:.2f}")
+                subtotal_amt += base_amt
 
         st.markdown("---")
         disc_type = st.radio("Discount Type", ["None", "Percentage (%)", "Flat Amount (Rs.)"], horizontal=True)
         discount_val = st.number_input("Discount Value", min_value=0.0, value=0.0)
 
-        calc_subtotal = subtotal_amt + total_tax_amt
+        effective_tax = total_tax_amt if is_tax_invoice else 0.0
+        calc_subtotal = subtotal_amt + effective_tax
         discount_amount = (calc_subtotal * (discount_val / 100.0)) if disc_type == "Percentage (%)" else discount_val if disc_type == "Flat Amount (Rs.)" else 0.0
         final_total_amt = max(0.0, calc_subtotal - discount_amount)
 
@@ -740,18 +608,20 @@ else:
             client_gstin = p_info.get("gstin", "")
             company_gstin = user_data["profile"].get("gstin", "")
             
-            if client_gstin.startswith("07") or (company_gstin and client_gstin[:2] == company_gstin[:2]):
-                cgst_amt = total_tax_amt / 2.0
-                sgst_amt = total_tax_amt / 2.0
-                tax_breakdown_html = f"""
-                <tr><td>CGST (9%):</td><td style='text-align:right;'>Rs. {cgst_amt:.2f}</td></tr>
-                <tr><td>SGST (9%):</td><td style='text-align:right;'>Rs. {sgst_amt:.2f}</td></tr>
-                """
-            else:
-                igst_amt = total_tax_amt
-                tax_breakdown_html = f"""
-                <tr><td>IGST (18%):</td><td style='text-align:right;'>Rs. {igst_amt:.2f}</td></tr>
-                """
+            tax_breakdown_html = ""
+            if is_tax_invoice:
+                if client_gstin.startswith("07") or (company_gstin and client_gstin[:2] == company_gstin[:2]):
+                    cgst_amt = total_tax_amt / 2.0
+                    sgst_amt = total_tax_amt / 2.0
+                    tax_breakdown_html = f"""
+                    <tr><td>CGST:</td><td style='text-align:right;'>Rs. {cgst_amt:.2f}</td></tr>
+                    <tr><td>SGST:</td><td style='text-align:right;'>Rs. {sgst_amt:.2f}</td></tr>
+                    """
+                else:
+                    igst_amt = total_tax_amt
+                    tax_breakdown_html = f"""
+                    <tr><td>IGST:</td><td style='text-align:right;'>Rs. {igst_amt:.2f}</td></tr>
+                    """
 
             balance = final_total_amt - total_paid
 
@@ -759,24 +629,45 @@ else:
             user_data["history"].append({
                 "invoice_no": inv_no, "client": target_party, "total": final_total_amt,
                 "paid": total_paid, "balance": balance, "date": inv_date,
-                "parsed_items": list(st.session_state.inv_rows), "timestamp": datetime.now().isoformat()
+                "parsed_items": list(st.session_state.inv_rows), "is_tax_invoice": is_tax_invoice,
+                "timestamp": datetime.now().isoformat()
             })
             save_saas_data(saas_db)
 
             sel_theme = user_data["profile"].get("format", FORMAT_OPTIONS[0])
-            p_col, wave_gradient = ("#065f46", "linear-gradient(135deg, #059669 0%, #10b981 100%)") if "Emerald Green" in sel_theme else ("#1e3a8a", "linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%)")
+            if "Emerald Green" in sel_theme: p_col, wave_gradient = "#065f46", "linear-gradient(135deg, #059669 0%, #10b981 100%)"
+            elif "Sunset Orange" in sel_theme: p_col, wave_gradient = "#c2410c", "linear-gradient(135deg, #ea580c 0%, #fb923c 100%)"
+            elif "Royal Purple" in sel_theme: p_col, wave_gradient = "#581c87", "linear-gradient(135deg, #7e22ce 0%, #a855f7 100%)"
+            elif "Minimalist Clean" in sel_theme: p_col, wave_gradient = "#334155", "linear-gradient(135deg, #475569 0%, #64748b 100%)"
+            elif "Classic Blue" in sel_theme: p_col, wave_gradient = "#1e3a8a", "linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%)"
+            else: p_col, wave_gradient = "#0f172a", "linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%)"
+
             init = get_initials(user_data['profile']['name'])
-            l_html = f"<div style='width:50px;height:50px;background:{p_col};color:#fff;display:flex;align-items:center;justify-content:center;font-weight:bold;border-radius:8px;'>{init}</div>"
-            comp_terms = user_data["profile"].get("terms", "1. Standard terms apply.")
+            logo_html = f"<div style='width:50px;height:50px;background:{p_col};color:#fff;display:flex;align-items:center;justify-content:center;font-weight:bold;border-radius:8px;'>{init}</div>"
+            custom_logo_url = user_data["profile"].get("custom_logo", "")
+            if custom_logo_url.strip(): logo_html = f"<img src='{custom_logo_url}' style='max-height:50px;max-width:50px;object-fit:contain;'>"
+
+            wm_enabled = user_data["profile"].get("watermark_enabled", True)
+            wm_type = user_data["profile"].get("watermark_type", "Company Name")
+            wm_text = user_data["profile"]["name"] if wm_type == "Company Name" else init
+            wm_html = f'<div style="position:absolute; top:40%; left:20%; transform:rotate(-30deg); font-size:90px; font-weight:bold; color:rgba(0,0,0,0.04); z-index:0; pointer-events:none; white-space:nowrap;">{wm_text}</div>' if wm_enabled else ""
+
+            comp_bank_name = user_data["profile"].get("bank_name", "State Bank of India")
+            comp_acc_no = user_data["profile"].get("acc_no", "1234567890")
+            comp_ifsc = user_data["profile"].get("ifsc", "SBIN0016324")
+            comp_branch = user_data["profile"].get("branch", "Nashik Ashok Nagar")
+            comp_terms = user_data["profile"].get("terms", "Standard terms apply.")
             
-            table_rows_new = "".join([f"<tr><td>{r['desc']}</td><td>{r['qty']}</td><td>{r['rate']:.2f}</td><td style='text-align:right;'>{r['amt']:.2f}</td></tr>" for r in st.session_state.inv_rows])
+            invoice_title_text = "TAX INVOICE" if is_tax_invoice else "BILL OF SUPPLY"
+            table_headers = "<th>Description</th><th>Qty</th><th>Rate</th>" + ("<th>Tax Type</th>" if is_tax_invoice else "") + "<th style='text-align:right;'>Amount</th>"
+            table_rows_new = "".join([f"<tr><td>{r['desc']}</td><td>{r['qty']}</td><td>{r['rate']:.2f}</td>" + (f"<td>{r['tax_type']} ({r['tax_pct']}%)</td>" if is_tax_invoice else "") + f"<td style='text-align:right;'>{r['amt']:.2f}</td></tr>" for r in st.session_state.inv_rows])
 
             html_content = f"""
             <!DOCTYPE html><html><head><meta charset="utf-8"><style>
                 * {{ -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }}
                 body {{ font-family: Helvetica; background: #e2e8f0; padding: 20px; }}
-                .a4-page {{ width: 210mm; min-height: 297mm; margin: auto; background: #fff; padding: 20mm; border: 1px solid #cbd5e1; position: relative; }}
-                .wave-header {{ background: {wave_gradient} !important; color: #fff !important; padding: 20px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }}
+                .a4-page {{ width: 210mm; min-height: 297mm; margin: auto; background: #fff; padding: 20mm; border: 1px solid #cbd5e1; position: relative; overflow:hidden; }}
+                .wave-header {{ background: {wave_gradient} !important; color: #fff !important; padding: 20px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom-left-radius: 30px; border-bottom-right-radius: 30px; }}
                 table {{ width: 100%; border-collapse: collapse; margin-top: 15px; }}
                 th, td {{ border: 1px solid #cbd5e1; padding: 8px; font-size: 13px; }}
                 th {{ background: {p_col}; color: white; text-align: left; }}
@@ -787,15 +678,16 @@ else:
                 <a href="https://api.whatsapp.com/send?text=Hello%2C%20Invoice%20No%3A%20{inv_no}%20Total%3A%20Rs.%20{final_total_amt:.2f}" target="_blank" style="background:#25d366;color:white;padding:12px 25px;font-weight:bold;text-decoration:none;border-radius:8px;display:inline-block;margin-left:10px;">📱 Send via WhatsApp</a>
             </div>
             <div class="a4-page">
+                {wm_html}
                 <div class="wave-header">
-                    <div style="display: flex; gap: 15px; align-items:center;">{l_html}<div><h2>{user_data['profile']['name']}</h2><p>{user_data['profile']['address']}<br>Contact: {user_data['profile']['contact']}<br>GSTIN: {user_data['profile']['gstin']}</p></div></div>
-                    <div style="text-align:right;"><h2>TAX INVOICE</h2><p>{inv_no}</p></div>
+                    <div style="display: flex; gap: 15px; align-items:center;">{logo_html}<div><h2>{user_data['profile']['name']}</h2><p>{user_data['profile']['address']}<br>Contact: {user_data['profile']['contact']}<br>GSTIN: {user_data['profile']['gstin']}</p></div></div>
+                    <div style="text-align:right;"><h2>{invoice_title_text}</h2><p>{inv_no}</p></div>
                 </div>
                 <table style="width:100%; border-collapse:collapse; margin-bottom:20px;"><tr>
                 <td style="padding:10px; border:1px solid #cbd5e1;"><strong>Service Provider:</strong><br>{user_data['profile']['name']}<br>Address: {user_data['profile']['address']}<br>Contact: {user_data['profile']['contact']}<br>GSTIN: {user_data['profile']['gstin']}</td>
                 <td style="padding:10px; border:1px solid #cbd5e1;"><strong>Billed To:</strong><br>{target_party}<br>Address: {p_info.get('address')}<br>GSTIN: {p_info.get('gstin')}</td>
                 </tr></table>
-                <table><thead><tr><th>Description</th><th>Qty</th><th>Rate</th><th style='text-align:right;'>Amount</th></tr></thead><tbody>{table_rows_new}</tbody></table>
+                <table><thead><tr>{table_headers}</tr></thead><tbody>{table_rows_new}</tbody></table>
                 <br>
                 <table style="width: 350px; margin-left: auto;">
                     <tr><td>Subtotal:</td><td style='text-align:right;'>Rs. {subtotal_amt:.2f}</td></tr>
@@ -805,9 +697,24 @@ else:
                     <tr><td>Total Paid:</td><td style='text-align:right;'>Rs. {total_paid:.2f}</td></tr>
                     <tr style="font-weight:bold; background:#e2e8f0;"><td>Balance Due:</td><td style='text-align:right;'>Rs. {balance:.2f}</td></tr>
                 </table>
-                <br><hr><p style="font-size:11px; white-space: pre-line;"><strong>Terms & Conditions:</strong><br>{comp_terms}</p>
+                <br>
+                <table style="width:100%; border-collapse:collapse; margin-top:20px; font-size:11px;">
+                    <tr>
+                        <td style="width:50%; border:1px solid #cbd5e1; padding:10px; vertical-align:top;">
+                            <strong>Bank Details:</strong><br>
+                            Bank Name: {comp_bank_name}<br>
+                            A/C No: {comp_acc_no}<br>
+                            IFSC Code: {comp_ifsc}<br>
+                            Branch: {comp_branch}
+                        </td>
+                        <td style="width:50%; border:1px solid #cbd5e1; padding:10px; vertical-align:top;">
+                            <strong>Terms & Conditions:</strong><br>
+                            {comp_terms}
+                        </td>
+                    </tr>
+                </table>
             </div></body></html>
             """
-            st.success("Invoice Generated Successfully with Terms & Tax Breakdown!")
+            st.success("Invoice Generated Successfully with GST Toggle & Bank Details!")
             st.components.v1.html(html_content, height=850, scrolling=True)
 
