@@ -627,24 +627,41 @@ else:
     # 11. COMPANY PROFILE & FORMAT SETTINGS
     # ==========================================
     elif menu_option == "⚙️ Company Profile & Format Settings":
-        st.markdown("<div class='main-title'><h1>Settings & Format Customizer</h1></div>", unsafe_allow_html=True)
+        st.markdown("<div class='main-title'><h1>Settings, Bank Details & Terms Customizer</h1></div>", unsafe_allow_html=True)
         prof = user_data["profile"]
+        
+        st.subheader("🏢 Company Information")
         up_name = st.text_input("Company Name", value=prof.get("name", ""))
         up_address = st.text_input("Address", value=prof.get("address", ""))
         up_contact = st.text_input("Contact", value=prof.get("contact", ""))
         up_gstin = st.text_input("GSTIN", value=prof.get("gstin", ""))
-        up_terms = st.text_area("Invoice Terms & Conditions / Bank Details", value=prof.get("terms", "1. Standard terms apply."), height=120)
+        
+        st.subheader("🏦 Bank Details for Invoice Footer")
+        col_b1, col_b2 = st.columns(2)
+        up_bank_name = col_b1.text_input("Bank Name", value=prof.get("bank_name", ""))
+        up_acc_no = col_b2.text_input("Account Number", value=prof.get("acc_no", ""))
+        col_b3, col_b4 = st.columns(2)
+        up_ifsc = col_b3.text_input("IFSC Code", value=prof.get("ifsc", ""))
+        up_branch = col_b4.text_input("Branch Name", value=prof.get("branch", ""))
+        
+        st.subheader("📜 Terms & Conditions")
+        up_terms = st.text_area("Invoice Terms & Conditions", value=prof.get("terms", "1. Standard terms apply."), height=120)
+        
         up_format = st.selectbox("Select Theme", FORMAT_OPTIONS, index=0)
         
-        if st.button("💾 Save Settings & Terms"):
+        if st.button("💾 Save All Enterprise Settings"):
             user_data["profile"]["name"] = up_name
             user_data["profile"]["address"] = up_address
             user_data["profile"]["contact"] = up_contact
             user_data["profile"]["gstin"] = up_gstin
+            user_data["profile"]["bank_name"] = up_bank_name
+            user_data["profile"]["acc_no"] = up_acc_no
+            user_data["profile"]["ifsc"] = up_ifsc
+            user_data["profile"]["branch"] = up_branch
             user_data["profile"]["terms"] = up_terms
             user_data["profile"]["format"] = up_format
             save_saas_data(saas_db)
-            st.success("Settings & Terms saved successfully!")
+            st.success("All Settings, Bank Details & Terms saved successfully!")
             st.rerun()
 
     # ==========================================
